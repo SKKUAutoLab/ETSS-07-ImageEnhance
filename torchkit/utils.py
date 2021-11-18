@@ -25,17 +25,18 @@ from torchkit.core.fileio import load
 """
 
 # NOTE: Inside MLKit/torchkit
-torchkit_dir    = os.path.dirname(os.path.abspath(__file__))  # "workspaces/MLKit/torchkit"
+torchkit_dir    = os.path.dirname(os.path.abspath(__file__))
 
 # NOTE: Inside MLKit
-root_dir        = os.path.dirname(torchkit_dir)               # "workspaces/MLKit"
-exps_dir        = os.path.join(root_dir, "exps")              # "workspaces/MLKit/exps"
-checkpoints_dir = os.path.join(exps_dir, "checkpoints")       # "workspaces/MLKit/exps/checkpoints"
-models_zoo_dir  = os.path.join(root_dir, "models_zoo")        # "workspaces/MLKit/models_zoo"
+root_dir        = os.path.dirname(torchkit_dir)
+exps_dir        = os.path.join(root_dir, "exps")
+checkpoints_dir = os.path.join(exps_dir, "checkpoints")
+models_zoo_dir  = os.path.join(root_dir, "models_zoo")
+datasets_dir    = os.path.join(root_dir, "data")
+data_dir        = os.path.join(root_dir, "data")
 
 # NOTE: Inside workspaces
-workspaces_dir  = os.path.dirname(root_dir)                   # "workspaces/"
-datasets_dir    = os.path.join(workspaces_dir, "datasets")    # "workspaces/datasets"
+workspaces_dir  = os.path.dirname(root_dir)
 
 
 # MARK: - Process Config

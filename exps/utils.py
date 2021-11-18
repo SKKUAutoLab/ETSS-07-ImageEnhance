@@ -19,19 +19,19 @@ from torchkit.core.fileio import load
 # MARK: - Directories
 
 # NOTE: Inside MLKit/exps
-exps_dir        = os.path.dirname(os.path.abspath(__file__))  # "workspaces/MLKit/exps"
-checkpoints_dir = os.path.join(exps_dir, "checkpoints")       # "workspaces/MLKit/exps/checkpoints"
-results_dir     = os.path.join(exps_dir, "results")           # "workspaces/MLKit/exps/results"
+exps_dir        = os.path.dirname(os.path.abspath(__file__))
+checkpoints_dir = os.path.join(exps_dir, "checkpoints")
+results_dir     = os.path.join(exps_dir, "results")
 
 # NOTE: Inside MLKit
-root_dir        = os.path.dirname(exps_dir)                   # "workspaces/MLKit"
-torchkit_dir    = os.path.join(root_dir, "torchkit")          # "workspaces/MLKit/torchkit"
-models_zoo_dir  = os.path.join(root_dir, "models_zoo")        # "workspaces/MLKit/models_zoo"
-data_dir        = os.path.join(root_dir, "data")              # "workspaces/MLKit/data"
+root_dir        = os.path.dirname(exps_dir)
+torchkit_dir    = os.path.join(root_dir, "torchkit")
+models_zoo_dir  = os.path.join(root_dir, "models_zoo")
+datasets_dir    = os.path.join(root_dir, "data")
+data_dir        = os.path.join(root_dir, "data")
 
 # NOTE: Inside workspaces
-workspaces_dir = os.path.dirname(root_dir)                   # "workspaces/"
-datasets_dir   = os.path.join(workspaces_dir, "datasets")    # "workspaces/datasets"
+workspaces_dir = os.path.dirname(root_dir)
 
 
 # MARK: - Process Config
