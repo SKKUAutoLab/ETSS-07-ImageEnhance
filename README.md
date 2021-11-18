@@ -22,7 +22,7 @@ This is the source code for image enhancement tasks. Currently, it supports rain
 
 # Training
 
-- Download the training data from:  (43 GB).
+- Download the training data from: [download](https://o365skku-my.sharepoint.com/:u:/g/personal/phlong_o365_skku_edu/ETZ4XCf9oxhEvfhrchrXXZwBecAZaP1YFBBzrGwQlwM5Kw?e=TtQfeL) (~7 GB).
 - Extract the data to `image_enhancement/data`. 
   - It should be located at: `image_enhancement/data/rain`
 - Run the training scripts: `python image_enhancement/exps/run/train.py`
