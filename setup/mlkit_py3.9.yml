@@ -1,0 +1,74 @@
+# Add conda-forge channel
+#   conda config --append channels conda-forge
+#
+# Install:
+#   conda env create -f mlkit.yml
+# 
+# Install cudatoolkit separately:
+#   conda install cudatoolkit=11.1
+#
+# Update: 
+#   conda env update --name mlkit --file mlkit.yml
+
+name: mlkit
+
+channels:
+  - pytorch
+  - defaults
+  - conda-forge
+
+dependencies:
+  # GENERAL
+  - colorama
+  - cudatoolkit=11.3
+  - cython
+  - git
+  - markdown
+  - matplotlib=3.4.3
+  - minio
+  - mpi4py # Installs cuda-aware openmpi
+  - munch
+  - mypy
+  - ninja
+  - numpy
+  - pandas
+  - pillow
+  - protobuf
+  - pydot
+  - python=3.9
+  - scikit-learn
+  - scipy
+  - seaborn
+  - tqdm
+  # PYTORCH
+  - pytorch
+  - torchvision
+  - torchaudio
+  # PIP
+  - pip
+  - pip:
+        # GENERAL
+        - filterpy
+        - labelme
+        - md-mermaid
+        - multipledispatch
+        - opencv-python==4.4.0.46         ; sys_platform=="win32"
+        - opencv-contrib-python==4.4.0.46 ; sys_platform=="win32"
+        - opencv-python-headless          ; sys_platform=="linux" or sys_platform=="darwin"
+        - opencv-contrib-python-headless  ; sys_platform=="linux" or sys_platform=="darwin"
+        - ordered-enum       
+        - PyQt6 
+        - rawpy
+        - setGPU
+        - sty   
+        - xmltodict     
+        # PYTORCH
+        - efficientnet-pytorch
+        - piq
+        - pretrainedmodels
+        - ptflops
+        - pytorch-lightning==1.5.1
+        - timm
+        - torchmetrics
+        - torchsummary
+        - validators

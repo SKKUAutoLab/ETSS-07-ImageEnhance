@@ -1,0 +1,55 @@
+# Parameters
+num_classes: 80      # Number of classes
+depth_multiple: 1.0  # Model depth multiple
+width_multiple: 1.0  # Layer channel multiple
+
+# Anchors
+anchors:
+  - [ 12,16,   19,36,   40,28]   # P3/8
+  - [ 36,75,   76,55,   72,146]  # P4/16
+  - [142,110, 192,243, 459,401]  # P5/32
+
+# YOLOv4-CSP backbone
+backbone:
+  # [from, number, module, args]
+  [
+    [-1, 1, Conv,          [32, 3, 1]],    # 0
+    [-1, 1, Conv,          [64, 3, 2]],    # 1-P1/2
+    [-1, 1, Bottleneck,    [64]],          # 2
+    [-1, 1, Conv,          [128, 3, 2]],   # 3-P2/4
+    [-1, 2, BottleneckCSP, [128]],         # 4
+    [-1, 1, Conv,          [256, 3, 2]],   # 5-P3/8
+    [-1, 8, BottleneckCSP, [256]],         # 6
+    [-1, 1, Conv,          [512, 3, 2]],   # 7-P4/16
+    [-1, 8, BottleneckCSP, [512]],         # 8
+    [-1, 1, Conv,          [1024, 3, 2]],  # 9-P5/32
+    [-1, 4, BottleneckCSP, [1024]],        # 10
+  ]
+
+# YOLOv4-CSP head
+# na = len(anchors[0])
+head:
+  [
+    [-1,       1, SPPCSP,         [512]],                # 11
+    [-1,       1, Conv,           [256, 1, 1]],          # 12
+    [-1,       1, nn.Upsample,    [None, 2, "nearest"]], # 13
+    [8,        1, Conv,           [256, 1, 1]],          # 14-route backbone P4
+    [[-1, -2], 1, Concat,         [1]],                  # 15
+    [-1,       2, BottleneckCSP2, [256]],                # 16
+    [-1,       1, Conv,           [128, 1, 1]],          # 17
+    [-1,       1, nn.Upsample,    [None, 2, "nearest"]], # 18
+    [6,        1, Conv,           [128, 1, 1]],          # 19-route backbone P3
+    [[-1, -2], 1, Concat,         [1]],                  # 20
+    [-1,       2, BottleneckCSP2, [128]],                # 21
+    [-1,       1, Conv,           [256, 3, 1]],          # 22
+    [-2,       1, Conv,           [256, 3, 2]],          # 23
+    [[-1, 16], 1, Concat,         [1]],                  # 24-Cat
+    [-1,       2, BottleneckCSP2, [256]],                # 25
+    [-1,       1, Conv,           [512, 3, 1]],          # 26
+    [-2,       1, Conv,           [512, 3, 2]],          # 27
+    [[-1, 11], 1, Concat,         [1]],                  # 28-Cat
+    [-1,       2, BottleneckCSP2, [512]],                # 29
+    [-1,       1, Conv,           [1024, 3, 1]],         # 30
+
+    [[22, 26, 30], 1, Detect, [num_classes, anchors]],  # 31-Detect(P3, P4, P5)
+  ]
