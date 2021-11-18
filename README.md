@@ -2,11 +2,10 @@
 
 This is the source code for image enhancement tasks. Currently, it supports rain removal in daytime conditions.
 
----
 
 # Installation
 
-## Requirements
+### Requirements
 
 - Anaconda3 
 - Python 3.9
@@ -14,22 +13,20 @@ This is the source code for image enhancement tasks. Currently, it supports rain
 - PyTorch 1.10
 - Code has been tested on Ubuntu 20.04 / Windows 10
 
-## Setup Environment
+### Setup Environment
 
 - Download the whole source code.
 - Goto setup folder `cd image_enhancement/setup`
 - Create the Anaconda environment: `conda env create -f mlkit.yml`
 
----
 
 # Training
 
-- Download the training data from: 
+- Download the training data from:  (43 GB).
 - Extract the data to `image_enhancement/data`. 
   - It should be located at: `image_enhancement/data/rain`
 - Run the training scripts: `python image_enhancement/exps/run/train.py`
 
----
 
 # Inference
 
