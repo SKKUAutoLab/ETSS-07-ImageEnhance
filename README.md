@@ -1,3 +1,5 @@
+### Automation Lab, Sungkyunkwan University
+
 # Image Enhancement
 
 This is the source code for image enhancement tasks. Currently, it supports rain removal in daytime conditions.
@@ -27,8 +29,10 @@ This is the source code for image enhancement tasks. Currently, it supports rain
   (~7 GB). 
 - Extract the data to `image_enhancement/data`. 
   - It should be located at: `image_enhancement/data/rain`
-- Run the training scripts: `python image_enhancement/exps/run/train.py`
-
+- Run the training scripts:
+```shell
+python image_enhancement/exps/run/train.py
+```
 
 # Inference
 
@@ -37,4 +41,7 @@ This is the source code for image enhancement tasks. Currently, it supports rain
   /best...ckpt`
 - Copy the best weight to `image_enhancement/models_zoo`. Rename it as: 
   `mprnet_rain_version_0.ckpt`
-- Run the inference scripts: `python image_enhancement/exps/run/infer.py`
+- Run the inference scripts: 
+```shell
+python image_enhancement/exps/run/infer.py
+```
