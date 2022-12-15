@@ -10,7 +10,7 @@ This is the source code for image enhancement tasks. Currently, it supports rain
 
 ### Requirements
 
-- Anaconda3 
+- Anaconda/Miniconda
 - Python 3.9
 - CUDA 11.1
 - PyTorch 1.10
@@ -19,9 +19,14 @@ This is the source code for image enhancement tasks. Currently, it supports rain
 ### Setup Environment
 
 - Download the whole source code.
-- Goto setup folder `cd image_enhancement/setup`
-- Create the Anaconda environment: `conda env create -f mlkit.yml`
-
+- Goto setup folder
+```shell
+cd image_enhancement/setup
+```
+- Create the Anaconda environment:
+```shell
+conda env create -f mlkit.yml
+```
 
 # Training
 
