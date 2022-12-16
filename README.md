@@ -4,6 +4,9 @@
 
 This is the source code for image enhancement tasks. Currently, it supports rain removal in daytime conditions.
 
+#### GitHub Stats
+![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/image_enhancement/total.svg?style=for-the-badge)
+
 # Installation
 
 ### Requirements
