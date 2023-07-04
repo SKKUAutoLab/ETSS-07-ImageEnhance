@@ -2,14 +2,13 @@
 
 # ETSS-07: Image Enhancement
 
+![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg?style=for-the-badge)
+
 This is the source code for image enhancement task for "24/7 Traffic Surveillance System on Edge Device" project.
 
 Currently, it supports:
 - Rain removal.
 - Low-light enhancement (updating...)
-
-#### GitHub Stats
-![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/image_enhancement/total.svg?style=for-the-badge)
 
 ## Installation
 
