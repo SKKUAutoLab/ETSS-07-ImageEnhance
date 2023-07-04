@@ -4,7 +4,7 @@
 
 ![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg?style=for-the-badge)
 
-This is the source code for image enhancement task for "24/7 Traffic Surveillance System on Edge Device" project.
+This is the source code for the image enhancement task from the "24/7 Traffic Surveillance System on Edge Device" project.
 
 Currently, it supports:
 - Rain removal.
@@ -18,7 +18,6 @@ cd mon
 chmod +x install.sh
 bash -i install.sh
 ```
-
 
 --- 
 
