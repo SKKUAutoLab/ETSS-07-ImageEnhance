@@ -1,13 +1,32 @@
 ### Automation Lab, Sungkyunkwan University
 
-# Image Enhancement
+# ETSS-07: Image Enhancement
 
-This is the source code for image enhancement tasks. Currently, it supports rain removal in daytime conditions.
+This is the source code for image enhancement task for "24/7 Traffic Surveillance System on Edge Device" project.
+
+Currently, it supports:
+- Rain removal.
+- Low-light enhancement (updating...)
 
 #### GitHub Stats
 ![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/image_enhancement/total.svg?style=for-the-badge)
 
-# Installation
+## Installation
+
+```shell
+git clone https://phlong3105@github.com/phlong3105/mon
+cd mon
+chmod +x install.sh
+bash -i install.sh
+```
+
+
+--- 
+
+<details open>
+<summary>Old Documentation</summary>
+
+## Installation
 
 ### Requirements
 
@@ -29,7 +48,7 @@ cd image_enhancement/setup
 conda env create -f mlkit.yml
 ```
 
-# Training
+## Training
 
 - Download the training data from: [download](https://o365skku-my.sharepoint.com/:u:/g/personal/phlong_o365_skku_edu/ETZ4XCf9oxhEvfhrchrXXZwBecAZaP1YFBBzrGwQlwM5Kw?e=TtQfeL)  
   (~7 GB). 
@@ -40,7 +59,7 @@ conda env create -f mlkit.yml
 python image_enhancement/exps/run/train.py
 ```
 
-# Inference
+## Inference
 
 - If you have retrained the model, find the best weight from:
   `image_enhancement/exps/checkpoints/mprnet/mprnet_rain/<version>/weights
@@ -51,3 +70,5 @@ python image_enhancement/exps/run/train.py
 ```shell
 python image_enhancement/exps/run/infer.py
 ```
+
+</details>
