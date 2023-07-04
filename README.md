@@ -23,7 +23,7 @@ bash -i install.sh
 
 --- 
 
-<details open>
+<details>
 <summary>Old Documentation</summary>
 
 ## Installation
