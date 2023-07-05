@@ -8,7 +8,7 @@ This is the source code for the image enhancement task from the "24/7 Traffic Su
 
 Currently, it supports:
 - Rain removal.
-- Low-light enhancement (updating...)
+- Low-light enhancement (updating ...)
 
 ## Installation
 
