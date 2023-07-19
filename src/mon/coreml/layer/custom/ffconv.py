@@ -6,9 +6,13 @@
 from __future__ import annotations
 
 __all__ = [
-    "FFConv2d", "FFConv2dNormAct", "FastFourierConv2d",
-    "FastFourierConv2dNormActivation", "FourierUnit",
-    "LearnableSpatialTransform", "SpectralTransform",
+    "FFConv2d",
+    "FFConv2dNormAct",
+    "FastFourierConv2d",
+    "FastFourierConv2dNormActivation",
+    "FourierUnit",
+    "LearnableSpatialTransform",
+    "SpectralTransform",
 ]
 
 import torch
@@ -24,7 +28,10 @@ from mon.globals import LAYERS
 # region Fourier Transform
 
 class FourierUnit(nn.Module):
-
+    """Fourier transformation unit proposed in the paper: "Fast Fourier
+    Convolution" (https://github.com/pkumivision/FFC).
+    """
+    
     def __init__(
         self,
         in_channels          : int,
@@ -56,7 +63,7 @@ class FourierUnit(nn.Module):
         # Squeeze and excitation block
         self.use_se = use_se
         if use_se:
-            self.se = base.SqueezeExciteL(
+            self.se = base.ChannelAttention(
                 channels        = self.conv_layer.in_channels,
                 reduction_ratio = reduction_ratio,
                 bias            = bias,
@@ -451,6 +458,5 @@ FFConv2d        = FastFourierConv2d
 FFConv2dNormAct = FastFourierConv2dNormActivation
 LAYERS.register(module=FFConv2d)
 LAYERS.register(module=FFConv2dNormAct)
-
 
 # endregion

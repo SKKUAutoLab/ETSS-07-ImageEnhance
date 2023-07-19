@@ -41,7 +41,7 @@ model = {
 	"phase"      : "training",     # The model's running phase.
 	"loss"       : None,           # Loss function for training the model.
 	"metrics"    : {
-	    "train": [{"name": "psnr"}],
+	    "train": None,
 		"val"  : [{"name": "psnr"}],
 		"test" : [{"name": "psnr"}],
     },          # A list metrics for validating and testing model.
@@ -75,7 +75,7 @@ datamodule = {
     "to_tensor"   : True,         # If True, convert input and target to :class:`torch.Tensor`.
     "cache_data"  : False,        # If True, cache data to disk for faster loading next time.
     "cache_images": False,        # If True, cache images into memory for faster training.
-    "batch_size"  : 16,            # The number of samples in one forward pass.
+    "batch_size"  : 8,            # The number of samples in one forward pass.
     "devices"     : 0,            # A list of devices to use. Defaults to 0.
     "shuffle"     : True,         # If True, reshuffle the datapoints at the beginning of every epoch.
     "verbose"     : True,         # Verbosity.
@@ -89,8 +89,8 @@ datamodule = {
 trainer = default.trainer | {
 	"callbacks"       : [
 		default.model_checkpoint | {
-		    "monitor": "train/psnr",  # Quantity to monitor.
-			"mode"   : "max",         # 'min' or 'max'.
+		    "monitor": "train/loss",  # Quantity to monitor.
+			"mode"   : "min",         # 'min' or 'max'.
 		},
 		default.learning_rate_monitor,
 		default.rich_model_summary,

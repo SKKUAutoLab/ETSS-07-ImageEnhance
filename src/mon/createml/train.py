@@ -20,22 +20,36 @@ console = mf.console
 # region Host
 
 hosts = {
-	"lp-labdesktop01-ubuntu": {
-	"config"     : "hinet_gt_rain",
+	"lp-labdesktop-01-ubuntu": {
+        "config"     : "zerodcev2_lol226",
         "root"       : RUN_DIR/"train",
-        "project"    : "hinet",
-        "name"       : "hinet-gt-rain",
+        "project"    : "zerodcev2",
+        "name"       : "zerodcev2-lol226",
         "weights"    : None,
         "batch_size" : 4,
-        "image_size" : (256, 256),
+        "image_size" : (512, 512),
         "accelerator": "auto",
-	"devices"    : 1,
+        "devices"    : 1,
         "max_epochs" : None,
         "max_steps"  : None,
-	"strategy"   : "auto",
+        "strategy"   : "auto",
+	},
+    "lp-labdesktop-02-ubuntu": {
+        "config"     : "zerodcev2_lol226",
+        "root"       : RUN_DIR/"train",
+        "project"    : "zerodcev2",
+        "name"       : "zerodcev2-lol226",
+        "weights"    : None,
+        "batch_size" : 4,
+        "image_size" : (512, 512),
+        "accelerator": "auto",
+        "devices"    : 1,
+        "max_epochs" : None,
+        "max_steps"  : None,
+        "strategy"   : "auto",
 	},
     "vsw-ws01": {
-	"config"     : "hinet_gt_rain",
+        "config"     : "hinet_gt_rain",
         "root"       : RUN_DIR/"train",
         "project"    : "hinet",
         "name"       : "hinet-gt-rain",
@@ -43,13 +57,13 @@ hosts = {
         "batch_size" : 4,
         "image_size" : (512, 512),
         "accelerator": "auto",
-	"devices"    : 1,
+        "devices"    : 1,
         "max_epochs" : None,
         "max_steps"  : None,
-	"strategy"   : "auto",
+        "strategy"   : "auto",
 	},
     "vsw-ws02": {
-	"config"     : "",
+        "config"     : "",
         "root"       : RUN_DIR/"train",
         "project"    : None,
         "name"       : None,
@@ -57,13 +71,13 @@ hosts = {
         "batch_size" : 4,
         "image_size" : (256, 256),
         "accelerator": "auto",
-	"devices"    : 1,
+        "devices"    : 1,
         "max_epochs" : None,
         "max_steps"  : None,
-	"strategy"   : "auto",
+        "strategy"   : "auto",
 	},
     "vsw-ws03": {
-	"config"     : "",
+        "config"     : "",
         "root"       : RUN_DIR/"train",
         "project"    : None,
         "name"       : None,
@@ -71,10 +85,10 @@ hosts = {
         "batch_size" : 4,
         "image_size" : (256, 256),
         "accelerator": "auto",
-	"devices"    : 1,
+        "devices"    : 1,
         "max_epochs" : None,
         "max_steps"  : None,
-	"strategy"   : "auto",
+        "strategy"   : "auto",
 	},
 }
 
@@ -84,18 +98,18 @@ hosts = {
 # region Function
 
 @click.command()
-@click.option("--config",      default="",    type=click.Path(exists=False), help="The training config to use.")
+@click.option("--config",      default="",     type=click.Path(exists=False), help="The training config to use.")
 @click.option("--root",        default=RUN_DIR/"train", type=click.Path(exists=False), help="Save results to root/project/name.")
-@click.option("--project",     default=None,  type=click.Path(exists=False), help="Save results to root/project/name.")
-@click.option("--name",        default=None,  type=click.Path(exists=False), help="Save results to root/project/name.")
-@click.option("--weights",     default=None,  type=click.Path(exists=False), help="Weights paths.")
-@click.option("--batch-size",  default=8,     type=int, help="Total Batch size for all GPUs.")
-@click.option("--image-size",  default=None,  type=int, help="Image sizes.")
-@click.option("--accelerator", default="gpu", type=click.Choice(["cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto"], case_sensitive=False))
-@click.option("--devices",     default=0,     type=int, help="Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.")
-@click.option("--max-epochs",  default=None,  type=int, help="Stop training once this number of epochs is reached.")
-@click.option("--max-steps",   default=None,  type=int, help="Stop training once this number of steps is reached.")
-@click.option("--strategy",    default=None,  type=str, help="Supports different training strategies with aliases as well custom strategies.")
+@click.option("--project",     default=None,   type=click.Path(exists=False), help="Save results to root/project/name.")
+@click.option("--name",        default=None,   type=click.Path(exists=False), help="Save results to root/project/name.")
+@click.option("--weights",     default=None,   type=click.Path(exists=False), help="Weights paths.")
+@click.option("--batch-size",  default=8,      type=int, help="Total Batch size for all GPUs.")
+@click.option("--image-size",  default=None,   type=int, help="Image sizes.")
+@click.option("--accelerator", default="gpu",  type=click.Choice(["cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto"], case_sensitive=False))
+@click.option("--devices",     default=0,      type=int, help="Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.")
+@click.option("--max-epochs",  default=100,    type=int, help="Stop training once this number of epochs is reached.")
+@click.option("--max-steps",   default=None,   type=int, help="Stop training once this number of steps is reached.")
+@click.option("--strategy",    default="auto", type=str, help="Supports different training strategies with aliases as well custom strategies.")
 def train(
     config     : mf.Path | str,
     root       : mf.Path,
