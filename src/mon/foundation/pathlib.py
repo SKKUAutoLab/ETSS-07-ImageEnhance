@@ -7,8 +7,8 @@ from __future__ import annotations
 
 __all__ = [
     "Path", "PosixPath", "PurePath", "PurePosixPath", "PureWindowsPath",
-    "WindowsPath", "copy_file", "delete_cache", "delete_files", "get_files",
-    "get_next_version", "hash_files", "mkdirs", "rmdirs",
+    "WindowsPath", "copy_file", "delete_cache", "delete_dir", "delete_files",
+    "get_files", "get_next_version", "hash_files", "mkdirs", "rmdirs",
 ]
 
 import glob
@@ -299,6 +299,14 @@ def delete_cache(path: Path | str, recursive: bool = True):
     delete_files(regex=".cache", path=path, recursive=recursive)
 
 
+def delete_dir(paths: Path | str | list[Path | str]):
+    paths = builtins.to_list(paths)
+    paths = builtins.unique(paths)
+    for p in paths:
+        p = Path(p)
+        if p.exists():
+            shutil.rmtree(p)
+
 def delete_files(
     regex    : str,
     path     : Path | str = "",
@@ -325,7 +333,7 @@ def delete_files(
 
 
 def mkdirs(
-    paths   : list[Path | str],
+    paths   : Path | str | list[Path | str],
     mode    : int  = 0o777,
     parents : bool = True,
     exist_ok: bool = True,
@@ -370,7 +378,7 @@ def mkdirs(
         print(f"Cannot create directory: {err}.")
 
 
-def rmdirs(paths: list[pathlib.Path | str]):
+def rmdirs(paths: Path | str | list[pathlib.Path | str]):
     """Delete directories.
     
     Args:

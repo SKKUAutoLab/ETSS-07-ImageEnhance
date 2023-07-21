@@ -363,6 +363,7 @@ class ChannelConsistencyLoss(Loss):
         kl_gb = functional.kl_div(d_gb1, d_gb2, reduction="mean", log_target=self.log_target)
         
         loss = kl_rb + kl_rg + kl_gb
+        loss = reduce_loss(loss=loss, reduction=self.reduction)
         return loss
 
 

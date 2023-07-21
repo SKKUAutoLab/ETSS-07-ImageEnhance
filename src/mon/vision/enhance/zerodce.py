@@ -206,10 +206,10 @@ class CombinedLoss01(loss.Loss):
         loss_exp = self.loss_exp(input=enhance)
         loss_col = self.loss_col(input=enhance)
         loss_tv  = self.loss_tv(input=a)
-        loss = self.spa_weight * loss_spa \
-               + self.exp_weight * loss_exp \
-               + self.col_weight * loss_col \
-               + self.tv_weight * loss_tv
+        loss     = self.spa_weight * loss_spa \
+                   + self.exp_weight * loss_exp \
+                   + self.col_weight * loss_col \
+                   + self.tv_weight * loss_tv
         return loss
 
 
@@ -634,7 +634,7 @@ class ZeroDCEPPVanilla(nn.Module):
 
 @MODELS.register(name="zerodce-tiny")
 class ZeroDCETiny(base.ImageEnhancementModel):
-    """Zero-DCE Tiny (Zero-Reference Deep Curve Estimation) model.
+    """Zero-DCE-Tiny (Zero-Reference Deep Curve Estimation) model.
     
     See Also: :class:`mon.vision.enhance.base.ImageEnhancementModel`
     """

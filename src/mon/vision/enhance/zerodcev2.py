@@ -81,12 +81,12 @@ class CombinedLoss(loss.Loss):
         loss_exp     = self.loss_exp(input=enhance)
         loss_col     = self.loss_col(input=enhance)
         loss_tv      = self.loss_tv(input=a)
-        # loss_channel = self.loss_channel(input=enhance, target=input)
-        loss = self.spa_weight * loss_spa \
-               + self.exp_weight * loss_exp \
-               + self.col_weight * loss_col \
-               + self.tv_weight * loss_tv # \
-               # + self.channel_weight * loss_channel
+        loss_channel = self.loss_channel(input=enhance, target=input)
+        loss         = self.spa_weight * loss_spa \
+                       + self.exp_weight * loss_exp \
+                       + self.col_weight * loss_col \
+                       + self.tv_weight * loss_tv \
+                       + self.channel_weight * loss_channel
         # print(loss_spa, loss_exp, loss_col, loss_tv, loss_channel)
         # print(loss_channel)
         return loss
@@ -160,117 +160,6 @@ class ZeroDCEv2A(ZeroDCEv2):
     See Also: :class:`mon.vision.enhance.zerodcev2.ZeroDCEv2`
     """
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        number_f          = 32
-        self.scale_factor = 1.0
-        self.ratio        = 0.5
-        self.relu         = layer.ReLU(inplace=True)
-        self.upsample     = layer.UpsamplingBilinear2d(scale_factor=self.scale_factor)
-        self.conv1 = layer.Conv2d(
-            in_channels  = 3,
-            out_channels = number_f,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.conv2 = layer.Conv2d(
-            in_channels  = number_f,
-            out_channels = number_f,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.conv3 = layer.Conv2d(
-            in_channels  = number_f,
-            out_channels = number_f,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.conv4 = layer.FFConv2dNormAct(
-            in_channels  = number_f * 2,
-            out_channels = number_f,
-            kernel_size  = 1,
-            ratio_gin    = self.ratio,
-            ratio_gout   = self.ratio,
-            stride       = 1,
-            padding      = 0,
-            dilation     = 1,
-            groups       = 1,
-            bias         = False,
-            padding_mode = "reflect",
-            norm_layer   = layer.BatchNorm2d,
-            act_layer    = layer.Identity,
-            enable_lfu   = True,
-            fft_norm     = "ortho",
-        )
-        self.conv5 = layer.Conv2d(
-            in_channels  = number_f + number_f // 2,
-            out_channels = number_f,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.conv6 = layer.Conv2d(
-            in_channels  = number_f * 2,
-            out_channels = number_f,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.conv7 = layer.Conv2d(
-            in_channels  = number_f * 2,
-            out_channels = 3,
-            kernel_size  = 3,
-            stride       = 1,
-            padding      = 1,
-            groups       = 1,
-        )
-        self.le_curve = layer.PixelwiseHigherOrderLECurve(n=8)
-    
-    def forward(
-        self,
-        input    : torch.Tensor,
-        augment  : bool = False,
-        profile  : bool = False,
-        out_index: int  = -1,
-        *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        x = input
-        if self.scale_factor == 1:
-            x_down = x
-        else:
-            x_down = F.interpolate(x, scale_factor=1 / self.scale_factor, mode="bilinear")
-        
-        x1 = self.relu(self.conv1(x_down))
-        x2 = self.relu(self.conv2(x1))
-        x3 = self.relu(self.conv3(x2))
-        x4_l, x4_g = self.conv4([x3, x3])
-        x4 = x4_l + x4_g
-        x5 = self.relu(self.conv5(torch.cat([x3, x4], 1)))
-        x6 = self.relu(self.conv6(torch.cat([x2, x5], 1)))
-        a  = F.tanh(self.conv7(torch.cat([x1, x6], 1)))
-        if self.scale_factor == 1:
-            a = a
-        else:
-            a = self.upsample(a)
-        (a, y) = self.le_curve([a, x])
-        return a, y
-
-
-@MODELS.register(name="zerodcev2-b")
-class ZeroDCEv2B(ZeroDCEv2):
-    """Zero-DCEv2-B model.
-    
-    See Also: :class:`mon.vision.enhance.zerodcev2.ZeroDCEv2`
-    """
-    
     def __init__(
         self,
         num_channels: int   = 32,
@@ -321,6 +210,73 @@ class ZeroDCEv2B(ZeroDCEv2):
         x5         = self.relu(self.conv5(torch.cat([x3, x4], 1)))
         x6         = self.relu(self.conv6(torch.cat([x2, x5], 1)))
         a          = F.tanh(self.conv7(torch.cat([x1, x6], 1)))
+        if self.scale_factor == 1:
+            a = a
+        else:
+            a = self.upsample(a)
+        (a, y) = self.le_curve([a, x])
+        return a, y
+
+
+@MODELS.register(name="zerodcev2-b")
+class ZeroDCEv2B(ZeroDCEv2):
+    """Zero-DCEv2-B model.
+    
+    See Also: :class:`mon.vision.enhance.zerodcev2.ZeroDCEv2`
+    """
+    
+    def __init__(
+        self,
+        num_channels: int   = 32,
+        scale_factor: float = 1.0,
+        ratio       : float = 0.5,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.num_channels = num_channels
+        self.scale_factor = scale_factor
+        self.ratio        = ratio
+        
+        self.relu     = layer.ReLU(inplace=True)
+        self.upsample = layer.UpsamplingBilinear2d(scale_factor=self.scale_factor)
+        self.conv0    = layer.DSConv2d(3, self.num_channels, 3, dw_stride=1, dw_padding=1)
+        self.conv1    = layer.FFConv2dNormAct(self.num_channels * 2, self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv2    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv3    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv4    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv5    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv6    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv7    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
+        self.conv8    = layer.DSConv2d(self.num_channels + self.num_channels // 2, 3, 3, dw_stride=1, dw_padding=1)
+        self.le_curve = layer.PixelwiseHigherOrderLECurve(n=8)
+        
+    def forward(
+        self,
+        input    : torch.Tensor,
+        augment  : bool = False,
+        profile  : bool = False,
+        out_index: int  = -1,
+        *args, **kwargs
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        x = input
+        if self.scale_factor == 1.0:
+            x_down = x
+        else:
+            x_down = F.interpolate(x, scale_factor=1/self.scale_factor, mode="bilinear")
+        
+        x0           = self.relu(self.conv0(x_down))
+        x1_l, x1_g   = self.conv1([x0, x0])
+        x2_l, x2_g   = self.conv2([x1_l, x1_g])
+        x3_l, x3_g   = self.conv3([x2_l, x2_g])
+        x4_l, x4_g   = self.conv4([x3_l, x3_g])
+        x34_l, x34_g = x3_l + x4_l, x3_g + x4_g
+        x5_l, x5_g   = self.conv5([x34_l, x34_g])
+        x25_l, x25_g = x2_l + x5_l, x2_g + x5_g
+        x6_l, x6_g   = self.conv6([x25_l, x25_g])
+        x16_l, x16_g = x1_l + x6_l, x1_g + x6_g
+        a_l, a_g     = self.conv7([x6_l, x6_g])
+        a            = F.tanh(self.conv8(a_l + a_g))
+        
         if self.scale_factor == 1:
             a = a
         else:

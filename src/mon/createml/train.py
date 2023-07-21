@@ -181,9 +181,7 @@ def train(
     }
    
     if not exist_ok:
-        model_root = mf.Path(root)/project/name
-        if model_root.exists():
-            shutil.rmtree(mf.Path(root)/project/name)
+        mf.delete_dir(paths=mf.Path(root)/project/name)
         
     _train(args=args)
 

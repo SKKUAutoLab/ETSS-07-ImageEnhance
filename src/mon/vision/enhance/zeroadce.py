@@ -26,10 +26,7 @@ _current_dir = pathlib.Path(__file__).absolute().parent
 # region Module
 
 @LAYERS.register()
-class ADCE(
-    layer.ConvLayerParsingMixin,
-    torch.nn.Module
-):
+class ADCE(layer.ConvLayerParsingMixin, nn.Module):
     
     def __init__(
         self,
@@ -221,12 +218,12 @@ class CombinedLoss(loss.Loss):
         loss_tv      = self.loss_tv(input=a)
         loss_channel = self.loss_channel(input=enhance, target=input)
         loss_edge    = self.loss_edge(input=enhance, target=input)
-        loss = self.spa_weight * loss_spa \
-               + self.exp_weight * loss_exp \
-               + self.col_weight * loss_col \
-               + self.tv_weight * loss_tv \
-               + self.channel_weight * loss_channel \
-               + self.edge_weight * loss_edge
+        loss         = self.spa_weight * loss_spa \
+                       + self.exp_weight * loss_exp \
+                       + self.col_weight * loss_col \
+                       + self.tv_weight * loss_tv \
+                       + self.channel_weight * loss_channel \
+                       + self.edge_weight * loss_edge
         return loss
 
 # endregion
@@ -474,5 +471,5 @@ class ZeroADCEJIT(base.ImageEnhancementModel):
             if hasattr(sub_module, "regularization_loss"):
                 loss += sub_module.regularization_loss()
         return alpha * loss
-    
+
 # endregion
