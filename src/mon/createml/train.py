@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import importlib
+import shutil
 import socket
 from typing import Any
 
@@ -33,6 +34,7 @@ hosts = {
         "max_epochs" : None,
         "max_steps"  : None,
         "strategy"   : "auto",
+        "exist_ok"   : False,
 	},
     "lp-labdesktop-02-ubuntu": {
         "config"     : "zerodcev2_lol226",
@@ -47,6 +49,7 @@ hosts = {
         "max_epochs" : None,
         "max_steps"  : None,
         "strategy"   : "auto",
+        "exist_ok"   : False,
 	},
     "vsw-ws01": {
         "config"     : "hinet_gt_rain",
@@ -61,6 +64,7 @@ hosts = {
         "max_epochs" : None,
         "max_steps"  : None,
         "strategy"   : "auto",
+        "exist_ok"   : False,
 	},
     "vsw-ws02": {
         "config"     : "",
@@ -75,6 +79,7 @@ hosts = {
         "max_epochs" : None,
         "max_steps"  : None,
         "strategy"   : "auto",
+        "exist_ok"   : False,
 	},
     "vsw-ws03": {
         "config"     : "",
@@ -89,6 +94,7 @@ hosts = {
         "max_epochs" : None,
         "max_steps"  : None,
         "strategy"   : "auto",
+        "exist_ok"   : False,
 	},
 }
 
@@ -103,13 +109,14 @@ hosts = {
 @click.option("--project",     default=None,   type=click.Path(exists=False), help="Save results to root/project/name.")
 @click.option("--name",        default=None,   type=click.Path(exists=False), help="Save results to root/project/name.")
 @click.option("--weights",     default=None,   type=click.Path(exists=False), help="Weights paths.")
-@click.option("--batch-size",  default=8,      type=int, help="Total Batch size for all GPUs.")
-@click.option("--image-size",  default=None,   type=int, help="Image sizes.")
+@click.option("--batch-size",  default=8,      type=int,  help="Total Batch size for all GPUs.")
+@click.option("--image-size",  default=None,   type=int,  help="Image sizes.")
 @click.option("--accelerator", default="gpu",  type=click.Choice(["cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto"], case_sensitive=False))
-@click.option("--devices",     default=0,      type=int, help="Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.")
-@click.option("--max-epochs",  default=100,    type=int, help="Stop training once this number of epochs is reached.")
-@click.option("--max-steps",   default=None,   type=int, help="Stop training once this number of steps is reached.")
-@click.option("--strategy",    default="auto", type=str, help="Supports different training strategies with aliases as well custom strategies.")
+@click.option("--devices",     default=0,      type=int,  help="Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.")
+@click.option("--max-epochs",  default=100,    type=int,  help="Stop training once this number of epochs is reached.")
+@click.option("--max-steps",   default=None,   type=int,  help="Stop training once this number of steps is reached.")
+@click.option("--strategy",    default="auto", type=str,  help="Supports different training strategies with aliases as well custom strategies.")
+@click.option("--exist-ok",    is_flag=True,   help="Whether to overwrite existing experiment.")
 def train(
     config     : mf.Path | str,
     root       : mf.Path,
@@ -123,6 +130,7 @@ def train(
     max_epochs : int,
     max_steps  : int,
     strategy   : str,
+    exist_ok   : bool,
 ):
     # Obtain arguments
     hostname  = socket.gethostname().lower()
@@ -139,15 +147,16 @@ def train(
     project     = project or config_args.model["project"]
     project     = str(project).replace(".", "/")
     root        = root        or host_args.get("root",        None)
-    name        = name        or host_args.get("name",        None) or config_args.model["name"]
-    weights     = weights     or host_args.get("weights",     None) or config_args.model["weights"]
-    batch_size  = batch_size  or host_args.get("batch_size",  None) or config_args.data["batch_size"]
-    image_size  = image_size  or host_args.get("image_size",  None) or config_args.data["image_size"]
-    accelerator = accelerator or host_args.get("accelerator", None) or config_args.trainer["accelerator"]
-    devices     = devices     or host_args.get("devices",     None) or config_args.trainer["devices"]
-    max_epochs  = max_epochs  or host_args.get("max_epochs",  None) or config_args.trainer["max_epochs"]
-    max_steps   = max_steps   or host_args.get("max_steps",   None) or config_args.trainer["max_steps"]
-    strategy    = strategy    or host_args.get("strategy",    None) or config_args.trainer["strategy"]
+    name        = name        or host_args.get("name",        None)  or config_args.model["name"]
+    weights     = weights     or host_args.get("weights",     None)  or config_args.model["weights"]
+    batch_size  = batch_size  or host_args.get("batch_size",  None)  or config_args.data["batch_size"]
+    image_size  = image_size  or host_args.get("image_size",  None)  or config_args.data["image_size"]
+    accelerator = accelerator or host_args.get("accelerator", None)  or config_args.trainer["accelerator"]
+    devices     = devices     or host_args.get("devices",     None)  or config_args.trainer["devices"]
+    max_epochs  = max_epochs  or host_args.get("max_epochs",  None)  or config_args.trainer["max_epochs"]
+    max_steps   = max_steps   or host_args.get("max_steps",   None)  or config_args.trainer["max_steps"]
+    strategy    = strategy    or host_args.get("strategy",    None)  or config_args.trainer["strategy"]
+    exist_ok    = exist_ok    or host_args.get("exist_ok",    False)
     
     # Update arguments
     args = mf.get_module_vars(config_args)
@@ -170,6 +179,12 @@ def train(
         "max_steps"  : max_steps,
         "strategy"   : strategy,
     }
+   
+    if not exist_ok:
+        model_root = mf.Path(root)/project/name
+        if model_root.exists():
+            shutil.rmtree(mf.Path(root)/project/name)
+        
     _train(args=args)
 
 
@@ -177,6 +192,7 @@ def _train(args: dict):
     # Initialization
     console.rule("[bold red]1. INITIALIZATION")
     console.log(f"Machine: {args['hostname']}")
+    
     datamodule: coreml.DataModule = DATAMODULES.build(config=args["datamodule"])
     datamodule.prepare_data()
     datamodule.setup(phase="training")
@@ -191,7 +207,7 @@ def _train(args: dict):
     # Trainer
     console.rule("[bold red]2. SETUP TRAINER")
     mf.copy_file(src=args["config_file"], dst=model.root/"config.py")
-
+    
     ckpt      = coreml.get_latest_checkpoint(dirpath=model.ckpt_dir) if model.ckpt_dir.exists() else None
     callbacks = CALLBACKS.build_instances(configs=args["trainer"]["callbacks"])
 

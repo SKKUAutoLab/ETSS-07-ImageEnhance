@@ -100,6 +100,9 @@ class SiLU(base.PassThroughLayerParsingMixin, nn.SiLU):
 
 @LAYERS.register()
 class SimpleGate(base.LayerParsingMixin, nn.Module):
+    """Simple gate activation unit proposed in the paper: "`Simple Baselines for
+    Image Restoration <https://arxiv.org/pdf/2204.04676.pdf>`__".
+    """
     
     @classmethod
     def parse_layer_args(cls, f: int, args: list, ch: list) -> tuple[list, list]:
@@ -109,7 +112,7 @@ class SimpleGate(base.LayerParsingMixin, nn.Module):
 
         Args:
             f: From, i.e., the current layer receives output from the f-th layer.
-                For example: -1 means from a previous layer; -2 means from 2
+                For example, -1 means from a previous layer; -2 means from 2
                 previous layers; [99, 101] means from the 99th and 101st layers.
                 This attribute is used in forward pass.
             args: Layer's parameters.

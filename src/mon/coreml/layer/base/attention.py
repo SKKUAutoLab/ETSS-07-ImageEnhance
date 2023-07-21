@@ -8,7 +8,7 @@ from __future__ import annotations
 __all__ = [
     "BAM", "CBAM", "ChannelAttention", "ChannelAttentionModule", "GhostSAM",
     "GhostSupervisedAttentionModule", "PixelAttentionModule", "SAM", "SimAM",
-    "SimplifedChannelAttention", "SqueezeExcitation", "SqueezeExciteC",
+    "SimplifiedChannelAttention", "SqueezeExcitation", "SqueezeExciteC",
     "SqueezeExciteL", "SupervisedAttentionModule",
 ]
 
@@ -29,14 +29,14 @@ from torchvision.ops import misc as torchvision_misc
 
 @LAYERS.register()
 class SqueezeExciteC(base.PassThroughLayerParsingMixin, nn.Module):
-    """Squeeze and Excite layer from the paper "Squeeze and Excitation Networks"
-    (https://arxiv.org/pdf/1709.01507.pdf).
+    """Squeeze and Excite layer from the paper: "`Squeeze and Excitation
+    Networks <https://arxiv.org/pdf/1709.01507.pdf>`__"
     
     This implementation use :class:`torch.nn.Conv2d` layer.
     
     References:
-        https://amaarora.github.io/2020/07/24/SeNet.html#squeeze-and-excitation-block-in-pytorch
-        https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py
+        - https://amaarora.github.io/2020/07/24/SeNet.html#squeeze-and-excitation-block-in-pytorch
+        - https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py
     """
     
     def __init__(
@@ -90,14 +90,14 @@ class SqueezeExciteC(base.PassThroughLayerParsingMixin, nn.Module):
 
 @LAYERS.register()
 class SqueezeExciteL(base.PassThroughLayerParsingMixin, nn.Module):
-    """Squeeze and Excite layer from the paper "Squeeze and Excitation Networks"
-    (https://arxiv.org/pdf/1709.01507.pdf).
+    """Squeeze and Excite layer from the paper: "`Squeeze and Excitation
+    Networks <https://arxiv.org/pdf/1709.01507.pdf>`__"
     
     This implementation use :class:`torch.nn.Linear` layer.
     
     References:
-        https://amaarora.github.io/2020/07/24/SeNet.html#squeeze-and-excitation-block-in-pytorch
-        https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py
+        - https://amaarora.github.io/2020/07/24/SeNet.html#squeeze-and-excitation-block-in-pytorch
+        - https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py
     """
     
     def __init__(
@@ -149,9 +149,9 @@ class SqueezeExcitation(base.PassThroughLayerParsingMixin, torchvision_misc.Sque
 
 
 @LAYERS.register()
-class SimplifedChannelAttention(base.PassThroughLayerParsingMixin, nn.Module):
-    """Simplified Channel Attention layer from the paper: "Simple Baselines for
-    Image Restoration" (https://arxiv.org/pdf/2204.04676.pdf).
+class SimplifiedChannelAttention(base.PassThroughLayerParsingMixin, nn.Module):
+    """Simplified channel attention layer proposed in the paper: "`Simple
+    Baselines for Image Restoration <https://arxiv.org/pdf/2204.04676.pdf>`__".
     """
     
     def __init__(
