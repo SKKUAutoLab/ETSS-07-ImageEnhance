@@ -288,7 +288,7 @@ def to_act_layer(act: Callable = ReLU(), *args, **kwargs) -> nn.Module:
     # if isinstance(act, str):
     #     act = LAYER.build(name=act)
     act_layer = act
-    if act is None:
+    if act is None or act == False:
         act_layer = nn.Identity()
     elif isinstance(act, Callable | types.FunctionType | functools.partial):
         act_layer = act(*args, **kwargs)

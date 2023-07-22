@@ -305,6 +305,7 @@ def delete_dir(paths: Path | str | list[Path | str]):
     for p in paths:
         p = Path(p)
         if p.exists():
+            delete_files(regex="*", path=p, recursive=True)
             shutil.rmtree(p)
 
 def delete_files(
@@ -330,7 +331,6 @@ def delete_files(
             f.unlink()
     except Exception as err:
         print(f"Cannot delete files: {err}.")
-
 
 def mkdirs(
     paths   : Path | str | list[Path | str],

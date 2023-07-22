@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Zero-ADCE-C model trained on LOL dataset."""
+"""Zero-DCE model trained on LOL dataset."""
 
 from __future__ import annotations
 
@@ -13,9 +13,9 @@ from mon.globals import RUN_DIR, DATA_DIR
 # region Basic
 
 root         = RUN_DIR / "train"
-project      = "zeroadce"
-model_name   = "zeroadce"
-model_config = "zeroadce-c.yaml"
+project      = "zerodce"
+model_name   = "zerodce"
+model_config = "zerodce.yaml"
 data_name    = "lol"
 num_classes  = None
 fullname     = f"{model_name}-{data_name}"
@@ -41,9 +41,9 @@ model = {
 	"phase"      : "training",     # The model's running phase.
 	# "loss"       : None,           # Loss function for training the model.
 	"metrics"    : {
-	    "train": [{"name": "psnr"}],
-		"val"  : [{"name": "psnr"}],
-		"test" : [{"name": "psnr"}],
+	    "train": None,
+		"val"  : None,
+		"test" : None,
     },          # A list metrics for validating and testing model.
 	"optimizers" : [
 		{

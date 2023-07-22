@@ -53,8 +53,8 @@ class CombinedLoss(loss.Loss):
         self.tv_weight      = tv_weight
         self.channel_weight = channel_weight
         
-        self.loss_spa = loss.SpatialConsistencyLoss(reduction=reduction)
-        self.loss_exp = loss.ExposureControlLoss(
+        self.loss_spa     = loss.SpatialConsistencyLoss(reduction=reduction)
+        self.loss_exp     = loss.ExposureControlLoss(
             reduction  = reduction,
             patch_size = exp_patch_size,
             mean_val   = exp_mean_val,
@@ -85,8 +85,8 @@ class CombinedLoss(loss.Loss):
         loss         = self.spa_weight * loss_spa \
                        + self.exp_weight * loss_exp \
                        + self.col_weight * loss_col \
-                       + self.tv_weight * loss_tv \
-                       + self.channel_weight * loss_channel
+                       + self.tv_weight * loss_tv # \
+                       # + self.channel_weight * loss_channel
         # print(loss_spa, loss_exp, loss_col, loss_tv, loss_channel)
         # print(loss_channel)
         return loss
@@ -247,7 +247,7 @@ class ZeroDCEv2B(ZeroDCEv2):
         self.conv5    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
         self.conv6    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
         self.conv7    = layer.FFConv2dNormAct(self.num_channels,     self.num_channels, 1, self.ratio, self.ratio, stride=1, padding=0, dilation=1, padding_mode="reflect", norm_layer=layer.BatchNorm2d, act_layer=layer.ReLU)
-        self.conv8    = layer.DSConv2d(self.num_channels + self.num_channels // 2, 3, 3, dw_stride=1, dw_padding=1)
+        self.conv8    = layer.DSConv2d(self.num_channels // 2, 3, 3, dw_stride=1, dw_padding=1)
         self.le_curve = layer.PixelwiseHigherOrderLECurve(n=8)
         
     def forward(

@@ -13,12 +13,12 @@ from functools import partial
 from typing import Any, Callable
 
 import torch
-
 from mon.coreml import layer, loss
 from mon.coreml.layer.typing import _size_2_t
 from mon.foundation import pathlib
 from mon.globals import LAYERS, MODELS
 from mon.vision.enhance import base
+from torch import nn
 
 _current_dir = pathlib.Path(__file__).absolute().parent
 
@@ -254,7 +254,7 @@ class ZeroADCE(base.ImageEnhancementModel):
             *args, **kwargs
         )
     
-    def init_weights(self, m: torch.nn.Module):
+    def init_weights(self, m: nn.Module):
         classname = m.__class__.__name__
         if classname.find("Conv") != -1:
             if hasattr(m, "conv"):

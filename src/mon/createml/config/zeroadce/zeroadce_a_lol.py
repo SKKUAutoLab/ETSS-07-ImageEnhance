@@ -14,7 +14,7 @@ from mon.globals import RUN_DIR, DATA_DIR
 
 root         = RUN_DIR / "train"
 project      = "zeroadce"
-model_name   = "zeroadce-a"
+model_name   = "zeroadce"
 model_config = "zeroadce-a.yaml"
 data_name    = "lol"
 num_classes  = None

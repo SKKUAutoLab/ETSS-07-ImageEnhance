@@ -8,7 +8,7 @@ from __future__ import annotations
 __all__ = [
     "FFConv2d", "FFConv2dNormAct", "FFConv2dSE", "FastFourierConv2d",
     "FastFourierConv2dNormActivation", "FastFourierConv2dSE", "FourierUnit",
-    "FourierUnit2D", "FourierUnit3D", "SpectralTransform2D",
+    "FourierUnit2d", "FourierUnit3d", "SpectralTransform2d",
 ]
 
 from typing import Any
@@ -84,7 +84,7 @@ class FourierUnit(nn.Module):
         return y
 
 
-class FourierUnit2D(FourierUnit):
+class FourierUnit2d(FourierUnit):
     
     def __init__(
         self,
@@ -102,7 +102,7 @@ class FourierUnit2D(FourierUnit):
         )
     
 
-class FourierUnit3D(FourierUnit):
+class FourierUnit3d(FourierUnit):
     
     def __init__(
         self,
@@ -120,7 +120,7 @@ class FourierUnit3D(FourierUnit):
         )
     
 
-class SpectralTransform2D(nn.Module):
+class SpectralTransform2d(nn.Module):
     """Spectral transform unit proposed in the paper: "`Fast Fourier Convolution
     <https://github.com/pkumivision/FFC>`__".
     
@@ -163,14 +163,14 @@ class SpectralTransform2D(nn.Module):
             base.BatchNorm2d(out_channels // 2),
             base.ReLU(inplace=True)
         )
-        self.fu = FourierUnit2D(
+        self.fu = FourierUnit2d(
             in_channels  = out_channels // 2,
             out_channels = out_channels // 2,
             groups       = groups,
             fft_norm     = fft_norm,
         )
         if self.enable_lfu:
-            self.lfu = FourierUnit2D(
+            self.lfu = FourierUnit2d(
                 in_channels  = out_channels // 2,
                 out_channels = out_channels // 2,
                 groups       = groups,
@@ -288,7 +288,7 @@ class FastFourierConv2d(base.ConvLayerParsingMixin, nn.Module):
             bias         = bias,
             padding_mode = padding_mode,
         ) if in_cg > 0 and out_cl > 0 else base.Identity()
-        self.conv_g2g   = SpectralTransform2D(
+        self.conv_g2g   = SpectralTransform2d(
             in_channels  = in_cg,
             out_channels = out_cg,
             stride       = stride,
@@ -425,7 +425,7 @@ class FastFourierConv2dSE(base.ConvLayerParsingMixin, nn.Module):
 
 FFConv2d        = FastFourierConv2d
 FFConv2dNormAct = FastFourierConv2dNormActivation
-FFConv2dSE     = FastFourierConv2dSE
+FFConv2dSE      = FastFourierConv2dSE
 LAYERS.register(module=FFConv2d)
 LAYERS.register(module=FFConv2dNormAct)
 LAYERS.register(module=FFConv2dSE)
