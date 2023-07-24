@@ -283,5 +283,5 @@ class ZeroDCEv2B(ZeroDCEv2):
             a = self.upsample(a)
         (a, y) = self.le_curve([a, x])
         return a, y
-    
+
 # endregion
