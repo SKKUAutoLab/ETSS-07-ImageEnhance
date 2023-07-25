@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements light enhancement curve.
+"""This module implements enhancement functions and layers that are used to
+built models in :mod:`mon.vision.enhance`.
 """
 
 from __future__ import annotations
@@ -11,25 +12,26 @@ __all__ = [
 ]
 
 import torch
-from torch import nn
 
-from mon.coreml.layer import base
+from mon import coreml as nn
 from mon.globals import LAYERS
 
 
+# region Light Enhancement Curve
+
 @LAYERS.register()
-class PixelwiseHigherOrderLECurve(base.MergingLayerParsingMixin, nn.Module):
+class PixelwiseHigherOrderLECurve(nn.MergingLayerParsingMixin, nn.Module):
     """Pixelwise Light-Enhancement Curve is a higher-order curves that can be
     applied iteratively to enable more versatile adjustment to cope with
     challenging low-light conditions:
         LE_{n}(x) = LE_{n−1}(x) + A_{n}(x) * LE_{n−1}(x)(1 − LE_{n−1}(x)),
         
         where `A` is a parameter map with the same size as the given image, and
-        `n` is the number of iteration, which controls the curvature.
+        `n` is the number of iterations, which controls the curvature.
     
-    This module is designed to accompany both:
-        - ZeroDCE   (estimate 3 * n curve parameter maps)
-        - ZeroDCE++ (estimate 3   curve parameter maps)
+    This module is designed to go with:
+        - Zero-DCE (estimate 3 * n curve parameter maps)
+        - Zero-DCE++, Zero-DCE-Tiny (estimate 3 curve parameter maps)
     
     Args:
         n: Number of iterations.
@@ -68,3 +70,5 @@ class PixelwiseHigherOrderLECurve(base.MergingLayerParsingMixin, nn.Module):
         y = list(y) if isinstance(y, tuple) else y
         y = torch.cat(y, dim=1) if isinstance(y, list) else y
         return y, x
+
+# endregion
