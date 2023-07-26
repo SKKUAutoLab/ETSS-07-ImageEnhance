@@ -208,8 +208,8 @@ class ClassLabels(list[ClassLabel]):
         
         Args:
             key: The key to search for. Default: 'id'.
-            exclude_negative_key: If True, excludes the key with negative value.
-                Default: True.
+            exclude_negative_key: If `True`, excludes the key with negative
+                value. Default: `True`.
             
         Return:
             A list of colors.

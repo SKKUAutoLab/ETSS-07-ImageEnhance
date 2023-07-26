@@ -34,7 +34,7 @@ from mon.vision.typing import (
 from torch.utils.data import random_split
 
 from mon import core
-from mon.vision import constant, visualize
+from mon.vision import constant, view
 from mon.vision.dataset import base
 
 

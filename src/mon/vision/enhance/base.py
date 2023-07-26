@@ -15,7 +15,7 @@ import torch
 
 from mon import nn
 from mon.foundation import pathlib
-from mon.vision import visualize
+from mon.vision import view
 
 
 # region Model

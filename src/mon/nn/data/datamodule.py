@@ -34,11 +34,11 @@ class DataModule(lightning.LightningDataModule, ABC):
     Args:
         batch_size: The number of samples in one forward pass. Default: 1.
         devices: A list of devices to use. Default: 0.
-        shuffle: If True, reshuffle the datapoints at the beginning of every
-            epoch. Default: True.
+        shuffle: If `True`, reshuffle the datapoints at the beginning of every
+            epoch. Default: `True`.
         collate_fn: The function used to fused datapoint together when using
             :param:`batch_size` > 1.
-        verbose: Verbosity. Default: True.
+        verbose: Verbosity. Default: `True`.
     """
     
     def __init__(

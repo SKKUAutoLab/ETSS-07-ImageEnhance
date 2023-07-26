@@ -21,6 +21,8 @@ __all__ = [
 import numpy as np
 import torch
 
+import mon.vision.core.image
+from mon import nn
 from mon.globals import ShapeCode
 from mon.vision import image
 
@@ -127,7 +129,7 @@ def get_bbox_intersection_union(
     area2 = get_bbox_area(bbox=bbox2)
     lt    = np.max(bbox1[:, None, :2], bbox2[:, :2])  # [N, M, 2]
     rb    = np.min(bbox1[:, None, 2:], bbox2[:, 2:])  # [N, M, 2]
-    wh    = image.upcast(rb - lt).clamp(min=0)  # [N, M, 2]
+    wh    = nn.upcast(rb - lt).clamp(min=0)  # [N, M, 2]
     inter = wh[:, :, 0] * wh[:, :, 1]  # [N, M]
     union = area1[:, None] + area2 - inter
     return inter, union
@@ -430,7 +432,7 @@ def clip_bbox(
     Returns:
         Clipped bounding boxes of shape [N, 4].
     """
-    h, w       = image.get_hw(size=image_size)
+    h, w       = mon.vision.core.image.get_hw(size=image_size)
     area       = get_bbox_area(bbox=bbox)
     bbox[:, 0] = np.clip(0, w)  # x1
     bbox[:, 1] = np.clip(0, h)  # y1

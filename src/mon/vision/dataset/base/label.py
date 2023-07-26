@@ -22,6 +22,7 @@ import uuid
 import numpy as np
 import torch
 
+import mon.vision.core.image
 from mon.nn import data
 from mon.foundation import file, pathlib
 from mon.vision import geometry, image as mi
@@ -631,7 +632,7 @@ class ImageLabel(data.Label):
         if load_on_create and image is None:
             image = self.load()
         
-        self.shape = mi.get_image_shape(image=image) if image is not None else None
+        self.shape = mon.vision.core.image.get_image_shape(image=image) if image is not None else None
        
         if self.keep_in_memory:
             self.image = image
@@ -668,7 +669,7 @@ class ImageLabel(data.Label):
             to_tensor = self.to_tensor,
             normalize = self.normalize,
         )
-        self.shape = mi.get_image_shape(image=image) if (image is not None) else self.shape
+        self.shape = mon.vision.core.image.get_image_shape(image=image) if (image is not None) else self.shape
         
         if self.keep_in_memory:
             self.image = image
@@ -1153,7 +1154,7 @@ class SegmentationLabel(data.Label):
         if load_on_create and mask is None:
             mask = self.load()
         
-        self.shape = mi.get_image_shape(image=mask) if mask is not None else None
+        self.shape = mon.vision.core.image.get_image_shape(image=mask) if mask is not None else None
        
         if self.keep_in_memory:
             self.mask = mask
@@ -1190,7 +1191,7 @@ class SegmentationLabel(data.Label):
             to_tensor = self.to_tensor,
             normalize = self.normalize,
         )
-        self.shape = mi.get_image_shape(image=mask) if (mask is not None) else self.shape
+        self.shape = mon.vision.core.image.get_image_shape(image=mask) if (mask is not None) else self.shape
         
         if self.keep_in_memory:
             self.mask = mask

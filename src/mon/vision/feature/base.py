@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 import torch
 
+import mon.vision.core.image
 from mon import nn
 from mon.foundation import pathlib
 from mon.vision import image
@@ -68,7 +69,7 @@ class DeepEmbedder(Embedder, ABC):
         super().__init__()
         self.config     = config
         self.weight     = weight
-        self.image_size = image.get_hw(size=image_size)
+        self.image_size = mon.vision.core.image.get_hw(size=image_size)
         self.device     = nn.select_device(device=device)
         self.to_numpy   = to_numpy
         # Load model

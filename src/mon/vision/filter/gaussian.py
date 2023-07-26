@@ -251,18 +251,15 @@ def gaussian_blur2d(
     input      : torch.Tensor,
     kernel_size: _size_2_t,
     sigma      : tuple[float, float] | torch.Tensor,
-    border_type: str         = 'reflect',
-    separable  : bool        = True,
+    border_type: str  = "reflect",
+    separable  : bool = True,
 ) -> torch.Tensor:
-    r"""Create an operator that blurs a tensor using a Gaussian filter.
-
-    .. image:: _static/img/gaussian_blur2d.png
-
-    The operator smooths the given tensor with a Gaussian kernel by convolving
-    it to each channel. It supports batched operation.
+    r"""Create an operator that blurs a tensor using a Gaussian filter. The
+    operator smooths the given tensor with a Gaussian kernel by convolving it to
+    each channel. It supports batched operation.
     
     Arguments:
-        input: The input tensor with shape :math:`(B, C, H, W)`.
+        input: The input tensor with shape :math:`[B, C, H, W]`.
         kernel_size: The size of the kernel.
         sigma: The standard deviation of the kernel.
         border_type: The padding mode to be applied before convolving.
@@ -271,14 +268,14 @@ def gaussian_blur2d(
         separable: Run as composition of two 1d-convolutions.
 
     Returns:
-        The blurred tensor with shape :math:`(B, C, H, W)`.
+        The blurred tensor with shape :math:`[B, C, H, W]`.
 
-    .. note::
+    Notes:
        See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
        gaussian_blur.html>`__.
 
     Examples:
-        >>> input = torch.rand(2, 4, 5, 5)
+        >>> input  = torch.rand(2, 4, 5, 5)
         >>> output = gaussian_blur2d(input, (3, 3), (1.5, 1.5))
         >>> output.shape
         torch.Size([2, 4, 5, 5])
@@ -287,24 +284,21 @@ def gaussian_blur2d(
         >>> output.shape
         torch.Size([2, 4, 5, 5])
     """
-    KORNIA_CHECK_IS_TENSOR(input)
-
     if isinstance(sigma, tuple):
-        sigma = tensor([sigma], device=input.device, dtype=input.dtype)
+        sigma = torch.tensor([sigma], device=input.device, dtype=input.dtype)
     else:
-        KORNIA_CHECK_IS_TENSOR(sigma)
         sigma = sigma.to(device=input.device, dtype=input.dtype)
 
     if separable:
-        ky, kx = _unpack_2d_ks(kernel_size)
-        bs = sigma.shape[0]
-        kernel_x = get_gaussian_kernel1d(kx, sigma[:, 1].view(bs, 1))
-        kernel_y = get_gaussian_kernel1d(ky, sigma[:, 0].view(bs, 1))
-        out = filter2d_separable(input, kernel_x, kernel_y, border_type)
+        ky, kx   = nn.to_2d_kernel_size(kernel_size=kernel_size)
+        bs       = sigma.shape[0]
+        kernel_x = get_gaussian_kernel1d(kernel_size=kx, sigma=sigma[:, 1].view(bs, 1))
+        kernel_y = get_gaussian_kernel1d(kernel_size=ky, sigma=sigma[:, 0].view(bs, 1))
+        output   = filter2d_separable(input, kernel_x, kernel_y, border_type)
     else:
-        kernel = get_gaussian_kernel2d(kernel_size, sigma)
-        out = filter2d(input, kernel, border_type)
+        kernel   = get_gaussian_kernel2d(kernel_size=kernel_size, sigma=sigma)
+        output   = filter2d(input, kernel, border_type)
 
-    return out
+    return output
 
 # endregion

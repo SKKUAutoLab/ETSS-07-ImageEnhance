@@ -271,7 +271,7 @@ class FractionalInstanceNorm2d(base.SameChannelsLayerParsingMixin, nn.InstanceNo
                               the normalized tensor and the original tensor.
             Default to "half".
         pool: Pooling type. One of: ["avg", "max"]. Default: "avg"".
-        bias: Add bias for `adaptive` scheme. Default: True.
+        bias: Add bias for `adaptive` scheme. Default: `True`.
     """
     
     schemes = [
