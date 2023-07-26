@@ -43,10 +43,10 @@ def read_image(
 
     Args:
         path: An image filepath.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to True.
+        to_rgb: If True, convert the image from BGR to RGB. Default: True.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default:
             False.
         
     Return:
@@ -77,8 +77,8 @@ def read_video_ffmpeg(
         height: The height of the video frame.
         width: The width of the video.
         to_tensor: If True convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default:
             False.
     
     Return:
@@ -115,14 +115,14 @@ class Loader(ABC):
         source: A data source. It can be a path to a single image file, a
             directory, a video file, or a stream. It can also be a path pattern.
         max_samples: The maximum number of datapoints from the given
-            :param:`source` to process. Defaults to None.
-        batch_size: The number of samples in a single forward pass. Defaults to
+            :param:`source` to process. Default: None.
+        batch_size: The number of samples in a single forward pass. Default:
             1.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to False.
+        to_rgb: If True, convert the image from BGR to RGB. Default: False.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to True.
-        verbose: Verbosity. Defaults to False.
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default: True.
+        verbose: Verbosity. Default: False.
     """
     
     def __init__(
@@ -197,14 +197,14 @@ class ImageLoader(Loader):
         source: A data source. It can be a filepath, a filepath pattern, or a
             directory.
         max_samples: The maximum number of datapoints from the given
-            :param:`source` to process. Defaults to None.
-        batch_size: The number of samples in a single forward pass. Defaults to
+            :param:`source` to process. Default: None.
+        batch_size: The number of samples in a single forward pass. Default:
             1.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to False.
+        to_rgb: If True, convert the image from BGR to RGB. Default: False.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to True.
-        verbose: Verbosity mode of video loader backend. Defaults to False.
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default: True.
+        verbose: Verbosity mode of video loader backend. Default: False.
     """
     
     def __init__(
@@ -309,15 +309,15 @@ class VideoLoader(Loader, ABC):
         source: A data source. It can be a path to a single video file, a
             directory, or a stream. It can also be a path pattern.
         max_samples: The maximum number of datapoints from the given
-            :param:`source` to process. Defaults to None.
-        batch_size: The number of samples in a single forward pass. Defaults to
+            :param:`source` to process. Default: None.
+        batch_size: The number of samples in a single forward pass. Default:
             1.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to True.
+        to_rgb: If True, convert the image from BGR to RGB. Default: True.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default:
             False.
-        verbose: Verbosity mode of video loader backend. Defaults to False.
+        verbose: Verbosity mode of video loader backend. Default: False.
     """
     
     def __init__(
@@ -388,21 +388,21 @@ class VideoLoaderCV(VideoLoader):
         source: A data source. It can be a filepath, a filepath pattern, or a
             directory.
         max_samples: The maximum number of datapoints from the given
-            :param:`source` to process. Defaults to None.
-        batch_size: The number of samples in a single forward pass. Defaults to
+            :param:`source` to process. Default: None.
+        batch_size: The number of samples in a single forward pass. Default:
             1.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to True.
+        to_rgb: If True, convert the image from BGR to RGB. Default: True.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default:
             False.
         api_preference: Preferred Capture API backends to use. It can be used to
             enforce a specific reader implementation. Two most used options are:
             [cv2.CAP_ANY=0, cv2.CAP_FFMPEG=1900]. See more:
             https://docs.opencv.org/4.5.5/d4/d15/group__videoio__flags__base
             .htmlggaeb8dd9c89c10a5c63c139bf7c4f5704da7b235a04f50a444bc2dc72f5ae394aaf
-            Defaults to cv2.CAP_FFMPEG.
-        verbose: Verbosity mode of video loader backend. Defaults to False.
+            Default: cv2.CAP_FFMPEG.
+        verbose: Verbosity mode of video loader backend. Default: False.
     """
     
     def __init__(
@@ -591,15 +591,15 @@ class VideoLoaderFFmpeg(VideoLoader):
         source: A data source. It can be a filepath, a filepath pattern, or a
             directory.
         max_samples: The maximum number of datapoints from the given
-            :param:`source` to process. Defaults to None.
-        batch_size: The number of samples in a single forward pass. Defaults to
+            :param:`source` to process. Default: None.
+        batch_size: The number of samples in a single forward pass. Default:
             1.
-        to_rgb: If True, convert the image from BGR to RGB. Defaults to True.
+        to_rgb: If True, convert the image from BGR to RGB. Default: True.
         to_tensor: If True, convert the image from :class:`numpy.ndarray` to
-            :class:`torch.Tensor`. Defaults to False.
-        normalize: If True, normalize the image to [0.0, 1.0]. Defaults to
+            :class:`torch.Tensor`. Default: False.
+        normalize: If True, normalize the image to [0.0, 1.0]. Default:
             False.
-        verbose: Verbosity mode of video loader backend. Defaults to False.
+        verbose: Verbosity mode of video loader backend. Default: False.
         kwargs: Any supplied kwargs are passed to :mod:`ffmpeg` verbatim.
         
     References:
@@ -779,8 +779,8 @@ def write_image_cv(
         dirpath: A directory to write the image to.
         name: An image's name.
         prefix: A prefix to add to the :param:`name`.
-        extension: An extension of the image file. Defaults to '.png'.
-        denormalize: If True, convert the image to [0, 255]. Defaults to False.
+        extension: An extension of the image file. Default: '.png'.
+        denormalize: If True, convert the image to [0, 255]. Default: False.
     """
     # Convert image
     if isinstance(image, torch.Tensor):
@@ -820,8 +820,8 @@ def write_image_torch(
         dirpath: A directory to write the image to.
         name: An image's name.
         prefix: A prefix to add to the :param:`name`.
-        extension: An extension of the image file. Defaults to '.png'.
-        denormalize: If True, convert the image to [0, 255]. Defaults to False.
+        extension: An extension of the image file. Default: '.png'.
+        denormalize: If True, convert the image to [0, 255]. Default: False.
     """
     # Convert image
     if isinstance(image, np.ndarray):
@@ -867,8 +867,8 @@ def write_images_cv(
         dirpath: A directory to write the images to.
         names: A list of images' names.
         prefixes: A prefix to add to the :param:`names`.
-        extension: An extension of image files. Defaults to ".png".
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
+        extension: An extension of image files. Default: ".png".
+        denormalize: If True, convert image to [0, 255]. Default: False.
     """
     if isinstance(names, str):
         names = [names for _ in range(len(images))]
@@ -908,8 +908,8 @@ def write_images_torch(
         dirpath: A directory to write the images to.
         names: A list of images' names.
         prefixes: A prefix to add to the :param:`names`.
-        extension: An extension of image files. Defaults to ".png".
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
+        extension: An extension of image files. Default: ".png".
+        denormalize: If True, convert image to [0, 255]. Default: False.
     """
     if isinstance(names, str):
         names = [names for _ in range(len(images))]
@@ -944,7 +944,7 @@ def write_video_ffmpeg(
     Args:
         process: A subprocess that manages ffmpeg.
         image: A frame/image of shape 1CHW.
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
+        denormalize: If True, convert image to [0, 255]. Default: False.
     """
     if isinstance(image, np.ndarray):
         if base.is_normalized_image(image=image):
@@ -975,9 +975,9 @@ class Writer(ABC):
 
     Args:
         destination: A directory to save images.
-        image_size: An output image size of shape HW. Defaults to [480, 640].
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
-        verbose: Verbosity. Defaults to False.
+        image_size: An output image size of shape HW. Default: [480, 640].
+        denormalize: If True, convert image to [0, 255]. Default: False.
+        verbose: Verbosity. Default: False.
     """
     
     def __init__(
@@ -1025,8 +1025,8 @@ class Writer(ABC):
 
         Args:
             image: An image.
-            path: An image filepath with an extension. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            path: An image filepath with an extension. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         pass
     
@@ -1041,8 +1041,8 @@ class Writer(ABC):
 
         Args:
             images: A list of images.
-            paths: A list of image filepaths with extensions. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            paths: A list of image filepaths with extensions. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         pass
 
@@ -1054,10 +1054,10 @@ class ImageWriter(Writer):
         destination: A directory to save images.
         image_size: A desired output size of shape HW. This is used to
         reshape the
-            input. Defaults to [480, 640].
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
-        extension: The extension of the file to be saved. Defaults to '.png'.
-        verbose: Verbosity. Defaults to False.
+            input. Default: [480, 640].
+        denormalize: If True, convert image to [0, 255]. Default: False.
+        extension: The extension of the file to be saved. Default: '.png'.
+        verbose: Verbosity. Default: False.
     """
     
     def __init__(
@@ -1102,8 +1102,8 @@ class ImageWriter(Writer):
 
         Args:
             image: An image.
-            path: An image filepath with an extension. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            path: An image filepath with an extension. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if isinstance(path, pathlib.Path):
             path = self.dst / f"{path.stem}{self.extension}"
@@ -1131,8 +1131,8 @@ class ImageWriter(Writer):
 
         Args:
             images: A list of 3-D images.
-            paths: A list of image filepaths with extensions. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            paths: A list of image filepaths with extensions. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if paths is None:
             paths = [None for _ in range(len(images))]
@@ -1151,11 +1151,11 @@ class VideoWriter(Writer, ABC):
         destination: A directory to save images.
         image_size: A desired output size of shape HW. This is used to
         reshape the
-            input. Defaults to [480, 640].
-        frame_rate: A frame rate of the output video. Defaults to 10.
-        save_image: If True save each image separately. Defaults to False.
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
-        verbose: Verbosity. Defaults to False.
+            input. Default: [480, 640].
+        frame_rate: A frame rate of the output video. Default: 10.
+        save_image: If True save each image separately. Default: False.
+        denormalize: If True, convert image to [0, 255]. Default: False.
+        verbose: Verbosity. Default: False.
     """
     
     def __init__(
@@ -1185,13 +1185,13 @@ class VideoWriterCV(VideoWriter):
     Args:
         destination: A destination directory to save images.
         image_size: A desired output size of shape HW. This is used to reshape
-            the input. Defaults to [480, 640].
-        frame_rate: A frame rate of the output video. Defaults to 10.
+            the input. Default: [480, 640].
+        frame_rate: A frame rate of the output video. Default: 10.
         fourcc: Video codec. One of: ['mp4v', 'xvid', 'mjpg', 'wmv']. Defaults
             to ".mp4v".
-        save_image: If True, save each image separately. Defaults to False.
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
-        verbose: Verbosity. Defaults to False.
+        save_image: If True, save each image separately. Default: False.
+        denormalize: If True, convert image to [0, 255]. Default: False.
+        verbose: Verbosity. Default: False.
     """
     
     def __init__(
@@ -1254,8 +1254,8 @@ class VideoWriterCV(VideoWriter):
 
         Args:
             image: An image.
-            path: An image filepath with an extension. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            path: An image filepath with an extension. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if self.save_image:
             write_image_cv(
@@ -1288,8 +1288,8 @@ class VideoWriterCV(VideoWriter):
 
         Args:
             images: A list of images.
-            paths: A list of image filepaths with extensions. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            paths: A list of image filepaths with extensions. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if paths is None:
             paths = [None for _ in range(len(images))]
@@ -1303,12 +1303,12 @@ class VideoWriterFFmpeg(VideoWriter):
     Args:
         destination: A destination directory to save images.
         image_size: A desired output size of shape HW. This is used to reshape
-            the input. Defaults to [480, 640].
-        frame_rate: A frame rate of the output video. Defaults to 10.
-        pix_fmt: A video codec. Defaults to 'yuv420p'.
-        save_image: If True save each image separately. Defaults to False.
-        denormalize: If True, convert image to [0, 255]. Defaults to False.
-        verbose: Verbosity. Defaults to False.
+            the input. Default: [480, 640].
+        frame_rate: A frame rate of the output video. Default: 10.
+        pix_fmt: A video codec. Default: 'yuv420p'.
+        save_image: If True save each image separately. Default: False.
+        denormalize: If True, convert image to [0, 255]. Default: False.
+        verbose: Verbosity. Default: False.
         kwargs: Any supplied kwargs are passed to :mod:`ffmpeg` verbatim.
     """
     
@@ -1398,8 +1398,8 @@ class VideoWriterFFmpeg(VideoWriter):
 
         Args:
             image: An image.
-            path: An image filepath with an extension. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            path: An image filepath with an extension. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if self.save_image:
             assert isinstance(path, pathlib.Path)
@@ -1429,8 +1429,8 @@ class VideoWriterFFmpeg(VideoWriter):
 
         Args:
             images: A list of images.
-            paths: A list of image filepaths with extensions. Defaults to None.
-            denormalize: If True, convert image to [0, 255]. Defaults to False.
+            paths: A list of image filepaths with extensions. Default: None.
+            denormalize: If True, convert image to [0, 255]. Default: False.
         """
         if paths is None:
             paths = [None for _ in range(len(images))]

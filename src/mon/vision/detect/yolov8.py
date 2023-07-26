@@ -11,14 +11,13 @@ __all__ = [
 
 import numpy as np
 import torch
+
+from mon.globals import DETECTORS
+from mon.vision import image as mimage, tracking
+from mon.vision.detect import base
 from ultralytics.nn import tasks
 from ultralytics.yolo.data import augment
 from ultralytics.yolo.utils import checks, ops
-
-from mon.globals import DETECTORS
-from mon.vision import image as mimage
-from mon.vision.detect import base
-from mon.vision import tracking
 
 
 # region YOLOv8

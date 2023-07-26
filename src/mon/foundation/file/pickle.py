@@ -73,7 +73,7 @@ class PickleHandler(base.FileHandler):
 
         Args:
             path: A filepath.
-            mode: The mode to open the file. Defaults to “r” means read.
+            mode: The mode to open the file. Default: “r” means read.
 
         Returns:
             File's content.
@@ -93,7 +93,7 @@ class PickleHandler(base.FileHandler):
         Args:
             obj: A serializable object.
             path: A filepath.
-            mode: The mode to open the file. Defaults to “w” means write.
+            mode: The mode to open the file. Default: “w” means write.
         """
         path = pathlib.Path(path)
         super().write_to_file(obj=obj, path=path, mode="wb", **kwargs)

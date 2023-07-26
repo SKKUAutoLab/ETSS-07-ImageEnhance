@@ -11,7 +11,8 @@ __all__ = [
     "shuffle_dict", "split_list", "to_1list", "to_1tuple", "to_2list",
     "to_2tuple", "to_3list", "to_3tuple", "to_4list", "to_4tuple", "to_5list",
     "to_5tuple", "to_6list", "to_6tuple", "to_float", "to_int", "to_list",
-    "to_nlist", "to_ntuple", "to_tuple", "unique",
+    "to_nlist", "to_ntuple", "to_pair", "to_quadruple", "to_single",
+    "to_triple", "to_tuple", "unique",
 ]
 
 import copy
@@ -104,9 +105,9 @@ def intersect_dicts(x: dict, y: dict, exclude: list = []) -> dict:
 
 
 def intersect_ordered_dicts(
-    x: OrderedDict,
-    y: OrderedDict,
-    exclude: list = []
+    x      : OrderedDict,
+    y      : OrderedDict,
+    exclude: list = [],
 ) -> OrderedDict:
     """Find the intersection between two ordered dictionaries.
     
@@ -153,7 +154,7 @@ def iter_to_iter(x: Iterable, item_type: type, return_type: type | None = None):
     Args:
         x: An iterable object.
         item_type: The item type.
-        return_type: The desired iterable type. Defaults to None.
+        return_type: The desired iterable type. Default: None.
     
     Returns:
         An iterable object cast to the desired type.
@@ -296,12 +297,16 @@ def to_ntuple(n: int) -> Callable[[Any], tuple]:
     return parse
 
 
-to_1tuple = to_ntuple(1)
-to_2tuple = to_ntuple(2)
-to_3tuple = to_ntuple(3)
-to_4tuple = to_ntuple(4)
-to_5tuple = to_ntuple(5)
-to_6tuple = to_ntuple(6)
+to_1tuple    = to_ntuple(1)
+to_2tuple    = to_ntuple(2)
+to_3tuple    = to_ntuple(3)
+to_4tuple    = to_ntuple(4)
+to_5tuple    = to_ntuple(5)
+to_6tuple    = to_ntuple(6)
+to_single    = to_ntuple(1)
+to_pair      = to_ntuple(2)
+to_triple    = to_ntuple(3)
+to_quadruple = to_ntuple(4)
 
 
 @multipledispatch.dispatch(list)

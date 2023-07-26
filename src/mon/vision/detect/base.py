@@ -15,8 +15,9 @@ from typing import Any
 import numpy as np
 import torch
 
+from mon import nn
 from mon.foundation import pathlib
-from mon.vision import image as mimage, nn, tracking
+from mon.vision import image as mimage, tracking
 
 
 # region Detector
@@ -29,15 +30,15 @@ class Detector(ABC):
         config: A detector model's config.
         weights: A path to a pretrained weights file.
         classlabels: A list of all the class-labels defined in a dataset.
-        image_size: The desired model's input size in HW format. Defaults to
+        image_size: The desired model's input size in HW format. Default:
             640.
-        conf_threshold: An object confidence threshold. Defaults to 0.5.
-        iou_threshold: An IOU threshold for NMS. Defaults to 0.4.
-        max_detections: Maximum number of detections/image. Defaults to 300.
-        device: Cuda device, i.e. 0 or 0,1,2,3 or cpu. Defaults to 'cpu'.
+        conf_threshold: An object confidence threshold. Default: 0.5.
+        iou_threshold: An IOU threshold for NMS. Default: 0.4.
+        max_detections: Maximum number of detections/image. Default: 300.
+        device: Cuda device, i.e. 0 or 0,1,2,3 or cpu. Default: 'cpu'.
         to_instance: If True, wrap the predictions to a list of
             :class:`supr.data.instance.Instance` object. Else, return raw
-            predictions. Defaults to True.
+            predictions. Default: True.
     """
     
     def __init__(

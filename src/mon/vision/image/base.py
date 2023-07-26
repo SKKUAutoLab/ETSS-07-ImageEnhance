@@ -27,7 +27,7 @@ import multipledispatch
 import numpy as np
 import torch
 
-from mon import coreml as nn
+from mon import nn
 from mon.foundation import error_console, math
 
 
@@ -111,7 +111,7 @@ def check_image_size(size: list[int], stride: int = 32) -> int:
     
     Args:
         size: An image's size.
-        stride: The stride of a network. Defaults to 32.
+        stride: The stride of a network. Default: 32.
     
     Returns:
         A new size of the image.
@@ -299,11 +299,11 @@ def denormalize_image_mean_std(
 
     Args:
         image: An image in channel-first format.
-        mean: A sequence of means for each channel. Defaults to
+        mean: A sequence of means for each channel. Default:
             [0.485, 0.456, 0.406].
-        std: A sequence of standard deviations for each channel. Defaults to
+        std: A sequence of standard deviations for each channel. Default:
             [0.229, 0.224, 0.225].
-        eps: A scalar value to avoid zero divisions. Defaults to 1e-6.
+        eps: A scalar value to avoid zero divisions. Default: 1e-6.
         
     Returns:
         A denormalized image.
@@ -360,11 +360,11 @@ def normalize_image_mean_std(
 
     Args:
         image: An image in channel-first format.
-        mean: A sequence of means for each channel. Defaults to
+        mean: A sequence of means for each channel. Default:
             [0.485, 0.456, 0.406].
-        std: A sequence of standard deviations for each channel. Defaults to
+        std: A sequence of standard deviations for each channel. Default:
             [0.229, 0.224, 0.225].
-        eps: A scalar value to avoid zero divisions. Defaults to 1e-6.
+        eps: A scalar value to avoid zero divisions. Default: 1e-6.
         
     Returns:
         A normalized image.
@@ -419,10 +419,10 @@ def normalize_image_by_range(
     
     Args:
         image: An image.
-        min: The current minimum pixel value of the image. Defaults to 0.0.
-        max: The current maximum pixel value of the image. Defaults to 255.0.
-        new_min: A new minimum pixel value of the image. Defaults to 0.0.
-        new_max: A new minimum pixel value of the image. Defaults to 1.0.
+        min: The current minimum pixel value of the image. Default: 0.0.
+        max: The current maximum pixel value of the image. Default: 255.0.
+        new_min: A new minimum pixel value of the image. Default: 0.0.
+        new_max: A new minimum pixel value of the image. Default: 1.0.
         
     Returns:
         A normalized image.
@@ -692,8 +692,8 @@ def to_nparray(
     Args:
         image: An image.
         keepdim: If True, keep the original shape. If False, convert it to a 3-D
-            shape. Defaults to True.
-        denormalize: If True, convert image to [0, 255]. Defaults to True.
+            shape. Default: True.
+        denormalize: If True, convert image to [0, 255]. Default: True.
 
     Returns:
         An :class:`numpy.ndarray` image.
@@ -726,8 +726,8 @@ def to_tensor(
     Args:
         image: An image in channel-last or channel-first format.
         keepdim: If True, keep the original shape. If False, convert it to a 4-D
-            shape. Defaults to True.
-        normalize: If True, normalize the image to [0, 1]. Defaults to False.
+            shape. Default: True.
+        normalize: If True, normalize the image to [0, 1]. Default: False.
         device: The device to run the model on. If None, the default 'cpu'
             device is used.
         
@@ -809,7 +809,7 @@ def add_weighted(
         alpha: The weight of the :param:`image1` elements.
         image2: The second image.
         beta: The weight of the :param:`image2` elements.
-        gamma: A scalar added to each sum. Defaults to 0.0.
+        gamma: A scalar added to each sum. Default: 0.0.
 
     Returns:
         A weighted image.
@@ -845,7 +845,7 @@ def blend(
         image1: A source image.
         image2: A n overlay image that we want to blend on top of :param:`image1`.
         alpha: An alpha transparency of the overlay.
-        gamma: A scalar added to each sum. Defaults to 0.0.
+        gamma: A scalar added to each sum. Default: 0.0.
 
     Returns:
         Blended image.

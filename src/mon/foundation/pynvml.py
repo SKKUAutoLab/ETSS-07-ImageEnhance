@@ -17,8 +17,8 @@ def get_device_memory(
     """Return the GPU memory status as a tuple (total, used, and free).
     
     Args:
-        device: The index of the GPU device. Defaults to 0.
-        unit: The memory unit. Defaults to 'GB'.
+        device: The index of the GPU device. Default: 0.
+        unit: The memory unit. Default: 'GB'.
     """
     nvmlInit()
     unit  = MemoryUnit.from_value(value=unit)

@@ -15,8 +15,9 @@ from typing import Any
 import numpy as np
 import torch
 
+from mon import nn
 from mon.foundation import pathlib
-from mon.vision import image, nn
+from mon.vision import image
 
 
 # region Embedder
@@ -46,11 +47,11 @@ class DeepEmbedder(Embedder, ABC):
     Args:
         config: A detector model's config.
         weight: A path to a pretrained weight file.
-        image_size: The desired model's input size in HW format. Defaults to
+        image_size: The desired model's input size in HW format. Default:
             640.
-        device: Cuda device, i.e. 0 or 0,1,2,3 or cpu. Defaults to 'cpu'.
+        device: Cuda device, i.e. 0 or 0,1,2,3 or cpu. Default: 'cpu'.
         to_numpy: If True, convert the embedded feature vectors to
-            :class:`np.ndarray`. Defaults to False.
+            :class:`np.ndarray`. Default: False.
     
     See Also: :class:`Embedder`.
     """

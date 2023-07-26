@@ -93,7 +93,7 @@ class SORTBBox(base.Tracker):
             - :meth`:delete_dead_tracks`
         
         Args:
-            instances: A list of new instances. Defaults to ().
+            instances: A list of new instances. Default: ().
         """
         self.frame_count += 1  # Should be the same with VideoReader.index
 

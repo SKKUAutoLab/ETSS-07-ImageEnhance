@@ -75,7 +75,7 @@ class FileHandler(ABC):
         
         Args:
             path: A filepath.
-            mode: The mode to open the file. Defaults to “r” means read.
+            mode: The mode to open the file. Default: “r” means read.
         
         Returns:
             File's content.
@@ -95,7 +95,7 @@ class FileHandler(ABC):
         Args:
             obj: A serializable object.
             path: A filepath.
-            mode: The mode to open the file. Defaults to “w” means write.
+            mode: The mode to open the file. Default: “w” means write.
         """
         with open(path, mode) as f:
             self.write_to_fileobj(obj=obj, path=f, **kwargs)
@@ -113,7 +113,7 @@ def write_to_file(
         obj: A serializable object.
         path: A filepath.
         file_format: The file format. If not specified, it is inferred from the
-            :param:`path`'s extension. Defaults to None.
+            :param:`path`'s extension. Default: None.
     """
     path = pathlib.Path(path)
     if file_format is None:
@@ -147,7 +147,7 @@ def read_from_file(
     Args:
         path: A filepath.
         file_format: The file format. If not specified, it is inferred from the
-            :param:`path`'s extension. Defaults to None.
+            :param:`path`'s extension. Default: None.
     
     Returns:
         File's content.
@@ -180,7 +180,7 @@ def merge_files(
         in_paths: Merging filepaths.
         out_path: The output file.
         file_format: The file format. If not specified, it is inferred from the
-            :param:`path`'s extension. Defaults to None.
+            :param:`path`'s extension. Default: None.
     """
     in_paths = builtins.to_list(x=in_paths)
     in_paths = [pathlib.Path(p) for p in in_paths]

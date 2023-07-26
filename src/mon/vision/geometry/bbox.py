@@ -425,7 +425,7 @@ def clip_bbox(
         drop_ratio: If the fraction of a bounding box left in the image after
             being clipped is less than :param:`drop_ratio` the bounding box is
             dropped. If :param:`drop_ratio` == 0, don't drop any bounding boxes.
-            Defaults to 0.0.
+            Default: 0.0.
         
     Returns:
         Clipped bounding boxes of shape [N, 4].

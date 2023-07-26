@@ -64,7 +64,7 @@ class KODASLoL19(base.ImageEnhancementDataset):
 class KODASLoL19DataModule(base.DataModule):
     """KODAS-LoL DataModule.
     
-    See Also: :class:`mon.coreml.data.datamodule.DataModule`.
+    See Also: :class:`mon.nn.data.datamodule.DataModule`.
     """
     
     def prepare_data(self, *args, **kwargs):
@@ -90,7 +90,7 @@ class KODASLoL19DataModule(base.DataModule):
                 - "testing"  : prepares :attr:`test`.
                 - "inference": prepares :attr:`predict`.
                 - None:      : prepares all.
-                Defaults to None.
+                Default: None.
         """
         console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         phase = ModelPhase.from_value(phase) if phase is not None else phase

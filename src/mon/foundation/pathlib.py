@@ -200,7 +200,7 @@ class Path(type(pathlib.Path())):
         Args:
             dst: The destination path.
             replace: If True replace the existing file at the destination
-                location. Defaults to True.
+                location. Default: True.
         """
         dst = Path(dst)
         if dst.is_url():
@@ -222,7 +222,7 @@ def get_files(regex: str, recursive: bool = False) -> list[Path]:
     
     Args:
         regex: A file path patterns.
-        recursive: If True, look for file in subdirectories. Defaults to False.
+        recursive: If True, look for file in subdirectories. Default: False.
         
     Returns:
         A list of unique file paths.
@@ -240,7 +240,7 @@ def get_next_version(path: Path | str, prefix: str | None = None) -> int:
     
     Args:
         path: The directory path containing files.
-        prefix: The file prefix. Defaults to None.
+        prefix: The file prefix. Default: None.
     """
     path  = Path(path)
     files = list(path.iterdir())
@@ -294,7 +294,7 @@ def delete_cache(path: Path | str, recursive: bool = True):
     Args:
         path: The directory path containing the cache files.
         recursive: If True, recursively look for cache files in subdirectories.
-            Defaults to True.
+            Default: True.
     """
     delete_files(regex=".cache", path=path, recursive=recursive)
 
@@ -318,7 +318,7 @@ def delete_files(
     Args:
         regex: A file path patterns.
         path: A path to a directory to search for the files to delete.
-        recursive: If True, look for file in subdirectories. Defaults to False.
+        recursive: If True, look for file in subdirectories. Default: False.
     """
     path  = Path(path)
     files = []
@@ -359,7 +359,7 @@ def mkdirs(
               last path component isn't an existing non-directory file.
             - If False, FileExistsError is raised if the target directory
               already exists.
-        replace: If True, delete existing directories and recreate. Defaults to
+        replace: If True, delete existing directories and recreate. Default:
             False.
     """
     paths = builtins.to_list(paths)

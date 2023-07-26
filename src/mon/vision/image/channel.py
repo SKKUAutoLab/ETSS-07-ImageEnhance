@@ -11,7 +11,7 @@ __all__ = [
 
 import torch
 
-from mon.coreml import functional as F
+from mon.nn import functional as F
 from mon.vision.image import base
 
 
@@ -25,7 +25,7 @@ def get_dark_channel(image: torch.Tensor, size: int = 15) -> torch.Tensor:
 
     Args:
         image: An image in channel-first format.
-        size: A window size. Defaults to 15.
+        size: A window size. Default: 15.
 
     Returns:
         A dark channel prior.
@@ -63,8 +63,8 @@ def get_atmosphere_channel(
         
     Args:
         image: An image in channel-first format.
-        size: A window size. Defaults to 15.
-        p: A percentage of pixels for estimating atmosphere light. Defaults to
+        size: A window size. Default: 15.
+        p: A percentage of pixels for estimating atmosphere light. Default:
             0.0001.
     
     Returns:

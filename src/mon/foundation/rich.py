@@ -167,9 +167,9 @@ class GPUMemoryUsageColumn(progress.ProgressColumn):
     """A progress column showing current GPU memory usage, e.g. `33.1/48.0GB`.
     
     Args:
-        unit: The unit of memory. Defaults to “GB”.
+        unit: The unit of memory. Default: “GB”.
         table_column: The column in the table to associate this field with.
-            Defaults to None.
+            Default: None.
     """
     
     def __init__(
@@ -197,7 +197,7 @@ class ProcessedItemsColumn(progress.ProgressColumn):
     
     Args:
         table_column: The column in the table to associate this field with.
-            Defaults to None.
+            Default: None.
     """
     
     def __init__(self, table_column: table.Column | None = None):
