@@ -12,7 +12,7 @@ from typing import Any
 import click
 from lightning.pytorch import callbacks as lcallbacks
 
-from mon import nn, foundation as mf
+from mon import core as mf, nn
 from mon.globals import CALLBACKS, DATAMODULES, MODELS, RUN_DIR
 
 console = mf.console

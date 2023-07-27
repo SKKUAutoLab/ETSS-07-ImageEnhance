@@ -11,7 +11,7 @@ __all__ = [
     "SateHaze1KThickDataModule", "SateHaze1KThin", "SateHaze1KThinDataModule",
 ]
 
-from mon.foundation import console, pathlib, rich
+from mon.core import console, pathlib, rich
 from mon.globals import DATAMODULES, DATASETS, ModelPhase
 from mon.vision.dataset import base
 

@@ -9,7 +9,7 @@ __all__ = [
     "KODASLoL19", "KODASLoL19DataModule",
 ]
 
-from mon.foundation import console, pathlib, rich
+from mon.core import console, pathlib, rich
 from mon.globals import DATAMODULES, DATASETS, ModelPhase
 from mon.vision.dataset import base
 

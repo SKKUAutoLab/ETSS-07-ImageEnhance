@@ -24,7 +24,7 @@ import torch
 from torch import nn
 from torch.nn import parallel
 
-from mon.foundation import (
+from mon.core import (
     config as mconfig, console, error_console, pathlib, rich,
 )
 from mon.globals import (

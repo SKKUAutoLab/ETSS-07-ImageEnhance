@@ -38,7 +38,7 @@ import numpy as np
 import torch
 
 from mon import nn
-from mon.foundation import math
+from mon.core import math
 from mon.globals import LAYERS
 from mon.nn import _size_2_t, functional as F
 

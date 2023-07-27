@@ -15,7 +15,7 @@ from typing import Any, Callable, Sequence
 import torch
 
 from mon import nn
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import LAYERS, MODELS
 from mon.vision.enhance import base
 

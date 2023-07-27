@@ -29,7 +29,6 @@ import mon.nn.layer.padding
 import mon.nn.layer.parsing
 import mon.nn.layer.pooling
 import mon.nn.layer.sampling
-import mon.nn.layer.typing
 from mon.nn.layer.activation import *
 from mon.nn.layer.attention import *
 from mon.nn.layer.base import *

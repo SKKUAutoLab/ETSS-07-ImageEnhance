@@ -14,8 +14,7 @@ from abc import ABC
 import torch
 
 from mon import nn
-from mon.foundation import pathlib
-from mon.vision import view
+from mon.core import pathlib
 
 
 # region Model

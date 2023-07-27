@@ -22,10 +22,10 @@ import torch
 from torch import nn
 from torch.nn import functional
 
-from mon.foundation import builtins
+from mon.core import builtins
 from mon.globals import LAYERS
 from mon.nn.layer import base, padding as pad
-from mon.nn.layer.typing import _size_2_t
+from mon.nn.typing import _size_2_t
 
 
 # region Adaptive Pool

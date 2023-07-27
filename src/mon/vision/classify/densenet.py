@@ -16,9 +16,9 @@ from typing import Sequence
 import torch
 
 from mon import nn
-from mon.nn import functional as F
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import LAYERS, MODELS
+from mon.nn import functional as F
 from mon.vision.classify import base
 
 _current_dir = pathlib.Path(__file__).absolute().parent

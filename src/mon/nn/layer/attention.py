@@ -23,7 +23,7 @@ from mon.globals import LAYERS
 from mon.nn.layer import (
     activation, base, conv, ghost, linear, normalization, pooling,
 )
-from mon.nn.layer.typing import _size_2_t
+from mon.nn.typing import _size_2_t
 
 
 # region Channel Attention

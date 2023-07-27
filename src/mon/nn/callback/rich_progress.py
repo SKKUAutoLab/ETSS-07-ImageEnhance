@@ -13,7 +13,7 @@ import lightning
 import torch
 from lightning.pytorch.callbacks.progress import rich_progress
 
-from mon.foundation import console, rich
+from mon.core import console, rich
 from mon.globals import CALLBACKS
 
 

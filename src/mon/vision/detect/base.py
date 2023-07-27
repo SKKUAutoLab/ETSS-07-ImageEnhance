@@ -15,10 +15,9 @@ from typing import Any
 import numpy as np
 import torch
 
-import mon.vision.core.image
 from mon import nn
-from mon.foundation import pathlib
-from mon.vision import image as mimage, tracking
+from mon.core import pathlib
+from mon.vision import core, tracking
 
 
 # region Detector
@@ -59,7 +58,7 @@ class Detector(ABC):
         self.weights        = weights
         self.classlabels    = nn.ClassLabels.from_value(value=classlabels)
         self.allowed_ids    = self.classlabels.ids(key="id", exclude_negative_key=True)
-        self.image_size     = mon.vision.core.image.get_hw(size=image_size)
+        self.image_size     = core.get_hw(size=image_size)
         self.conf_threshold = conf_threshold
         self.iou_threshold  = iou_threshold
         self.max_detections = max_detections

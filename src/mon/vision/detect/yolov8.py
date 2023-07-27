@@ -12,10 +12,8 @@ __all__ = [
 import numpy as np
 import torch
 
-import mon.vision.core.image
-import mon.vision.core.utils
 from mon.globals import DETECTORS
-from mon.vision import image as mimage, tracking
+from mon.vision import core, tracking
 from mon.vision.detect import base
 from ultralytics.nn import tasks
 from ultralytics.yolo.data import augment
@@ -54,7 +52,7 @@ class YOLOv8(base.Detector):
         """
         input  = images.copy()
         ratio  = max(self.image_size) / max(
-            mon.vision.core.image.get_image_size(image=input))
+            core.get_image_size(image=input))
         stride = self.model.stride
         stride = int(stride.max() if isinstance(stride, torch.Tensor) else stride)
         
@@ -72,7 +70,7 @@ class YOLOv8(base.Detector):
                 raise ValueError
             input = np.ascontiguousarray(input)
 
-        input = mon.vision.core.image.to_image_tensor(
+        input = core.to_image_tensor(
             image     = input,
             keepdim   = False,
             normalize = True,
@@ -119,8 +117,8 @@ class YOLOv8(base.Detector):
             max_det    = self.max_detections,
             classes    = self.allowed_ids
         )
-        h0, w0 = mon.vision.core.image.get_image_size(image=images)
-        h1, w1 = mon.vision.core.image.get_image_size(image=input)
+        h0, w0 = core.get_image_size(image=images)
+        h1, w1 = core.get_image_size(image=input)
         for i, p in enumerate(pred):
             p[:, :4]  = ops.scale_boxes((h1, w1), p[:, :4], (h0, w0)).round()
             p         = p.detach().cpu().numpy()

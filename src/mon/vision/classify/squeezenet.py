@@ -14,7 +14,7 @@ from abc import ABC
 import torch
 
 from mon import nn
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import LAYERS, MODELS
 from mon.vision.classify import base
 

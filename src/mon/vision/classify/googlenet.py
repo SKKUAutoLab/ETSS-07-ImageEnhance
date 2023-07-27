@@ -12,7 +12,7 @@ __all__ = [
 import torch
 
 from mon import nn
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import MODELS
 from mon.vision.classify import base
 

@@ -16,7 +16,7 @@ from torch import nn
 from torch.nn import functional
 
 from mon import nn
-from mon.foundation import builtins, pathlib
+from mon.core import builtins, pathlib
 from mon.globals import LAYERS, MODELS
 from mon.nn import _size_2_t
 from mon.vision.classify import base

@@ -19,9 +19,9 @@ from torchvision.datasets.utils import (
     download_and_extract_archive,
 )
 
-from mon.nn import data as md
-from mon.foundation import console
+from mon.core import console
 from mon.globals import DATAMODULES, DATASETS, ModelPhase
+from mon.nn import data as md
 from mon.vision.dataset import base
 
 # region ClassLabels

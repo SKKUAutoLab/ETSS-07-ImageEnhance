@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 import torch
 
-from mon.foundation import console, file, pathlib, rich
+from mon.core import console, file, pathlib, rich
 
 
 # region Label

@@ -28,7 +28,7 @@ import torch.cuda
 from lightning.pytorch import accelerators, strategies
 from torch import distributed
 
-from mon.foundation import console
+from mon.core import console
 from mon.globals import ACCELERATORS, STRATEGIES
 
 # region Accelerator

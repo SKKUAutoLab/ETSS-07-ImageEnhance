@@ -15,7 +15,7 @@ import humps
 from torch import nn, optim
 
 import mon
-from mon.foundation import factory
+from mon.core import factory
 
 
 # region Factory

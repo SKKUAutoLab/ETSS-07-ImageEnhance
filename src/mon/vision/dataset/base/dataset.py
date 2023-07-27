@@ -30,12 +30,10 @@ import cv2
 import numpy as np
 import torch
 
-import mon.vision.core.image
-import mon.vision.core.utils
-from mon.nn import data
-from mon.foundation import console, file, pathlib, rich
+from mon.core import console, file, pathlib, rich
 from mon.globals import BBoxFormat
-from mon.vision import image as mi
+from mon.nn import data
+from mon.vision import core
 from mon.vision.dataset.base import label
 
 DataModule = data.DataModule
@@ -87,7 +85,7 @@ class UnlabeledImageDataset(data.UnlabeledDataset, ABC):
             verbose   = verbose,
             *args, **kwargs
         )
-        self.image_size  = mon.vision.core.image.get_hw(size=image_size)
+        self.image_size  = core.get_hw(size=image_size)
         self.classlabels = data.ClassLabels.from_value(value=classlabels)
         self.images: list[label.ImageLabel] = []
         
@@ -124,7 +122,7 @@ class UnlabeledImageDataset(data.UnlabeledDataset, ABC):
             transformed = self.transform(image=image)
             image = transformed["image"]
         if self.to_tensor:
-            image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
+            image = core.to_image_tensor(image=image, keepdim=False, normalize=True)
             
         return image, None, meta
         
@@ -248,7 +246,7 @@ class UnlabeledVideoDataset(data.UnlabeledDataset, ABC):
             verbose     = verbose,
             *args, **kwargs
         )
-        self.image_size     = mon.vision.core.image.get_hw(size=image_size)
+        self.image_size     = core.get_hw(size=image_size)
         self.api_preference = api_preference
         self.source         = pathlib.Path("")
         self.video_capture  = None
@@ -293,7 +291,7 @@ class UnlabeledVideoDataset(data.UnlabeledDataset, ABC):
                 transformed = self.transform(image=image)
                 image = transformed["image"]
             if self.to_tensor:
-                image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
+                image = core.to_image_tensor(image=image, keepdim=False, normalize=True)
             
             return image, None, meta
     
@@ -476,7 +474,7 @@ class LabeledImageDataset(data.LabeledDataset, ABC):
             verbose   = verbose,
             *args, **kwargs
         )
-        self.image_size  = mon.vision.core.image.get_hw(size=image_size)
+        self.image_size  = core.get_hw(size=image_size)
         self.classlabels = data.ClassLabels.from_value(value=classlabels)
         self.images: list[label.ImageLabel] = []
         if not hasattr(self, "labels"):
@@ -627,7 +625,7 @@ class ImageClassificationDataset(LabeledImageDataset, ABC):
             transformed = self.transform(image=image)
             image = transformed["image"]
         if self.to_tensor:
-            image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
+            image = core.to_image_tensor(image=image, keepdim=False, normalize=True)
             label = torch.Tensor(label)
             
         return image, label, meta
@@ -772,7 +770,7 @@ class ImageDetectionDataset(LabeledImageDataset, ABC):
             image       = transformed["image"]
             bboxes      = transformed["bboxes"]
         if self.to_tensor:
-            image  = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
+            image  = core.to_image_tensor(image=image, keepdim=False, normalize=True)
             bboxes = torch.Tensor(bboxes)
             
         return image, bboxes, meta
@@ -1117,8 +1115,8 @@ class ImageEnhancementDataset(LabeledImageDataset, ABC):
             image       = transformed["image"]
             label       = transformed["mask"]
         if self.to_tensor:
-            image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
-            label = mon.vision.core.image.to_image_tensor(image=label, keepdim=False, normalize=True)
+            image = core.to_image_tensor(image=image, keepdim=False, normalize=True)
+            label = core.to_image_tensor(image=label, keepdim=False, normalize=True)
             
         return image, label, meta
         
@@ -1250,8 +1248,8 @@ class ImageSegmentationDataset(LabeledImageDataset, ABC):
             image       = transformed["image"]
             label       = transformed["mask"]
         if self.to_tensor:
-            image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=True)
-            label = mon.vision.core.image.to_image_tensor(image=label, keepdim=False, normalize=True)
+            image = core.to_image_tensor(image=image, keepdim=False, normalize=True)
+            label = core.to_image_tensor(image=label, keepdim=False, normalize=True)
             
         return image, label, meta
     

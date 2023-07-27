@@ -15,7 +15,7 @@ from typing import Any
 import torch
 
 from mon import nn
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import LAYERS, MODELS
 from mon.nn import _size_2_t, functional as F
 from mon.vision import loss

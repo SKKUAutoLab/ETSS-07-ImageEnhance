@@ -14,7 +14,7 @@ from typing import Any, Sequence
 import torch
 
 from mon import nn
-from mon.foundation import builtins, pathlib
+from mon.core import builtins, pathlib
 from mon.globals import LAYERS, MODELS
 from mon.nn import _size_2_t
 from mon.vision.enhance import base

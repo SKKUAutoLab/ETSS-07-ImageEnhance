@@ -15,7 +15,7 @@ from typing import Any
 
 import torch
 
-from mon.foundation import console
+from mon.core import console
 
 
 # region Device Selection

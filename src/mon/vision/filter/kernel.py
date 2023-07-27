@@ -12,9 +12,9 @@ __all__ = [
 
 from typing import Any
 
-import mon.foundation
+import mon.core
 from mon import nn
-from mon.nn import _size_2_t, _size_3_t
+from mon.nn import _size_2_t
 
 console = mon.foundation.console
 

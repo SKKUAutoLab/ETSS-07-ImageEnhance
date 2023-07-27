@@ -15,7 +15,7 @@ from typing import Any, Callable
 import lightning
 from torch.utils import data
 
-from mon.foundation import builtins, console, rich
+from mon.core import builtins, console, rich
 from mon.globals import ModelPhase
 from mon.nn.data import dataset, label
 

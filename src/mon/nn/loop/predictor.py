@@ -15,7 +15,7 @@ from typing import Any
 
 import torch
 
-from mon.foundation import console, pathlib
+from mon.core import console, pathlib
 from mon.globals import ModelPhase
 from mon.nn import device as d, model
 

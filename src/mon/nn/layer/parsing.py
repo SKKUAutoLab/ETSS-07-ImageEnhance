@@ -11,7 +11,7 @@ __all__ = [
 
 from torch import nn
 
-from mon import foundation as mf
+from mon import core as mf
 from mon.nn.layer import *
 
 console = mf.console

@@ -14,9 +14,7 @@ from typing import Any
 
 import torch
 
-import mon.foundation
-from mon import nn
-from mon.nn import _size_2_t, _size_3_t
+import mon.core
 
 console = mon.foundation.console
 

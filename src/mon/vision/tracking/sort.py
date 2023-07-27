@@ -11,7 +11,7 @@ __all__ = [
 
 import numpy as np
 
-from mon.foundation import console
+from mon.core import console
 from mon.globals import TRACKERS
 from mon.vision import geometry
 from mon.vision.tracking import base, motion as mmotion

@@ -21,7 +21,7 @@ from mon.globals import LAYERS
 from mon.nn.layer import (
     activation, attention, base, conv, linear, normalization,
 )
-from mon.nn.layer.typing import _size_2_t
+from mon.nn.typing import _size_2_t
 
 
 # region MobileOne Convolution

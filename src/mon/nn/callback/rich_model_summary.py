@@ -12,7 +12,7 @@ __all__ = [
 from lightning.pytorch import callbacks
 from lightning.pytorch.utilities import model_summary
 
-from mon.foundation import console, rich
+from mon.core import console, rich
 from mon.globals import CALLBACKS
 
 

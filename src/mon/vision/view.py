@@ -18,11 +18,9 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 
-import mon.vision.core.image
-import mon.vision.core.utils
+from mon.core import builtins, math
 from mon.nn import data as md
-from mon.foundation import builtins, math
-from mon.vision import image as mi
+from mon.vision import core
 
 # mpl.use("wxAgg")
 
@@ -106,7 +104,7 @@ def imshow(
             reset. Default: 0.01.
     """
     # Prepare image and label
-    image = mon.vision.core.utils.to_list_of_3d(image)
+    image = core.to_list_of_3d_image(image)
     max_n = max_n if isinstance(max_n, int) else len(image)
     image = image[: max_n]
     
@@ -136,7 +134,7 @@ def imshow(
     for idx, img in enumerate(image):
         i   = int(idx / nrow)
         j   = int(idx % nrow)
-        img = mon.vision.core.image.to_image_nparray(image=img, keepdim=False, denormalize=denormalize)
+        img = core.to_image_nparray(image=img, keepdim=False, denormalize=denormalize)
         axs[i, j].imshow(np.asarray(img), aspect="auto")
         axs[i, j].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
         if label is not None:
@@ -195,7 +193,7 @@ def imshow_classification(
             reset. Default: 0.
     """
     # Prepare image and label
-    image = mon.vision.core.utils.to_list_of_3d(image)
+    image = core.to_list_of_3d_image(image)
     max_n = max_n if isinstance(max_n, int) else len(image)
     top_k = top_k if isinstance(top_k, int) else (
         len(classlabels) if isinstance(classlabels, md.ClassLabels) else 5
@@ -269,7 +267,7 @@ def imshow_classification(
             ax.tick_params(axis="x", direction="in", pad=-10)
             ax.tick_params(axis="y", direction="in", pad=-10)
         # Image
-        img = mon.vision.core.image.to_image_nparray(image=img, keepdim=False, denormalize=denormalize)
+        img = core.to_image_nparray(image=img, keepdim=False, denormalize=denormalize)
         axs[0].imshow(np.asarray(img), aspect="auto")
         # Classlabels
         pps = axs[1].barh(y_pos, scores, align="center", color="deepskyblue")
@@ -331,7 +329,7 @@ def imshow_enhancement(
     # Prepare image and label
     header = list(image.keys())
     image  = list(image.values())
-    image  = [mon.vision.core.utils.to_list_of_3d(i) for i in image]
+    image  = [core.to_list_of_3d_image(i) for i in image]
     max_n  = max_n if isinstance(max_n, int) else len(image[0])
     image  = [i[: max_n] for i in image]
     
@@ -357,7 +355,7 @@ def imshow_enhancement(
     [ax.set_title(l) for ax, l in zip(axs[0], header)]
     for i, img in enumerate(image):
         for j, im in enumerate(img):
-            im = mon.vision.core.image.to_image_nparray(image=im, keepdim=False, denormalize=denormalize)
+            im = core.to_image_nparray(image=im, keepdim=False, denormalize=denormalize)
             axs[j, i].imshow(np.asarray(im), aspect="auto")
             axs[j, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
         # if label is not None:

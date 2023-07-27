@@ -17,7 +17,7 @@ from typing import Any
 from torch.utils.data import dataset
 from torch.utils.data.dataset import *
 
-from mon.foundation import pathlib
+from mon.core import pathlib
 
 
 # region Dataset

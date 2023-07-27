@@ -22,12 +22,12 @@ from torch import nn
 from torch.nn import functional as F
 from torchvision.ops import misc
 
-from mon.foundation import math
+from mon.core import math
 from mon.globals import LAYERS
 from mon.nn.layer import (
     activation, base, normalization, padding as pad,
 )
-from mon.nn.layer.typing import _size_2_t, _size_any_t
+from mon.nn.typing import _size_2_t, _size_any_t
 
 
 # region Convolution

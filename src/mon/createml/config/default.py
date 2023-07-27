@@ -13,7 +13,7 @@ __all__ = [
 
 import albumentations as A
 
-from mon.foundation import pathlib
+from mon.core import pathlib
 from mon.globals import DATA_DIR
 
 # region Callback

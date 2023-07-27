@@ -26,10 +26,8 @@ import numpy as np
 import torch
 import torchvision
 
-import mon.vision.core.image
-import mon.vision.core.utils
-from mon.foundation import pathlib
-from mon.vision.image import base
+from mon.core import pathlib
+from mon.vision import core
 
 
 # region Read
@@ -60,7 +58,7 @@ def read_image(
     if to_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     if to_tensor:
-        image = mon.vision.core.image.to_image_tensor(image=image, keepdim=False, normalize=normalize)
+        image = core.to_image_tensor(image=image, keepdim=False, normalize=normalize)
     return image
 
 
@@ -102,7 +100,7 @@ def read_video_ffmpeg(
             .reshape([height, width, 3])
         )  # Numpy
         if to_tensor:
-            image = mon.vision.core.image.to_image_tensor(
+            image = core.to_image_tensor(
                 image     = image,
                 keepdim   = False,
                 normalize = normalize
@@ -467,7 +465,7 @@ class VideoLoaderCV(VideoLoader):
                 if self.to_rgb:
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 if self.to_tensor:
-                    image = mon.vision.core.image.to_image_tensor(
+                    image = core.to_image_tensor(
                         image     = image,
                         keepdim   = False,
                         normalize = self.normalize
@@ -671,7 +669,7 @@ class VideoLoaderFFmpeg(VideoLoader):
                 if self.to_rgb:
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 if self.to_tensor:
-                    image = mon.vision.core.image.to_image_tensor(
+                    image = core.to_image_tensor(
                         image     = image,
                         keepdim   = False,
                         normalize = self.normalize
@@ -786,8 +784,8 @@ def write_image_cv(
     """
     # Convert image
     if isinstance(image, torch.Tensor):
-        image = mon.vision.core.image.to_image_nparray(image=image, keepdim=True, denormalize=denormalize)
-    image = mon.vision.core.utils.to_channel_last(image=image)
+        image = core.to_image_nparray(image=image, keepdim=True, denormalize=denormalize)
+    image = core.to_channel_last_image(image=image)
     if 2 <= image.ndim <= 3:
         raise ValueError(
             f"img's number of dimensions must be between 2 and 3, but got "
@@ -828,8 +826,8 @@ def write_image_torch(
     # Convert image
     if isinstance(image, np.ndarray):
         image = torch.from_numpy(image)
-        image = mon.vision.core.utils.to_channel_first(image=image)
-    image = mon.vision.core.image.denormalize_image(image=image) if denormalize else image
+        image = core.to_channel_first_image(image=image)
+    image = core.denormalize_image(image=image) if denormalize else image
     image = image.to(torch.uint8)
     image = image.cpu()
     if 2 <= image.ndim <= 3:
@@ -949,13 +947,13 @@ def write_video_ffmpeg(
         denormalize: If True, convert image to [0, 255]. Default: False.
     """
     if isinstance(image, np.ndarray):
-        if mon.vision.core.image.is_normalized_image(image=image):
-            image = mon.vision.core.image.denormalize_image(image=image)
-        if mon.vision.core.utils.is_channel_first(image=image):
-            image = mon.vision.core.utils.to_channel_last(image=image)
+        if core.is_normalized_image(image=image):
+            image = core.denormalize_image(image=image)
+        if core.is_channel_first_image(image=image):
+            image = core.to_channel_last_image(image=image)
     elif isinstance(image, torch.Tensor):
-        image = mon.vision.core.image.to_image_nparray(
-            image= image,
+        image = core.to_image_nparray(
+            image       = image,
             keepdim     = False,
             denormalize = denormalize
         )
@@ -992,7 +990,7 @@ class Writer(ABC):
     ):
         super().__init__()
         self.dst         = pathlib.Path(destination)
-        self.img_size    = mon.vision.core.image.get_hw(size=image_size)
+        self.img_size    = core.get_hw(size=image_size)
         self.denormalize = denormalize
         self.verbose     = verbose
         self.index       = 0
@@ -1269,7 +1267,7 @@ class VideoWriterCV(VideoWriter):
                 denormalize = denormalize or self.denormalize
             )
         
-        image = mon.vision.core.image.to_image_nparray(
+        image = core.to_image_nparray(
             image       = image,
             keepdim     = True,
             denormalize = denormalize or self.denormalize,

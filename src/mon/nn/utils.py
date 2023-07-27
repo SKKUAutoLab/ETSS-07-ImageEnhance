@@ -21,10 +21,8 @@ import multipledispatch
 import numpy as np
 import torch
 
-import mon.foundation
-from mon.nn import _size_2_t, _size_3_t, _size_any_t
-
-console = mon.foundation.console
+from mon.core import console
+from mon.nn.typing import _size_2_t, _size_3_t, _size_any_t
 
 
 # region Check

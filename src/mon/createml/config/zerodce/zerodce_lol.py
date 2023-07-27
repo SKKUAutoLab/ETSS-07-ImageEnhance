@@ -8,7 +8,7 @@ from __future__ import annotations
 import albumentations as A
 
 from mon.createml.config import default
-from mon.globals import RUN_DIR, DATA_DIR
+from mon.globals import DATA_DIR, RUN_DIR
 
 # region Basic
 

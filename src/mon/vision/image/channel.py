@@ -11,9 +11,8 @@ __all__ = [
 
 import torch
 
-import mon.vision.core.utils
 from mon.nn import functional as F
-from mon.vision.image import base
+from mon.vision import core
 
 
 # region Dark Channel Prior
@@ -35,7 +34,7 @@ def get_dark_channel(image: torch.Tensor, size: int = 15) -> torch.Tensor:
         raise ValueError(
             f"img's number of dimensions must be == 4, but got {image.ndim}."
         )
-    if mon.vision.core.utils.is_channel_first(image=image):
+    if core.is_channel_first_image(image=image):
         raise ValueError(f"img must be in channel-first format.")
     
     b, c, h, w  = image.shape
@@ -75,7 +74,7 @@ def get_atmosphere_channel(
         raise ValueError(
             f"img's number of dimensions must be == 4, but got {image.ndim}."
         )
-    if mon.vision.core.utils.is_channel_first(image=image):
+    if core.is_channel_first_image(image=image):
         raise ValueError(f"img must be in channel-first format.")
     
     b, c, h, w = image.shape

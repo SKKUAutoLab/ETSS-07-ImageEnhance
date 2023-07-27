@@ -14,10 +14,10 @@ import torch
 from torch import nn
 from torch.nn import functional
 
-from mon.foundation import math
+from mon.core import math
 from mon.globals import LAYERS
 from mon.nn.layer import base
-from mon.nn.layer.typing import _ratio_2_t, _size_2_t
+from mon.nn.typing import _ratio_2_t, _size_2_t
 
 
 # region Downsampling

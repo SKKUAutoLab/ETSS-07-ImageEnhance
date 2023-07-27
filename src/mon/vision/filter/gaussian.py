@@ -18,7 +18,7 @@ from typing import Any
 
 import torch
 
-import mon.foundation
+import mon.core
 from mon import nn
 from mon.nn import _size_2_t, _size_3_t
 
