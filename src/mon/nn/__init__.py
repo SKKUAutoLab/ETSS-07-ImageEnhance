@@ -16,7 +16,7 @@ from __future__ import annotations
 # noinspection PyUnresolvedReferences
 from torch.nn import (
     Container, functional, init, Module, ModuleDict, ModuleList, ParameterDict,
-    ParameterList, Sequential, utils,
+    ParameterList, Sequential,
 )
 # noinspection PyUnresolvedReferences
 from torch.nn.parallel import DataParallel as DataParallel
