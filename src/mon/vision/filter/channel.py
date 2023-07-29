@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements channel manipulation functions. """
+"""This module implements channel filters."""
 
 from __future__ import annotations
 
 __all__ = [
-    "get_atmosphere_channel", "get_dark_channel",
+    "get_atmosphere_channel",
+    "get_dark_channel",
 ]
 
 import torch
@@ -21,7 +22,7 @@ def get_dark_channel(image: torch.Tensor, size: int = 15) -> torch.Tensor:
     """Get the dark channel prior in a given image.
 
     References:
-        https://github.com/liboyun/ZID/blob/master/utils/dcp.py
+        `<https://github.com/liboyun/ZID/blob/master/utils/dcp.py>`__
 
     Args:
         image: An image in channel-first format.
@@ -34,7 +35,7 @@ def get_dark_channel(image: torch.Tensor, size: int = 15) -> torch.Tensor:
         raise ValueError(
             f"img's number of dimensions must be == 4, but got {image.ndim}."
         )
-    if core.is_channel_first_image(image=image):
+    if core.is_channel_first_image(input=image):
         raise ValueError(f"img must be in channel-first format.")
     
     b, c, h, w  = image.shape
@@ -74,7 +75,7 @@ def get_atmosphere_channel(
         raise ValueError(
             f"img's number of dimensions must be == 4, but got {image.ndim}."
         )
-    if core.is_channel_first_image(image=image):
+    if core.is_channel_first_image(input=image):
         raise ValueError(f"img must be in channel-first format.")
     
     b, c, h, w = image.shape

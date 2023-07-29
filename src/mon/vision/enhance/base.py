@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements the base model class for enhancement models."""
+"""This module implements the base class for enhancement models."""
 
 from __future__ import annotations
 
@@ -104,8 +104,8 @@ class ImageEnhancementModel(nn.Model, ABC):
             wait_time: Wait for some time (in seconds) to display the figure
                 then reset. Default: ``0.01``.
             save: Save debug image. Default: ``False``.
-            verbose: If ``True`` shows the results on the screen. Default:
-                ``False``.
+            verbose: If ``True`` shows the results on the screen.
+                Default: ``False``.
         """
         result = {}
         if input is not None:
