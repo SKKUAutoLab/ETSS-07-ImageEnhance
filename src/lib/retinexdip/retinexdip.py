@@ -18,6 +18,8 @@ from net.losses import ExclusionLoss, GradientLoss, TVLoss
 from net.noise import get_noise
 from utils.image_io import *
 
+console = mon.console
+
 EnhancementResult = namedtuple("EnhancementResult", ["reflection", "illumination"])
 
 torch.manual_seed(0)
@@ -243,7 +245,7 @@ class Enhancement(object):
             #     self.best_result = self.current_result
 
     def _plot_closure(self, step):
-        print("Iteration {:5d}    Loss {:5f}".format(step, self.total_loss.item()))
+        # print("Iteration {:5d}    Loss {:5f}".format(step, self.total_loss.item()))
         if step % self.show_every == self.show_every - 1:
             # plot_image_grid("left_right_{}".format(step),
             #                 [self.current_result.reflection, self.current_result.illumination])
@@ -318,7 +320,7 @@ if __name__ == "__main__":
         sum_time    = 0
         num_images  = 0
         for image_path in image_paths:
-            print(image_path)
+            # print(image_path)
             image_path   = mon.Path(image_path)
             result_path  = config.output_dir / image_path.name
             image        = Image.open(image_path).convert("RGB")
@@ -328,7 +330,7 @@ if __name__ == "__main__":
             sum_time    += run_time
             num_images  += 1
         avg_time = float(sum_time / num_images)
-        print(f"Average time: {avg_time}")
+        console.log(f"Average time: {avg_time}")
     
     """
     parser = argparse.ArgumentParser()
