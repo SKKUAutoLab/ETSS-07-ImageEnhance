@@ -20,7 +20,7 @@ model=${1:-"zerodce"}
 task=${2:-"predict"}
 train_data=${3:-"lol"}
 predict_data=${4:-"all"}
-project=${5:-"enhance/llie"}
+project=${5:-"ie/llie"}
 epoch=${6:-"100"}
 
 read -e -i "$model"        -p "Model [${models[*]}]: " model
@@ -38,7 +38,7 @@ predict_data=$(echo $predict_data | tr '[:upper:]' '[:lower:]')
 project=$(echo $project | tr '[:upper:]' '[:lower:]')
 epoch=$(($epoch))
 
-# Validate Input
+# Check Input
 if [[ ! "${models[*]}" =~ $model ]]; then
   echo "$model is not in [${models[*]}]"
 fi
@@ -66,6 +66,7 @@ else
   declare -a predict_data=()
   predict_data+=($predict_data)
 fi
+# echo "${predict_data[*]}"
 
 declare -a low_data_dirs=()
 declare -a high_data_dirs=()
@@ -114,6 +115,7 @@ elif [ "$task" == "predict" ]; then
     fi
   done
 fi
+# echo "${low_data_dirs[*]}"
 
 train_dir="${root_dir}/run/train/${project}/${model}-${train_data}"
 train_weights_pt="${root_dir}/run/train/${project}/${model}-${train_data}/best.pt"
