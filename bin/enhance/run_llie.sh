@@ -4,10 +4,13 @@ echo "$HOSTNAME"
 
 # Constant
 models=(
-  "lcdpnet"     # https://github.com/onpix/LCDPNet
-  "retinexdip"  # https://github.com/zhaozunjin/RetinexDIP
-  "ruas"        # https://github.com/KarelZhang/RUAS
+  "iat"          # https://github.com/cuiziteng/Illumination-Adaptive-Transformer/tree/main/IAT_enhance
+  "lcdpnet"      # https://github.com/onpix/LCDPNet
+  "retinexdip"   # https://github.com/zhaozunjin/RetinexDIP
+  "ruas"         # https://github.com/KarelZhang/RUAS
+  "sci"          # # https://github.com/vis-opt-group/SCI
   "sgz"
+  "uretinexnet"  # https://github.com/AndersonYong/URetinex-Net
   "zerodce"
   "zerodce++"
 )
@@ -20,7 +23,7 @@ model=${1:-"zerodce"}
 task=${2:-"predict"}
 train_data=${3:-"lol"}
 predict_data=${4:-"all"}
-project=${5:-"ie/llie"}
+project=${5:-"enhance/llie"}
 epoch=${6:-"100"}
 
 read -e -i "$model"        -p "Model [${models[*]}]: " model
@@ -63,8 +66,7 @@ if [ "$predict_data" == "all" ]; then
     predict_data[$i]="${predict_datasets[$i]}"
   done
 else
-  declare -a predict_data=()
-  predict_data+=($predict_data)
+  declare -a predict_data=($predict_data)
 fi
 # echo "${predict_data[*]}"
 
@@ -121,9 +123,9 @@ train_dir="${root_dir}/run/train/${project}/${model}-${train_data}"
 train_weights_pt="${root_dir}/run/train/${project}/${model}-${train_data}/best.pt"
 train_weights_pth="${root_dir}/run/train/${project}/${model}-${train_data}/best.pth"
 train_weights_ckpt="${root_dir}/run/train/${project}/${model}-${train_data}/best.ckpt"
-zoo_weights_pt="${root_dir}/zoo/${model}/${model}-${train_data}.pt"
-zoo_weights_pth="${root_dir}/zoo/${model}/${model}-${train_data}.pth"
-zoo_weights_ckpt="${root_dir}/zoo/${model}/${model}-${train_data}.ckpt"
+zoo_weights_pt="${root_dir}/zoo/vision/enhance/${model}/${model}-${train_data}.pt"
+zoo_weights_pth="${root_dir}/zoo/vision/enhance/${model}/${model}-${train_data}.pth"
+zoo_weights_ckpt="${root_dir}/zoo/vision/enhance/${model}/${model}-${train_data}.ckpt"
 if [ -f "$train_weights_pt" ]; then
   weights=${train_weights_pt}
 elif [ -f "$train_weights_pth" ]; then
@@ -149,8 +151,11 @@ fi
 # Train
 if [ "$task" == "train" ]; then
   echo -e "\nTraining"
+  # IAT
+  if [ "$model" == "iat" ]; then
+    echo -e "\nIAT should be run in prediction mode only"
   # LCDPNet
-  if [ "$model" == "lcdpnet" ]; then
+  elif [ "$model" == "lcdpnet" ]; then
     python src/train.py \
       name="lcdpnet-lol" \
       num_epoch=${epoch} \
@@ -158,7 +163,7 @@ if [ "$task" == "train" ]; then
       valid_every=20
   # RetinexDIP
   elif [ "$model" == "retinexdip" ]; then
-    echo -e "\nRetinexNet should be run in online mode"
+    echo -e "\nRetinexNet should be run in prediction mode only"
     python retinexdip.py \
       --data "${low_data_dirs[i]}" \
       --weights "${zoo_weights}" \
@@ -173,6 +178,20 @@ if [ "$task" == "train" ]; then
       --epoch "${epoch}" \
       --batch-size 1 \
       --report-freq 50 \
+      --gpu 0 \
+      --seed 2 \
+      --checkpoints-dir "${train_dir}"
+  # SCI
+  elif [ "$model" == "sci" ]; then
+    python train.py \
+      --data "${low_data_dirs[i]}" \
+      --weights "${zoo_weights}" \
+      --load-pretrain false \
+      --batch-size 1 \
+      --epochs "${epoch}" \
+      --lr 0.0003 \
+      --stage 3 \
+      --cuda true \
       --gpu 0 \
       --seed 2 \
       --checkpoints-dir "${train_dir}"
@@ -198,6 +217,9 @@ if [ "$task" == "train" ]; then
       --exp-level 0.6 \
       --checkpoints-iter 10 \
       --checkpoints-dir "${train_dir}"
+  # URetinex-Net
+  elif [ "$model" == "uretinexnet" ]; then
+    echo -e "\nURetinex-Net does not have training script."
   # Zero-DCE
   elif [ "$model" == "zerodce" ]; then
     python lowlight_train.py \
@@ -245,8 +267,18 @@ if [ "$task" == "predict" ]; then
   else
     for (( i=0; i<${#predict_data[@]}; i++ )); do
       predict_dir="${root_dir}/run/predict/${project}/${model}/${predict_data[$i]}"
+      # IAT
+      if [ "$model" == "iat" ]; then
+          python IAT_enhance/predict.py \
+            --data "${low_data_dirs[i]}" \
+            --exposure-weights "${root_dir}/zoo/vision/enhance/${model}/iat-exposure.pth" \
+            --enhance-weights "${root_dir}/zoo/vision/enhance/${model}/iat-lol.pth" \
+            --image-size 512 \
+            --normalize \
+            --task "enhance" \
+            --output-dir "${predict_dir}"
       # RetinexDIP
-      if [ "$model" == "retinexdip" ]; then
+      elif [ "$model" == "retinexdip" ]; then
         python retinexdip.py \
           --data "${low_data_dirs[i]}" \
           --weights "${weights}" \
@@ -261,6 +293,15 @@ if [ "$task" == "predict" ]; then
           --gpu 0 \
           --seed 2 \
           --output-dir "${predict_dir}"
+      # SCI
+      elif [ "$model" == "sci" ]; then
+        python test.py \
+          --data "${low_data_dirs[i]}" \
+          --weights "${zoo_weights}" \
+          --image-size 512 \
+          --gpu 0 \
+          --seed 2 \
+          --output-dir "${predict_dir}"
       # SGZ
       elif [ "$model" == "sgz" ]; then
         python test.py \
@@ -268,9 +309,19 @@ if [ "$task" == "predict" ]; then
           --weights "${zoo_weights}" \
           --image-size 512 \
           --output-dir "${predict_dir}"
+      # URetinex-Net
+      elif [ "$model" == "uretinexnet" ]; then
+        python test.py \
+          --data "${low_data_dirs[i]}" \
+          --decom-model-low-weights "${root_dir}/zoo/vision/enhance/${model}/${train_data}/init_low-lol.pth" \
+          --unfolding-model-weights "${root_dir}/zoo/vision/enhance/${model}/${train_data}/unfolding-lol.pth" \
+          --adjust-model-weights "${root_dir}/zoo/vision/enhance/${model}/${train_data}/L_adjust-lol.pth" \
+          --image-size 512 \
+          --ratio 5 \
+          --output-dir "${predict_dir}"
       # Zero-DCE
       elif [ "$model" == "zerodce" ]; then
-        python test.py \
+        python lowlight_test.py \
           --data "${low_data_dirs[$i]}" \
           --weights "${weights}" \
           --image-size 512 \

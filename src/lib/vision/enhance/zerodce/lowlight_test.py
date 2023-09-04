@@ -51,6 +51,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", type=str, default=mon.RUN_DIR/"predict/zerodce")
     args = parser.parse_args()
     
+    args.data       = mon.Path(args.data)
     args.output_dir = mon.Path(args.output_dir)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -73,15 +74,19 @@ if __name__ == "__main__":
     
     #
     with torch.no_grad():
-        args.data = mon.Path(args.data)
         image_paths = list(args.data.rglob("*"))
         image_paths = [path for path in image_paths if path.is_image_file()]
         sum_time    = 0
-        for image_path in image_paths:
-            # print(image_path)
-            enhanced_image, run_time = predict(image_path)
-            result_path = args.output_dir / image_path.name
-            torchvision.utils.save_image(enhanced_image, str(result_path))
-            sum_time += run_time
+        with mon.get_progress_bar() as pbar:
+            for _, image_path in pbar.track(
+                sequence    = enumerate(image_paths),
+                total       = len(image_paths),
+                description = f"[bright_yellow] Inferring"
+            ):
+                # print(image_path)
+                enhanced_image, run_time = predict(image_path)
+                result_path = args.output_dir / image_path.name
+                torchvision.utils.save_image(enhanced_image, str(result_path))
+                sum_time += run_time
         avg_time = float(sum_time / len(image_paths))
         console.log(f"Average time: {avg_time}")
