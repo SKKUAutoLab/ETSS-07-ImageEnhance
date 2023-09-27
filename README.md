@@ -1,14 +1,16 @@
-### Automation Lab, Sungkyunkwan University
+<div align="center">
+	<h1 align="center">🐈 MON</h1>
+</div>
 
-# ETSS-07: Image Enhancement
+<div align = center>
+	<a align="center" href="http://phlong.net/mon/">Documentation</a>
+	<br>
+	<p></p>
+</div>
 
-![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg?style=for-the-badge)
-
-This is the source code for the image enhancement task from the "24/7 Traffic Surveillance System on Edge Device" project.
-
-Currently, it supports:
-- Rain removal.
-- Low-light enhancement (updating ... )
+- `🐈 mon` is an all-in-one research framework built using [Python](https://www.python.org/) and [PyTorch](https://pytorch.org/). 
+- It covers a wide range of research topics in computer vision and machine learning.
+- The full documentation of the framework [can be found here](http://phlong.net/mon/) (still work-in-progress).
 
 ## Installation
 
@@ -19,54 +21,19 @@ chmod +x install.sh
 bash -i install.sh
 ```
 
---- 
-
-<details>
-<summary>Old Documentation</summary>
-
-## Installation
-
-### Requirements
-
-- Anaconda/Miniconda
-- Python 3.9
-- CUDA 11.1
-- PyTorch 1.10
-- Code has been tested on Ubuntu 20.04 / Windows 10
-
-### Setup Environment
-
-- Download the whole source code.
-- Goto setup folder
-```shell
-cd image_enhancement/setup
-```
-- Create the Anaconda environment:
-```shell
-conda env create -f mlkit.yml
+## Cite
+If you find our work useful, please cite the following:
+```text
+@misc{Pham2022,  
+    author       = {Long Hoang Pham},  
+    title        = {🐈 mon},  
+    publisher    = {GitHub},
+    journal      = {GitHub repository},
+    howpublished = {https://github.com/phlong3105/mon},
+    year         = {2022},
+}
 ```
 
-## Training
-
-- Download the training data from: [download](https://o365skku-my.sharepoint.com/:u:/g/personal/phlong_o365_skku_edu/ETZ4XCf9oxhEvfhrchrXXZwBecAZaP1YFBBzrGwQlwM5Kw?e=TtQfeL)  
-  (~7 GB). 
-- Extract the data to `image_enhancement/data`. 
-  - It should be located at: `image_enhancement/data/rain`
-- Run the training scripts:
-```shell
-python image_enhancement/exps/run/train.py
-```
-
-## Inference
-
-- If you have retrained the model, find the best weight from:
-  `image_enhancement/exps/checkpoints/mprnet/mprnet_rain/<version>/weights
-  /best...ckpt`
-- Copy the best weight to `image_enhancement/models_zoo`. Rename it as: 
-  `mprnet_rain_version_0.ckpt`
-- Run the inference scripts: 
-```shell
-python image_enhancement/exps/run/infer.py
-```
-
-</details>
+## Contact
+If you have any questions, feel free to contact `Long H. Pham` 
+([longpham3105@gmail.com](longpham3105@gmail.com) or [phlong@skku.edu](phlong@skku.edu))
