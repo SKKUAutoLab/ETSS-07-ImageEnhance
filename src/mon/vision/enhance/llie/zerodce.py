@@ -14,14 +14,14 @@ from typing import Any
 
 import torch
 
-from mon import nn
-from mon.core import pathlib
 from mon.globals import LAYERS, MODELS
-from mon.nn import _size_2_t, functional as F
-from mon.vision import loss
+from mon.nn.typing import _size_2_t
+from mon.vision import core, nn
 from mon.vision.enhance.llie import base
+from mon.vision.nn import functional as F
 
-_current_dir = pathlib.Path(__file__).absolute().parent
+console      = core.console
+_current_dir = core.Path(__file__).absolute().parent
 
 
 # region Layer
@@ -231,14 +231,14 @@ class CombinedLoss01(nn.Loss):
         self.col_weight = col_weight
         self.tv_weight  = tv_weight
         
-        self.loss_spa = loss.SpatialConsistencyLoss(reduction=reduction)
-        self.loss_exp = loss.ExposureControlLoss(
+        self.loss_spa = nn.SpatialConsistencyLoss(reduction=reduction)
+        self.loss_exp = nn.ExposureControlLoss(
             reduction  = reduction,
             patch_size = exp_patch_size,
             mean_val   = exp_mean_val,
         )
-        self.loss_col = loss.ColorConstancyLoss(reduction=reduction)
-        self.loss_tv  = loss.IlluminationSmoothnessLoss(reduction=reduction)
+        self.loss_col = nn.ColorConstancyLoss(reduction=reduction)
+        self.loss_tv  = nn.IlluminationSmoothnessLoss(reduction=reduction)
     
     def __str__(self) -> str:
         return f"combined_loss"
@@ -292,15 +292,15 @@ class CombinedLoss02(nn.Loss):
         self.tv_weight      = tv_weight
         self.channel_weight = channel_weight
         
-        self.loss_spa     = loss.SpatialConsistencyLoss(reduction=reduction)
-        self.loss_exp     = loss.ExposureControlLoss(
+        self.loss_spa     = nn.SpatialConsistencyLoss(reduction=reduction)
+        self.loss_exp     = nn.ExposureControlLoss(
             reduction  = reduction,
             patch_size = exp_patch_size,
             mean_val   = exp_mean_val,
         )
-        self.loss_col     = loss.ColorConstancyLoss(reduction=reduction)
-        self.loss_tv      = loss.IlluminationSmoothnessLoss(reduction=reduction)
-        self.loss_channel = loss.ChannelConsistencyLoss(reduction=reduction)
+        self.loss_col     = nn.ColorConstancyLoss(reduction=reduction)
+        self.loss_tv      = nn.IlluminationSmoothnessLoss(reduction=reduction)
+        self.loss_channel = nn.ChannelConsistencyLoss(reduction=reduction)
     
     def __str__(self) -> str:
         return f"combined_loss"
@@ -436,8 +436,8 @@ class ZeroDCE(base.LowLightImageEnhancementModel):
         metrics, we only need the final predictions and ground-truth.
 
         Args:
-            input: An input of shape NCHW.
-            target: A ground-truth of shape NCHW. Default: None.
+            input: An input of shape :math:`[N, C, H, W]`.
+            target: A ground-truth of shape :math:`[N, C, H, W]`. Default: ``None``.
             
         Return:
             Predictions and loss value.
@@ -452,7 +452,7 @@ class ZeroDCEVanilla(nn.Module):
     """Original implementation of Zero-DCE.
     
     References:
-        https://github.com/Li-Chongyi/Zero-DCE
+        `<https://github.com/Li-Chongyi/Zero-DCE>`__
     """
     
     def __init__(self):
@@ -622,8 +622,8 @@ class ZeroDCEPP(base.LowLightImageEnhancementModel):
         metrics, we only need the final predictions and ground-truth.
 
         Args:
-            input: An input of shape NCHW.
-            target: A ground-truth of shape NCHW. Default: None.
+            input: An input of shape :math:`[N, C, H, W]`.
+            target: A ground-truth of shape :math:`[N, C, H, W]`. Default: ``None``.
             
         Return:
             Predictions and loss value.
@@ -638,7 +638,7 @@ class ZeroDCEPPVanilla(nn.Module):
     """Original implementation of ZeroDCE++.
     
     References:
-        https://github.com/Li-Chongyi/Zero-DCE_extension
+        `<https://github.com/Li-Chongyi/Zero-DCE_extension>`__
     """
     
     def __init__(self, scale_factor: float = 1.0):
@@ -726,8 +726,8 @@ class ZeroDCETiny(base.LowLightImageEnhancementModel):
         metrics, we only need the final predictions and ground-truth.
 
         Args:
-            input: An input of shape NCHW.
-            target: A ground-truth of shape NCHW. Default: None.
+            input: An input of shape :math:`[N, C, H, W]`.
+            target: A ground-truth of shape :math:`[N, C, H, W]`. Default: ``None``.
             
         Return:
             Predictions and loss value.

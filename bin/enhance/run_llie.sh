@@ -3,8 +3,8 @@ echo "$HOSTNAME"
 
 
 # Fast Commands
-#
-
+# ./run_llie.sh zerodcev2 all train sice-zerodce lol vision/enhance/llie no last
+# 00.0.0.0, 00.0.0.1, 00.0.0.2
 
 # Constants
 models=(
@@ -65,7 +65,7 @@ train_datasets=(
   "ve-lol-syn"
 )
 predict_datasets=(
-  # "darkface"
+  "darkface"
   # "deepupe"
   "dicm"
   # "exdark"
@@ -90,14 +90,16 @@ train_data=${4:-"lol"}
 predict_data=${5:-"all"}
 project=${6:-"vision/enhance/llie"}
 use_data_dir=${7:-"yes"}
+checkpoint=${8:-"best"}
 
 read -e -i "$model"        -p "Model [all ${models[*]}]: " model
 read -e -i "$variant"      -p "Variant: " variant
-read -e -i "$task"         -p "Task [train, evaluate, predict]: " task
+read -e -i "$task"         -p "Task [train, evaluate, predict, plot]: " task
 read -e -i "$train_data"   -p "Train data [all ${train_datasets[*]}]: " train_data
 read -e -i "$predict_data" -p "Predict data [all ${predict_datasets[*]}]: " predict_data
 read -e -i "$project"      -p "Project: " project
 read -e -i "$use_data_dir" -p "Use data_dir [yes, no]: " use_data_dir
+read -e -i "$checkpoint"   -p "Checkpoint type [best, last]: " checkpoint
 
 echo -e "\n"
 machine=$(echo $machine | tr '[:upper:]' '[:lower:]')
@@ -106,7 +108,7 @@ model=($(echo $model | tr ',' '\n'))
 # echo "${model[*]}"
 variant=$(echo $variant | tr '[:upper:]' '[:lower:]')
 variant=($(echo "$variant" | tr ',' '\n'))
-echo "${variant[*]}"
+# echo "${variant[*]}"
 task=$(echo $task | tr '[:upper:]' '[:lower:]')
 train_data=$(echo $train_data | tr '[:upper:]' '[:lower:]')
 train_data=($(echo $train_data | tr ',' '\n'))
@@ -412,28 +414,10 @@ if [ "$task" == "train" ]; then
           --checkpoints-dir "${train_dir}"
       # Zero-DCEv2
       elif [ "${model[i]}" == "zerodcev2" ]; then
-        if [ "${variant[j]}" == "all" ]; then
-          variants=(
-            "0000"
-            "0100" "0101" "0102" "0103" "0104" "0105" "0106"
-            "0200" "0201" "0202" "0203" "0204" "0205" "0206" "0207" "0208" "0209" "0210" "0211" "0212" "0213" "0214" "0215"
-            "0300" "0301" "0302" "0303" "0304" "0305"
-            "0400" "0401" "0402" "0403" "0404"
-            "0500"
-            "0600"
-          )
-          for (( v=0; v<${#variants[@]}; v++ )); do
-            model_variant="${model[i]}-${variants[v]}"
-            train_dir="${root_dir}/run/train/${project}/${model_variant}-${train_data[0]}"
-            python -W ignore train.py \
-              --name "${model_variant}-${train_data[0]}" \
-              --variant "${variants[v]}"
-          done
-        else
-          python -W ignore train.py \
-            --name "${model_variant}-${train_data[0]}" \
-            --variant "${variant[j]}"
-        fi
+        python -W ignore train.py \
+          --name "${model_variant}-${train_data[0]}" \
+          --variant "${variant[j]}" \
+          --max-epochs 100
       fi
     done
   done
@@ -459,9 +443,9 @@ if [ "$task" == "predict" ]; then
         model_variant="${model[i]}"
       fi
       train_dir="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}"
-      train_weights_pt="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/best.pt"
-      train_weights_pth="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/best.pth"
-      train_weights_ckpt="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/best.ckpt"
+      train_weights_pt="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/${checkpoint}.pt"
+      train_weights_pth="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/${checkpoint}.pth"
+      train_weights_ckpt="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/${checkpoint}.ckpt"
       zoo_weights_pt="${root_dir}/zoo/${project}/${model[i]}/${model_variant}-${train_data[0]}.pt"
       zoo_weights_pth="${root_dir}/zoo/${project}/${model[i]}/${model_variant}-${train_data[0]}.pth"
       zoo_weights_ckpt="${root_dir}/zoo/${project}/${model[i]}/${model_variant}-${train_data[0]}.ckpt"
@@ -641,48 +625,18 @@ if [ "$task" == "predict" ]; then
               --output-dir "${predict_dir}"
           # Zero-DCEv2
           elif [ "${model[i]}" == "zerodcev2" ]; then
-            if [ "${variant[i]}" == "all" ]; then
-              variants=(
-                "0000"
-                "0100" "0101" "0102" "0103" "0104" "0105" "0106"
-                "0200" "0201" "0202" "0203" "0204" "0205" "0206" "0207" "0208" "0209" "0210" "0211" "0212" "0213" "0214" "0215"
-                "0300" "0301" "0302" "0303" "0304" "0305"
-                "0400" "0401" "0402" "0403" "0404"
-                "0500"
-                "0600"
-              )
-              for (( v=0; v<${#variants[@]}; v++ )); do
-                model_variant="${model[i]}-${variants[v]}"
-                weights="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/weights/best.pt"
-                python -W ignore predict.py \
-                  --data "${low_data_dirs[k]}" \
-                  --config "${model[i]}_llie" \
-                  --root "${predict_dir}" \
-                  --project "${project}/${model[i]}" \
-                  --variant "${variants[v]}" \
-                  --weights "${weights}" \
-                  --num_iters 6 \
-                  --unsharp_sigma 1.5 \
-                  --image-size 512 \
-                  --output-dir "${predict_dir}"
-              done
-            else
-              # python -W ignore train.py \
-              #   --name "${model_variant}-${train_data[0]}" \
-              #   --variant "${variant}"
-              weights="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/weights/best.pt"
-              python -W ignore predict.py \
-                --data "${low_data_dirs[k]}" \
-                --config "${model[i]}_llie" \
-                --root "${predict_dir}" \
-                --project "${project}/${model[i]}" \
-                --variant "${variant[0]}" \
-                --weights "${weights}" \
-                --num_iters 6 \
-                --unsharp_sigma 1.5 \
-                --image-size 512 \
-                --output-dir "${predict_dir}"
-            fi
+            weights="${root_dir}/run/train/${project}/${model[i]}/${model_variant}-${train_data[0]}/weights/${checkpoint}.pt"
+            python -W ignore predict.py \
+              --data "${low_data_dirs[k]}" \
+              --config "${model[i]}_llie" \
+              --root "${predict_dir}" \
+              --project "${project}/${model[i]}" \
+              --variant "${variant[j]}" \
+              --weights "${weights}" \
+              --num_iters 8 \
+              --unsharp_sigma 2.5 \
+              --image-size 512 \
+              --output-dir "${predict_dir}"
           fi
         done
       fi
@@ -712,7 +666,8 @@ if [ "$task" == "evaluate" ]; then
             --image-dir "${predict_dir}" \
             --target-dir "${root_dir}/data/llie/test/${predict_data[k]}/high" \
             --result-file "${current_dir}" \
-            --model-name "${model[i]}" \
+            --name "${model[i]}" \
+            --variant "${variant[j]}" \
             --image-size 512 \
             --resize \
             --test-y-channel \
@@ -736,5 +691,24 @@ if [ "$task" == "evaluate" ]; then
 fi
 
 
+# Plot
+if [ "$task" == "plot" ]; then
+  echo -e "\\nPlot"
+  cd "${current_dir}" || exit
+  if [ "${use_data_dir}" == "yes" ]; then
+    predict_dir="${root_dir}/data/llie/predict"
+    output_dir="${root_dir}/data/llie/compare"
+  else
+    predict_dir="${root_dir}/run/predict/${project}"
+    output_dir="${root_dir}/run/predict/${project}/compare"
+  fi
+  python -W ignore plot.py \
+    --image-dir "${predict_dir}" \
+    --image-size 512 \
+    --num-cols 8 \
+    --output-dir "${output_dir}"
+fi
+
+
 # Done
-cd "${root_dir}" || exit
+cd "${current_dir}" || exit

@@ -13,11 +13,14 @@ import numpy as np
 import torch
 
 from mon.globals import DETECTORS
-from mon.vision import core, tracking
+from mon.vision import core, track
 from mon.vision.detect import base
 from ultralytics.nn import tasks
 from ultralytics.yolo.data import augment
 from ultralytics.yolo.utils import checks, ops
+
+console      = core.console
+_current_dir = core.Path(__file__).absolute().parent
 
 
 # region YOLOv8
@@ -96,7 +99,7 @@ class YOLOv8(base.Detector):
         input  : torch.Tensor,
         pred   : torch.Tensor,
         *args, **kwargs
-    ) -> list[np.ndarray] | list[list[tracking.Instance]]:
+    ) -> list[np.ndarray] | list[list[track.Instance]]:
         """Postprocessing step.
 
         Args:
@@ -131,7 +134,7 @@ class YOLOv8(base.Detector):
                 for *xyxy, conf, cls in p:
                     classlabel = self.classlabels.get_class(key="id", value=cls)
                     instances.append(
-                        tracking.Instance(
+                        track.Instance(
                             bbox        = xyxy,
                             confidence  = conf,
                             classlabel  = classlabel,

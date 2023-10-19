@@ -21,9 +21,11 @@ __all__ = [
 import numpy as np
 import torch
 
-from mon import nn
 from mon.globals import ShapeCode
-from mon.vision import core
+from mon.vision import core, nn
+
+console      = core.console
+_current_dir = core.Path(__file__).absolute().parent
 
 
 # region Property
@@ -114,7 +116,7 @@ def get_bbox_intersection_union(
     """Compute the intersection and union of two sets of boxes.
     
     References:
-        https://github.com/kuangliu/torchcv/blob/master/torchcv/utils/box.py
+        `<https://github.com/kuangliu/torchcv/blob/master/torchcv/utils/box.py>`__
     
     Args:
         bbox1: The first set of boxes in XYXY format.
@@ -421,15 +423,15 @@ def clip_bbox(
     which lose too much area as a result of the augmentation.
     
     Args:
-        bbox: Bounding boxes of shape [..., 4] and in XYXY format.
-        image_size: An image size in HW format.
+        bbox: Bounding boxes of shape :math:`[..., 4]` and in XYXY format.
+        image_size: An image size in :math:`[H, W]` format.
         drop_ratio: If the fraction of a bounding box left in the image after
             being clipped is less than :param:`drop_ratio` the bounding box is
             dropped. If :param:`drop_ratio` == 0, don't drop any bounding boxes.
-            Default: 0.0.
+            Default: ``0.0``.
         
     Returns:
-        Clipped bounding boxes of shape [N, 4].
+        Clipped bounding boxes of shape :math:`[N, 4]`.
     """
     h, w       = core.get_hw(size=image_size)
     area       = get_bbox_area(bbox=bbox)

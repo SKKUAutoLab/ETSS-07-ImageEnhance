@@ -24,6 +24,11 @@ __all__ = [
 import numpy as np
 import scipy
 
+from mon.vision import core
+
+console      = core.console
+_current_dir = core.Path(__file__).absolute().parent
+
 
 # region Boolean Distance
 
@@ -508,9 +513,9 @@ def directed_hausdorff(
     between pairs are calculated using a Euclidean metric.
     
     Args:
-        u: An [M, N] array-like input.
-        v: An [M, N] array-like input.
-        seed: Default: 0, a random shuffling of :param:`u` and :param:`v`
+        u: An :math:`[M, N]` array-like input.
+        v: An :math:`[M, N]` array-like input.
+        seed: Default: ``0``, a random shuffling of :param:`u` and :param:`v`
             that guarantees reproducibility.
 
     Returns:

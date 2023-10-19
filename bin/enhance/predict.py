@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import importlib
 import socket
 import time
@@ -132,7 +131,7 @@ def predict(args: dict):
                 input       = image.to(model.device)
                 start_time  = time.time()
                 output      = model(input=input, augment=False, profile=False, out_index=-1)
-                run_time    = (time.time() - start_time)
+                run_time    = time.time() - start_time
                 output      = output[-1] if isinstance(output, (list, tuple)) else output
                 if resize:
                     output  = mon.resize(input=image, size=[h0, w0])
@@ -157,7 +156,7 @@ def predict(args: dict):
 @click.option("--batch-size",  default=1,                     type=int,                      help="Total Batch size for all GPUs.")
 @click.option("--image-size",  default=512,                   type=int,                      help="Image sizes.")
 @click.option("--resize",      is_flag=True)
-@click.option("--output-dir",  default=mon.RUN_DIR/"predict", type=click.Path(exists=False), help="Save results to root/project/name.")
+@click.option("--output-dir",  default=mon.RUN_DIR/"predict", type=click.Path(exists=False), help="Save results location.")
 @click.option("--verbose",     is_flag=True)
 @click.pass_context
 def main(
