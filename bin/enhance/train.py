@@ -21,13 +21,13 @@ console = mon.console
 
 hosts = {
 	"lp-labdesktop-01": {
-        "config"     : "zerodcev2_sice_zerodce",
+        "config"     : "gcenet_sice_zerodce",
         "root"       : mon.RUN_DIR / "train",
-        "project"    : "vision/enhance/llie/zerodcev2",
-        "name"       : "zerodcev2-sice-zerodce",
+        "project"    : "vision/enhance/llie/gcenet",
+        "name"       : "gcenet-sice-zerodce",
         "variant"    : None,
         "weights"    : None,
-        "batch_size" : 16,
+        "batch_size" : 8,
         "image_size" : (512, 512),
         "accelerator": "auto",
         "devices"    : 1,
@@ -37,13 +37,13 @@ hosts = {
         "exist_ok"   : False,
 	},
     "lp-labdesktop-02": {
-        "config"     : "zerodcev2_sice_zerodce",
+        "config"     : "zeroadce_sice_zerodce",
         "root"       : mon.RUN_DIR / "train",
-        "project"    : "vision/enhance/llie/zerodcev2",
-        "name"       : "zerodcev2-sice-zerodce",
+        "project"    : "vision/enhance/llie/zerodace",
+        "name"       : "zerodace-sice-zerodce",
         "variant"    : None,
         "weights"    : None,
-        "batch_size" : 4,
+        "batch_size" : 16,
         "image_size" : (512, 512),
         "accelerator": "auto",
         "devices"    : 1,
@@ -69,13 +69,13 @@ hosts = {
         "exist_ok"   : False,
 	},
     "vsw-ws02": {
-        "config"     : "zerodcev2_sice_zerodce",
+        "config"     : "gcenet_sice_zerodce",
         "root"       : mon.RUN_DIR / "train",
-        "project"    : "vision/enhance/llie/zerodcev2",
-        "name"       : "zerodcev2-sice-zerodce",
+        "project"    : "vision/enhance/llie/gcenet",
+        "name"       : "gcenet-sice-zerodce",
         "variant"    : None,
         "weights"    : None,
-        "batch_size" : 16,
+        "batch_size" : 32,
         "image_size" : (512, 512),
         "accelerator": "auto",
         "devices"    : 1,
@@ -85,17 +85,17 @@ hosts = {
         "exist_ok"   : False,
 	},
     "vsw-ws-03": {
-        "config"     : "zerodcev2_sice_zerodce",
+        "config"     : "zeroadce_sice_zerodce",
         "root"       : mon.RUN_DIR / "train",
-        "project"    : "vision/enhance/llie/zerodcev2",
-        "name"       : "zerodcev2-sice-zerodce",
+        "project"    : "vision/enhance/llie/zeroadce",
+        "name"       : "zeroadce-sice-zerodce",
         "variant"    : None,
         "weights"    : None,
-        "batch_size" : 16,
+        "batch_size" : 32,
         "image_size" : (512, 512),
         "accelerator": "auto",
         "devices"    : 1,
-        "max_epochs" : None,
+        "max_epochs" : 300,
         "max_steps"  : None,
         "strategy"   : "auto",
         "exist_ok"   : False,
@@ -155,8 +155,9 @@ def train(args: dict):
         val_dataloaders   = datamodule.val_dataloader,
         ckpt_path         = ckpt,
     )
+    console.log(f"Model: {args['model']['fullname']}")  # Log
     console.log("[green]Done")
-
+    
 
 @click.command(context_settings=dict(
     ignore_unknown_options = True,
@@ -174,7 +175,7 @@ def train(args: dict):
 @click.option("--devices",     default=0,                   type=int,                      help="Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.")
 @click.option("--max-epochs",  default=100,                 type=int,                      help="Stop training once this number of epochs is reached.")
 @click.option("--max-steps",   default=None,                type=int,                      help="Stop training once this number of steps is reached.")
-@click.option("--strategy",    default="auto",              type=str,                      help="Supports different training strategies with aliases as well custom strategies.")
+@click.option("--strategy",    default="auto",              type=str,                      help="Supports different training strategies with aliases as well as custom strategies.")
 @click.option("--exist-ok",    is_flag=True,                                               help="Whether to overwrite existing experiment.")
 @click.pass_context
 def main(
@@ -218,6 +219,7 @@ def main(
     root        = root        or host_args.get("root",        None)
     name        = name        or host_args.get("name",        None)  or config_args.model["name"]
     variant     = variant     or host_args.get("variant",     None)  or config_args.model["variant"]
+    variant     = None if variant in ["", "none", "None"] else variant
     weights     = weights     or host_args.get("weights",     None)  or config_args.model["weights"]
     batch_size  = batch_size  or host_args.get("batch_size",  None)  or config_args.data["batch_size"]
     image_size  = image_size  or host_args.get("image_size",  None)  or config_args.data["image_size"]

@@ -140,7 +140,7 @@ See Also: :class:`lightning.pytorch.loggers.tensorboard.TensorBoardLogger`
 
 debug = {
     "every_best_epoch": True,   # Show only the best epochs.
-    "every_n_epochs"  : 200,    # Number of epochs between debugging (0 = disable).
+    "every_n_epochs"  : 500,    # Number of epochs between debugging (0 = disable).
     "image_quality"   : 95,     # Image quality to be saved.
     "max_n"           : 8,      # Show max `n` images.
     "nrow"            : 8,      # The maximum number of items to display in a row
@@ -163,7 +163,7 @@ trainer = {
     "default_root_dir"                 : None,    # Default path for logs and weights.
     "detect_anomaly"                   : False,   # Enable anomaly detection for the autograd engine.
     "deterministic"                    : False,   # PyTorch operations must use deterministic algorithms.
-    "devices"                          : None,    # Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.
+    "devices"                          : "auto",  # Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.
     "enable_checkpointing"             : True,
     "enable_model_summary"             : True,
     "enable_progress_bar"              : True,
