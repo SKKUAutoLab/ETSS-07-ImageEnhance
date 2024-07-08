@@ -21,11 +21,38 @@ chmod +x install.sh
 bash -i install.sh
 ```
 
+## Directory Organization
+
+- Look at "private.docx" for more information.
+
+```text
+code
+ |_ mon
+     |_ bin                  # Executable, main() files, CLI.
+     |_ data                 # Default location to store working datasets.
+     |_ docs                 # Documentation.
+     |_ env                  # Environment variables.
+     |_ src                  # Source code.
+     |   |_ mon              # Python code.
+     |       |_ config       # Configuration functionality.
+     |       |_ core         # Base functionality for other packages.
+     |       |_ data         # Data processing package.
+     |       |_ nn           # Machine learning package.
+     |       |_ vision       # Computer vision package.
+     |_ zoo                  # Model zoo.
+     |_ .gitignore           # 
+     |_ install.sh           # Installation script.
+     |_ LICENSE              #
+     |_ mkdocs.yaml          # mkdocs setup.
+     |_ pyproject.toml       # 
+     |_ README.md            # Github Readme.
+```
+
 ## Cite
 If you find our work useful, please cite the following:
 ```text
 @misc{Pham2022,  
-    author       = {Long Hoang Pham},  
+    author       = {Long Hoang Pham, Duong Nguyen-Ngoc Tran, Quoc Pham-Nam Ho},  
     title        = {🐈 mon},  
     publisher    = {GitHub},
     journal      = {GitHub repository},

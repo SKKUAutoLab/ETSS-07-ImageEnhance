@@ -111,27 +111,8 @@ nav:
   - Home: index.md
   - "Get Started":
       - "Quick Glance": get-started/quick-glance.md
-  - "Tutorials":
-      - tutorial/index.md
-  - "How-To Guides":
-      - how-to/index.md
-      - "Dev Guideline": how-to/dev-guidelines.md
-  - "API Explanation":
-      - explanation/index.md
-      - "mon":
-          - explanation/mon/index.md
-          - "foundation":
-              - explanation/mon/foundation/index.md
-          - "coreml":
-              - explanation/mon/coreml/index.md
-          - "createml":
-              - explanation/mon/createml/index.md
-          - "vision":
-              - explanation/mon/vision/index.md
-      - "app":
-          - explanation/app/index.md
-      - "lib":
-          - explanation/lib/index.md
+  - "Guides":
+      - "Style Guide": guide/styleguide.md
   - "Reference":
       - reference/index.md
 
