@@ -1,0 +1,28 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : ~
+model       : ~
+data        : ~
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : ~
+save_dir    : ~
+weights     : ~
+device      : ~
+local_rank  : ~
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : ~
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific

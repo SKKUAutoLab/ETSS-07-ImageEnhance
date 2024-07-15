@@ -1,0 +1,25 @@
+#
+#     /\_____/\
+#    /  o   o  \
+#   ( ==  ^  == )
+#    )         (
+#   (           )
+#  ( (  )   (  ) )
+# (__(__)___(__)__)
+#
+[tool.poetry]
+name        = "yolov7"
+version     = "0.1.0"
+description = "YOLOv7"
+license     = "MIT License"
+authors     = [
+]
+packages = [
+    {include="yolov7", from=".."},
+]
+include  = []
+exclude  = []
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
