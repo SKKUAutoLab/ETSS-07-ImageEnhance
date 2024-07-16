@@ -111,7 +111,7 @@ def predict(args: argparse.Namespace):
     resize      = args.resize
     benchmark   = args.benchmark
     
-    config_path = args.config_path
+    config_path = _current_dir / args.config_path  # "./models/cldm_v15.yaml"
     init_ckpt   = mon.ZOO_DIR / "vision/enhance/llie/quadprior/quadprior/coco/control_sd15_init.ckpt"
     ae_ckpt     = mon.ZOO_DIR / "vision/enhance/llie/quadprior/quadprior/coco/ae_epoch=00_step=7000.ckpt"
     
