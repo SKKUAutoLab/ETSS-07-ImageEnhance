@@ -11,7 +11,7 @@ project     : ~
 variant     : ~
 fullname    : "quadprior_coco"
 save_dir    : ~
-weights     : ~
+weights     : "vision/enhance/llie/quadprior/quadprior/coco/control_sd15_coco_final.ckpt"
 device      : ~
 local_rank  : ~
 launcher    : ~
@@ -35,3 +35,4 @@ lr              : 1e-4
 logger_freq     : 1000
 sd_locked       : True
 only_mid_control: False
+use_float16     : False
