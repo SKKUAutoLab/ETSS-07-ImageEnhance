@@ -419,11 +419,11 @@ class LabelingWidget(LabelDialog):
         toggle_keep_prev_mode.setChecked(self._config["keep_prev"])
 
         toggle_auto_use_last_label_mode = action(
-            self.tr("Auto Use Last Label"),
+            self.tr("Auto Use Last Annotation"),
             self.toggle_auto_use_last_label,
             shortcuts["toggle_auto_use_last_label"],
             None,
-            self.tr('Toggle "Auto Use Last Label" mode'),
+            self.tr('Toggle "Auto Use Last Annotation" mode'),
             checkable=True,
         )
         toggle_auto_use_last_label_mode.setChecked(
@@ -624,7 +624,7 @@ class LabelingWidget(LabelDialog):
             tip=self.tr("Save cropped image. (Support rectangle/rotation/polygon shape_type)"),
         )
         label_manager = action(
-            self.tr("&Label Manager"),
+            self.tr("&Annotation Manager"),
             self.label_manager,
             icon="edit",
             tip=self.tr("Manage Labels: Rename, Delete, Show/Hide, Adjust Color"),
@@ -1021,7 +1021,7 @@ class LabelingWidget(LabelDialog):
         }
 
         edit = action(
-            self.tr("&Edit Label"),
+            self.tr("&Edit Annotation"),
             self.edit_label,
             shortcuts["edit_label"],
             "edit",
@@ -1049,7 +1049,7 @@ class LabelingWidget(LabelDialog):
             self.tr("Auto Labeling"),
         )
 
-        # Label list context menu.
+        # Annotation list context menu.
         label_menu = QtWidgets.QMenu()
         utils.add_actions(label_menu, (edit, delete))
         self.label_list.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -4675,14 +4675,14 @@ class LabelingWidget(LabelDialog):
             f"*.{fmt.data().decode()}"
             for fmt in QtGui.QImageReader.supportedImageFormats()
         ]
-        filters = self.tr("Image & Label files (%s)") % " ".join(
+        filters = self.tr("Image & Annotation files (%s)") % " ".join(
             formats + [f"*{LabelFile.suffix}"]
         )
         file_dialog = FileDialogPreview(self)
         file_dialog.setFileMode(FileDialogPreview.ExistingFile)
         file_dialog.setNameFilter(filters)
         file_dialog.setWindowTitle(
-            self.tr("%s - Choose Image or Label file") % __appname__,
+            self.tr("%s - Choose Image or Annotation file") % __appname__,
         )
         file_dialog.setWindowFilePath(path)
         file_dialog.setViewMode(FileDialogPreview.Detail)
@@ -4746,7 +4746,7 @@ class LabelingWidget(LabelDialog):
 
     def save_file_dialog(self):
         caption = self.tr("%s - Choose File") % __appname__
-        filters = self.tr("Label files (*%s)") % LabelFile.suffix
+        filters = self.tr("Annotation files (*%s)") % LabelFile.suffix
         if self.output_dir:
             file_dialog = QtWidgets.QFileDialog(
                 self, caption, self.output_dir, filters
@@ -4774,7 +4774,7 @@ class LabelingWidget(LabelDialog):
             self,
             self.tr("Choose File"),
             default_labelfile_name,
-            self.tr("Label files (*%s)") % LabelFile.suffix,
+            self.tr("Annotation files (*%s)") % LabelFile.suffix,
         )
         if isinstance(filename, tuple):
             filename, _ = filename
@@ -4823,7 +4823,7 @@ class LabelingWidget(LabelDialog):
         label_file = self.get_label_file()
         if osp.exists(label_file):
             os.remove(label_file)
-            logger.info("Label file is removed: %s", label_file)
+            logger.info("Annotation file is removed: %s", label_file)
 
             item = self.file_list_widget.currentItem()
             item.setCheckState(Qt.Unchecked)
@@ -4863,7 +4863,7 @@ class LabelingWidget(LabelDialog):
             label_file = osp.join(label_dir_path, label_name)
             if osp.exists(label_file):
                 os.remove(label_file)
-                logger.info("Label file is removed: %s", image_file)
+                logger.info("Annotation file is removed: %s", image_file)
 
             filename = None
             if self.filename is None:

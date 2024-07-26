@@ -378,7 +378,7 @@ class RTDETRDecoder(nn.Module):
             act (nn.Module): Activation function. Default is nn.ReLU.
             eval_idx (int): Evaluation index. Default is -1.
             nd (int): Number of denoising. Default is 100.
-            label_noise_ratio (float): Label noise ratio. Default is 0.5.
+            label_noise_ratio (float): Annotation noise ratio. Default is 0.5.
             box_noise_scale (float): Box noise scale. Default is 1.0.
             learnt_init_query (bool): Whether to learn initial query embeddings. Default is False.
         """

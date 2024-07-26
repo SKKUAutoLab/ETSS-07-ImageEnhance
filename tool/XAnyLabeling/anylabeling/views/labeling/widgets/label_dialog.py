@@ -50,7 +50,7 @@ class LabelModifyDialog(QtWidgets.QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle("Label Change Manager")
+        self.setWindowTitle("Annotation Change Manager")
         self.setWindowFlags(self.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         self.resize(600, 400)
         self.move_to_center()
@@ -447,7 +447,7 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit.textChanged.connect(self.update_flags)
         # text edit
         self.edit_description = QtWidgets.QTextEdit()
-        self.edit_description.setPlaceholderText("Label description")
+        self.edit_description.setPlaceholderText("Annotation description")
         self.edit_description.setFixedHeight(50)
         layout.addWidget(self.edit_description)
         self.setLayout(layout)
@@ -594,7 +594,7 @@ class LabelDialog(QtWidgets.QDialog):
         items = self.label_list.findItems(text, QtCore.Qt.MatchFixedString)
         if items:
             if len(items) != 1:
-                logger.warning("Label list has duplicate '%s'", text)
+                logger.warning("Annotation list has duplicate '%s'", text)
             self.label_list.setCurrentItem(items[0])
             row = self.label_list.row(items[0])
             self.edit.completer().setCurrentRow(row)

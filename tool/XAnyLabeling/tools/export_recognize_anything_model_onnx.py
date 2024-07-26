@@ -284,13 +284,13 @@ if __name__ == "__main__":
         "--tag_list",
         type=str,
         default="ram/data/ram_tag_list.txt",
-        help="RAM Tag Label List",
+        help="RAM Tag Annotation List",
     )
     parser.add_argument(
         "--tag_list_chinese",
         type=str,
         default="ram/data/ram_tag_list_chinese.txt",
-        help="RAM Tag Chinese Label List",
+        help="RAM Tag Chinese Annotation List",
     )
     args = parser.parse_args()
 

@@ -286,7 +286,7 @@ def parse_opt(known=False):
     parser.add_argument('--optimizer', choices=['SGD', 'Adam', 'AdamW', 'RMSProp'], default='Adam', help='optimizer')
     parser.add_argument('--lr0', type=float, default=0.001, help='initial learning rate')
     parser.add_argument('--decay', type=float, default=5e-5, help='weight decay')
-    parser.add_argument('--label-smoothing', type=float, default=0.1, help='Label smoothing epsilon')
+    parser.add_argument('--label-smoothing', type=float, default=0.1, help='Annotation smoothing epsilon')
     parser.add_argument('--cutoff', type=int, default=None, help='Model layer cutoff index for Classify() head')
     parser.add_argument('--dropout', type=float, default=None, help='Dropout (fraction)')
     parser.add_argument('--verbose', action='store_true', help='Verbose mode')

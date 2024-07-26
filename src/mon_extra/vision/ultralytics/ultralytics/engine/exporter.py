@@ -1032,7 +1032,7 @@ class Exporter:
         model_meta.author = self.metadata["author"]
         model_meta.license = self.metadata["license"]
 
-        # Label file
+        # Annotation file
         tmp_file = Path(file).parent / "temp_meta.txt"
         with open(tmp_file, "w") as f:
             f.write(str(self.metadata))

@@ -168,7 +168,7 @@ class LabelConverter:
             "info": {
                 "year": 2023,
                 "version": __version__,
-                "description": "COCO Label Conversion",
+                "description": "COCO Annotation Conversion",
                 "contributor": "CVHub",
                 "url": "https://github.com/CVHub520/X-AnyLabeling",
                 "date_created": str(date.today()),
