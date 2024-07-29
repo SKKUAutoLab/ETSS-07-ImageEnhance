@@ -1,0 +1,33 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "depth_anything_v2"
+model       : "depth_anything_v2_vitb"
+data        : ~
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : ~
+save_dir    : ~
+weights     : ~
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 200
+steps       : ~
+imgsz       : 518
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+encoder     : "vitb"
+features    : 128
+out_channels: [96, 192, 384, 768]
+pred_only   : True
+grayscale   : False
