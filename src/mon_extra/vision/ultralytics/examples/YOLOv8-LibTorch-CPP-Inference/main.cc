@@ -77,7 +77,7 @@ torch::Tensor xywh2xyxy(const torch::Tensor& x) {
 }
 
 
-// References: https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/cpu/nms_kernel.cpp
+// Reference: https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/cpu/nms_kernel.cpp
 torch::Tensor nms(const torch::Tensor& bboxes, const torch::Tensor& scores, float iou_threshold) {
     if (bboxes.numel() == 0)
         return torch::empty({0}, bboxes.options().dtype(torch::kLong));

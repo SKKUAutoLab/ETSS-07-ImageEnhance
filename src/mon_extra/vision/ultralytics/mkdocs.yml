@@ -401,6 +401,7 @@ nav:
       - Amazon SageMaker: integrations/amazon-sagemaker.md
       - Paperspace Gradient: integrations/paperspace.md
       - Google Colab: integrations/google-colab.md
+      - Kaggle: integrations/kaggle.md
   - HUB:
       - hub/index.md
       - Web:
@@ -424,7 +425,7 @@ nav:
           - Model: hub/sdk/model.md
           - Dataset: hub/sdk/dataset.md
           - Project: hub/sdk/project.md
-          - References:
+          - Reference:
               - base:
                   - api_client: hub/sdk/reference/base/api_client.md
                   - auth: hub/sdk/reference/base/auth.md
@@ -446,7 +447,7 @@ nav:
       - REST API:
           - hub/api/index.md
 
-  - References:
+  - Reference:
       - cfg:
           - __init__: reference/cfg/__init__.md
       - data:
@@ -535,6 +536,7 @@ nav:
       - nn:
           - autobackend: reference/nn/autobackend.md
           - modules:
+              - activation: reference/nn/modules/activation.md
               - block: reference/nn/modules/block.md
               - conv: reference/nn/modules/conv.md
               - head: reference/nn/modules/head.md
@@ -613,9 +615,18 @@ plugins:
       handlers:
         python:
           options:
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
             docstring_style: google
             show_root_heading: true
             show_source: true
+            separate_signature: true
+            line_length: 80
+            show_signature_annotations: true
+            show_symbol_type_heading: true # insiders
+            show_symbol_type_toc: true # insiders
+            show_inheritance_diagram: true # insiders
   - ultralytics:
       add_desc: False
       add_image: True

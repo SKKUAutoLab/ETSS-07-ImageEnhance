@@ -39,8 +39,8 @@ class Analytics:
             writer (object): Video writer object to save the frames.
             im0_shape (tuple): Shape of the input image (width, height).
             title (str): Title of the chart.
-            x_label (str): Annotation for the x-axis.
-            y_label (str): Annotation for the y-axis.
+            x_label (str): Label for the x-axis.
+            y_label (str): Label for the y-axis.
             bg_color (str): Background color of the chart.
             fg_color (str): Foreground (text) color of the chart.
             line_color (str): Line color for line charts.

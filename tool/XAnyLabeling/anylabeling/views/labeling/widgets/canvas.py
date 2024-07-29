@@ -32,8 +32,8 @@ class Canvas(
     zoom_request = QtCore.pyqtSignal(int, QtCore.QPoint)
     scroll_request = QtCore.pyqtSignal(int, int)
     # [Feature] support for automatically switching to editing mode 
-    # when the cursor moves over an object (commit cd84619)
-    # mode_changed = QtCore.pyqtSignal()
+    # when the cursor moves over an object
+    mode_changed = QtCore.pyqtSignal()
     new_shape = QtCore.pyqtSignal()
     show_shape = QtCore.pyqtSignal(int, int, QtCore.QPointF)
     selection_changed = QtCore.pyqtSignal(list)
@@ -93,6 +93,8 @@ class Canvas(
         self.rotating_shape = False
         self.snapping = True
         self.h_shape_is_selected = False
+        self.h_shape_is_hovered = None
+        self.allowed_oop_shape_types = ["rotation"]
         self._painter = QtGui.QPainter()
         self._cursor = CURSOR_DEFAULT
         # Menus:
@@ -307,8 +309,8 @@ class Canvas(
                 self.show_shape.emit(shape_width, shape_height, pos)
 
             color = QtGui.QColor(0, 0, 255)
-            if self.out_off_pixmap(pos):
-                # Don't allow the user to draw outside the pixmap.
+            if self.out_off_pixmap(pos) and self.create_mode not in self.allowed_oop_shape_types:
+                # Don't allow the user to draw outside the pixmap, except for rotation.
                 # Project the point to the pixmap's edges.
                 pos = self.intersection_point(self.current[-1], pos)
             elif (
@@ -455,11 +457,12 @@ class Canvas(
                     )
                 self.setStatusTip(self.toolTip())
                 self.override_cursor(CURSOR_GRAB)
-                # [Feature] Automatically highlight shape when the mouse is moved inside it (commit eeb15c4)
-                # group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
-                # self.select_shape_point(
-                #     pos, multiple_selection_mode=group_mode
-                # )
+                # [Feature] Automatically highlight shape when the mouse is moved inside it
+                if self.h_shape_is_hovered:
+                    group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
+                    self.select_shape_point(
+                        pos, multiple_selection_mode=group_mode
+                    )
                 self.update()
 
                 if shape.shape_type == "rectangle":
@@ -554,13 +557,13 @@ class Canvas(
                         if int(ev.modifiers()) == QtCore.Qt.ControlModifier:
                             self.finalise()
                     # [Feature] support for automatically switching to editing mode 
-                    # when the cursor moves over an object (commit cd84619)
-                    # if (
-                    #     self.create_mode
-                    #     in ["rectangle", "rotation", "circle", "line", "point"]
-                    #     and not self.is_auto_labeling
-                    # ):
-                    #     self.mode_changed.emit()
+                    # when the cursor moves over an object
+                    if (
+                        self.create_mode
+                        in ["rectangle", "rotation", "circle", "line", "point"]
+                        and not self.is_auto_labeling
+                    ):
+                        self.mode_changed.emit()
                 elif not self.out_off_pixmap(pos):
                     # Create new shape.
                     self.current = Shape(shape_type=self.create_mode)
@@ -574,6 +577,15 @@ class Canvas(
                         self.set_hiding()
                         self.drawing_polygon.emit(True)
                         self.update()
+                elif (self.out_off_pixmap(pos) 
+                      and self.create_mode in self.allowed_oop_shape_types):
+                    # Create new shape.
+                    self.current = Shape(shape_type=self.create_mode)
+                    self.current.add_point(pos)
+                    self.line.points = [pos, pos]
+                    self.set_hiding()
+                    self.drawing_polygon.emit(True)
+                    self.update()
             elif self.editing():
                 if self.selected_edge():
                     self.add_point_to_edge()
@@ -798,7 +810,9 @@ class Canvas(
         """Move a vertex. Adjust position to be bounded by pixmap border"""
         index, shape = self.h_vertex, self.h_hape
         point = shape[index]
-        if self.out_off_pixmap(pos):
+        if (self.out_off_pixmap(pos) 
+            and shape.shape_type 
+            not in self.allowed_oop_shape_types):
             pos = self.intersection_point(point, pos)
 
         if shape.shape_type == "rotation":
@@ -807,13 +821,13 @@ class Canvas(
             p2, p3, p4 = self.get_adjoint_points(
                 shape.direction, shape[sindex], pos, index
             )
-            if (
-                self.out_off_pixmap(p2)
-                or self.out_off_pixmap(p3)
-                or self.out_off_pixmap(p4)
-            ):
-                # No need to move if one pixal out of map
-                return
+            # if (
+            #     self.out_off_pixmap(p2)
+            #     or self.out_off_pixmap(p3)
+            #     or self.out_off_pixmap(p4)
+            # ):
+            #     # No need to move if one pixal out of map
+            #     return
             # Move 4 pixal one by one
             shape.move_vertex_by(index, pos - point)
             lindex = (index + 1) % 4
@@ -841,17 +855,26 @@ class Canvas(
 
     def bounded_move_shapes(self, shapes, pos):
         """Move shapes. Adjust position to be bounded by pixmap border"""
-        if self.out_off_pixmap(pos):
+        shape_types = []
+        for shape in shapes:
+            if shape.shape_type in self.allowed_oop_shape_types:
+                shape_types.append(shape.shape_type)
+
+        if self.out_off_pixmap(pos) and len(shape_types) == 0:
             return False  # No need to move
-        o1 = pos + self.offsets[0]
-        if self.out_off_pixmap(o1):
-            pos -= QtCore.QPoint(min(0, int(o1.x())), min(0, int(o1.y())))
-        o2 = pos + self.offsets[1]
-        if self.out_off_pixmap(o2):
-            pos += QtCore.QPoint(
-                min(0, int(self.pixmap.width() - o2.x())),
-                min(0, int(self.pixmap.height() - o2.y())),
-            )
+        if len(shape_types) > 0 and len(shapes) != len(shape_types):
+            return False
+
+        if len(shape_types) == 0:
+            o1 = pos + self.offsets[0]
+            if self.out_off_pixmap(o1):
+                pos -= QtCore.QPoint(min(0, int(o1.x())), min(0, int(o1.y())))
+            o2 = pos + self.offsets[1]
+            if self.out_off_pixmap(o2):
+                pos += QtCore.QPoint(
+                    min(0, int(self.pixmap.width() - o2.x())),
+                    min(0, int(self.pixmap.height() - o2.y())),
+                )
         # XXX: The next line tracks the new position of the cursor
         # relative to the shape, but also results in making it
         # a bit "shaky" when nearing the border and allows it to
@@ -1201,10 +1224,19 @@ class Canvas(
             for shape in self.shapes:
                 if not shape.visible:
                     continue
-                if shape.score is not None:
-                    label = f"{shape.label} {shape.score:.2f}"
-                else:
-                    label = shape.label
+                if shape.label in [
+                    "AUTOLABEL_OBJECT",
+                    "AUTOLABEL_ADD",
+                    "AUTOLABEL_REMOVE",
+                ]:
+                    continue
+                label = (
+                    f"id:{shape.group_id} " if shape.group_id is not None else ""
+                ) + (
+                    f"{shape.label}"
+                ) + (
+                    f" {shape.score:.2f}" if shape.score is not None else ""
+                )
                 if not label:
                     continue
                 d = shape.point_size / shape.scale
@@ -1241,10 +1273,19 @@ class Canvas(
                     continue
                 d = 1.5  # default shape sacle
                 shape_type = shape.shape_type
-                if shape.score is not None:
-                    label = f"{shape.label} {shape.score:.2f}"
-                else:
-                    label = shape.label
+                if shape.label in [
+                    "AUTOLABEL_OBJECT",
+                    "AUTOLABEL_ADD",
+                    "AUTOLABEL_REMOVE",
+                ]:
+                    continue
+                label = (
+                    f"id:{shape.group_id} " if shape.group_id is not None else ""
+                ) + (
+                    f"{shape.label}"
+                ) + (
+                    f" {shape.score:.2f}" if shape.score is not None else ""
+                )
                 if not label:
                     continue
                 fm = QtGui.QFontMetrics(p.font())
@@ -1268,6 +1309,7 @@ class Canvas(
                     int(y - d),
                     label,
                 )
+
         # Draw mouse coordinates
         if self.cross_line_show:
             pen = QtGui.QPen(

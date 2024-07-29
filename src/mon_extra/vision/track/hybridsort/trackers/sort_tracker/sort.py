@@ -23,14 +23,14 @@ np.random.seed(0)
 
 
 def linear_assignment(cost_matrix):
-  try:
-    import lap
-    _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-    return np.array([[y[i],i] for i in x if i >= 0]) #
-  except ImportError:
-    from scipy.optimize import linear_sum_assignment
-    x, y = linear_sum_assignment(cost_matrix)
-    return np.array(list(zip(x, y)))
+    try:
+      import lap
+      _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
+      return np.array([[y[i],i] for i in x if i >= 0]) #
+    except ImportError:
+      from scipy.optimize import linear_sum_assignment
+      x, y = linear_sum_assignment(cost_matrix)
+      return np.array(list(zip(x, y)))
 
 
 def iou_batch(bb_test, bb_gt):
@@ -91,8 +91,8 @@ def convert_bbox_to_z(bbox):
   """
   w = bbox[2] - bbox[0]
   h = bbox[3] - bbox[1]
-  x = bbox[0] + w/2.
-  y = bbox[1] + h/2.
+  x = bbox[0] + w/2.0
+  y = bbox[1] + h/2.0
   s = w * h    #scale is just area
   r = w / float(h)
   return np.array([x, y, s, r]).reshape((4, 1))
@@ -266,7 +266,7 @@ class Sort(object):
     for t in reversed(to_del):
       self.trackers.pop(t)
     matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets, trks, self.iou_threshold, args=self.args)
-
+  
     # update matched trackers with assigned detections
     for m in matched:
       self.trackers[m[1]].update(dets[m[0], :])

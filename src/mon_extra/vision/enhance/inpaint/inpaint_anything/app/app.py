@@ -267,7 +267,7 @@ with gr.Blocks() as demo:
                     choices=["Foreground Point",
                                 "Background Point"],
                     value="Foreground Point",
-                    label="Point Annotation",
+                    label="Point Label",
                     interactive=True,
                     show_label=False,
                 )

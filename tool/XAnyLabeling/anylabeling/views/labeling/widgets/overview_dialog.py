@@ -166,7 +166,7 @@ class OverviewDialog(QtWidgets.QDialog):
 
     def get_total_infos(self, start_index: int = -1, end_index: int = -1):
         label_infos = self.get_label_infos(start_index, end_index)
-        total_infos = [["Annotation"] + self.supported_shape + ["Total"]]
+        total_infos = [["Label"] + self.supported_shape + ["Total"]]
         shape_counter = [0 for _ in range(len(self.supported_shape) + 1)]
 
         for label, infos in label_infos.items():

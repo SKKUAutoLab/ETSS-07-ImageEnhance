@@ -66,6 +66,7 @@ from typing import Any
 
 from mon.core import dtype as DT, factory, pathlib
 
+
 # region Directory
 
 _current_file = pathlib.Path(__file__).absolute()
@@ -508,8 +509,8 @@ class TrackState(DT.Enum):
         if isinstance(value, int):
             return cls.from_int(value)
         return None
-    
-    
+
+
 class MovingState(DT.Enum):
     
     """The tracking state of an object when moving through the camera."""
@@ -651,6 +652,7 @@ class Task(DT.Enum):
     DEBLUR   = "deblur"
     DEHAZE   = "dehaze"
     DENOISE  = "denoise"
+    DEPTH    = "depth"
     DERAIN   = "derain"
     DESNOW   = "desnow"
     DETECT   = "detect"
@@ -788,6 +790,34 @@ EXTRA_METRICS     = {
     "uranker"            : {"metric_mode": "NR", "lower_is_better": False, },
 }
 EXTRA_MODELS      = {  # architecture/model (+ variant)
+    # region depth
+    "depth_anything_v2": {
+        "depth_anything_v2_vitb": {
+            "tasks"    : [Task.DEPTH],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_anything_v2",
+            "torch_distributed_launch": True,
+        },
+        "depth_anything_v2_vits": {
+            "tasks"    : [Task.DEPTH],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_anything_v2",
+            "torch_distributed_launch": True,
+        },
+        "depth_anything_v2_vitl": {
+            "tasks"    : [Task.DEPTH],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_anything_v2",
+            "torch_distributed_launch": True,
+        },
+        "depth_anything_v2_vitg": {
+            "tasks"    : [Task.DEPTH],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_anything_v2",
+            "torch_distributed_launch": True,
+        },
+    },
+    # endregion
     # region detect
     "yolor"        : {
         "yolor_d6": {
@@ -920,6 +950,7 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "torch_distributed_launch": False,
         },
     },
+    # endregion
     # region enhance/llie
     "colie"        : {
         "colie": {

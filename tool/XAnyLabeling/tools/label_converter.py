@@ -99,7 +99,7 @@ class BaseLabelConverter:
             "info": {
                 "year": 2023,
                 "version": VERSION,
-                "description": "COCO Annotation Conversion",
+                "description": "COCO Label Conversion",
                 "contributor": "CVHub",
                 "url": "https://github.com/CVHub520/X-AnyLabeling",
                 "date_created": str(date.today()),
@@ -871,7 +871,7 @@ class RotateLabelConverter(BaseLabelConverter):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Annotation Converter")
+    parser = argparse.ArgumentParser(description="Label Converter")
     parser.add_argument(
         "--task",
         default="rectangle",

@@ -16,7 +16,7 @@ import numpy as np
 import torch
 
 from mon import core, nn
-from mon.vision import track_old
+from mon.vision import track
 
 console = core.console
 
@@ -102,7 +102,7 @@ class Detector(ABC):
         self,
         indexes: np.ndarray,
         images : np.ndarray
-    ) -> list[np.ndarray] | list[list[track_old.Instance]]:
+    ) -> list[np.ndarray] | list[list[track.Instance]]:
         """Detect objects in the images.
 
         Args:
@@ -157,7 +157,7 @@ class Detector(ABC):
         input  : torch.Tensor,
         pred   : torch.Tensor,
         *args, **kwargs
-    ) -> list[np.ndarray] | list[list[track_old.Instance]]:
+    ) -> list[np.ndarray] | list[list[track.Instance]]:
         """Postprocessing step.
 
         Args:
