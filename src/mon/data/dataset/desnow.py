@@ -45,18 +45,18 @@ class GTSnow(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TRAIN]
-    _has_test_label = False
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TRAIN]
+    has_test_label = False
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "gtsnow" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -65,13 +65,13 @@ class GTSnow(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = str(img.path)
@@ -79,7 +79,7 @@ class GTSnow(dataset.ImageEnhancementDataset):
                 path  = path.replace("/lq/", "/hq/")
                 path  = core.Path(path)
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="kitti_snow")
@@ -89,18 +89,18 @@ class KITTISnow(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TRAIN]
-    _has_test_label = False
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TRAIN]
+    has_test_label = False
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "kitti_snow" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -109,18 +109,18 @@ class KITTISnow(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="kitti_snow_s")
@@ -130,18 +130,18 @@ class KITTISnowS(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "kitti_snow_s" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
 
             for pattern in patterns:
@@ -151,18 +151,18 @@ class KITTISnowS(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="kitti_snow_m")
@@ -172,18 +172,18 @@ class KITTISnowM(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "kitti_snow_m" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -192,18 +192,18 @@ class KITTISnowM(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="kitti_snow_l")
@@ -213,18 +213,18 @@ class KITTISnowL(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
 
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "kitti_snow_l" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -233,18 +233,18 @@ class KITTISnowL(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="snow100k")
@@ -254,18 +254,18 @@ class Snow100K(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
 
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TRAIN]
-    _has_test_label = False
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TRAIN]
+    has_test_label = False
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "snow100k" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -274,18 +274,18 @@ class Snow100K(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="snow100k_s")
@@ -295,18 +295,18 @@ class Snow100KS(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
 
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "snow100k_s" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -315,18 +315,18 @@ class Snow100KS(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
     
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="snow100k_m")
@@ -336,18 +336,18 @@ class Snow100KM(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "snow100k_m" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -356,18 +356,18 @@ class Snow100KM(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 
 @DATASETS.register(name="snow100k_l")
@@ -377,18 +377,18 @@ class Snow100KL(dataset.ImageEnhancementDataset):
     See Also: :class:`base.ImageEnhancementDataset`.
     """
     
-    _tasks          = [Task.DESNOW]
-    _splits         = [Split.TEST]
-    _has_test_label = True
+    tasks          = [Task.DESNOW]
+    splits         = [Split.TEST]
+    has_test_label = True
     
     def __init__(self, root: core.Path = _default_root_dir, *args, **kwargs):
         super().__init__(root=root, *args, **kwargs)
     
-    def _get_images(self):
+    def get_images(self):
         patterns = [
             self.root / "snow100k_l" / self.split_str / "lq"
         ]
-        self._images: list[anno.ImageAnnotation] = []
+        self.images: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for pattern in patterns:
                 for path in pbar.track(
@@ -397,18 +397,18 @@ class Snow100KL(dataset.ImageEnhancementDataset):
                 ):
                     if path.is_image_file():
                         image = anno.ImageAnnotation(path=path)
-                        self._images.append(image)
+                        self.images.append(image)
 
-    def _get_labels(self):
-        self._labels: list[anno.ImageAnnotation] = []
+    def get_labels(self):
+        self.labels: list[anno.ImageAnnotation] = []
         with core.get_progress_bar(disable=self.disable_pbar) as pbar:
             for img in pbar.track(
-                self._images,
+                self.images,
                 description=f"Listing {self.__class__.__name__} {self.split_str} labels"
             ):
                 path  = img.path.replace("/lq/", "/hq/")
                 label = anno.ImageAnnotation(path=path.image_file())
-                self._labels.append(label)
+                self.labels.append(label)
 
 # endregion
 
@@ -422,20 +422,20 @@ class GTSnowDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
 
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
 
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = GTSnow(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = GTSnow(split=Split.TRAIN, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = GTSnow(split=Split.TRAIN, **self.dataset_kwargs)
 
         if self.classlabels is None:
@@ -454,20 +454,20 @@ class KITTISnowDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
 
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
        
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = KITTISnow(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = KITTISnow(split=Split.TRAIN, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = KITTISnow(split=Split.TRAIN, **self.dataset_kwargs)
 
         if self.classlabels is None:
@@ -487,20 +487,20 @@ class KITTISnowSDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
 
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = KITTISnowS(split=Split.TEST, **self.dataset_kwargs)
             self.val   = KITTISnowS(split=Split.TEST, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = KITTISnowS(split=Split.TEST, **self.dataset_kwargs)
 
         if self.classlabels is None:
@@ -520,20 +520,20 @@ class KITTISnowMDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
 
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = KITTISnowM(split=Split.TEST, **self.dataset_kwargs)
             self.val   = KITTISnowM(split=Split.TEST, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = KITTISnowM(split=Split.TEST, **self.dataset_kwargs)
 
         if self.classlabels is None:
@@ -553,20 +553,20 @@ class KITTISnowLDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
 
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = KITTISnowL(split=Split.TEST, **self.dataset_kwargs)
             self.val   = KITTISnowL(split=Split.TEST, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = KITTISnowL(split=Split.TEST, **self.dataset_kwargs)
 
         if self.classlabels is None:
@@ -586,20 +586,20 @@ class Snow100KDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
     
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = Snow100K(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = Snow100K(split=Split.TRAIN, **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = Snow100K(split=Split.TRAIN, **self.dataset_kwargs)
         
         if self.classlabels is None:
@@ -619,20 +619,20 @@ class Snow100KSDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
     
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = Snow100KS(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = Snow100KS(split=Split.TEST,  **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = Snow100KS(split=Split.TEST,  **self.dataset_kwargs)
         
         if self.classlabels is None:
@@ -652,20 +652,20 @@ class Snow100KMDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
     
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = Snow100KM(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = Snow100KM(split=Split.TEST,  **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = Snow100KM(split=Split.TEST,  **self.dataset_kwargs)
         
         if self.classlabels is None:
@@ -685,20 +685,20 @@ class Snow100KLDataModule(datamodule.DataModule):
     See Also: :class:`base.DataModule`.
     """
     
-    _tasks = [Task.DESNOW]
+    tasks = [Task.DESNOW]
     
     def prepare_data(self, *args, **kwargs):
         if self.classlabels is None:
             self.get_classlabels()
     
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         if self.can_log:
             console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
-        if phase in [None, "training"]:
+        if stage in [None, "train"]:
             self.train = Snow100KL(split=Split.TRAIN, **self.dataset_kwargs)
             self.val   = Snow100KL(split=Split.TEST,  **self.dataset_kwargs)
-        if phase in [None, "testing"]:
+        if stage in [None, "test"]:
             self.test  = Snow100KL(split=Split.TEST,  **self.dataset_kwargs)
         
         if self.classlabels is None:

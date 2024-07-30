@@ -17,6 +17,7 @@ from torch.utils import data
 
 from mon import core
 from mon.data.datastruct.dataset import base
+from mon.globals import Task
 
 console = core.console
 
@@ -25,8 +26,6 @@ console = core.console
 
 class DataModule(lightning.LightningDataModule, ABC):
     """The base class for all datamodules.
-    
-    See Also: :class:`lightning.LightningDataModule`.
     
     Attributes:
         dataset_kwargs: A :class:`dict` containing datasets' default arguments.
@@ -40,9 +39,12 @@ class DataModule(lightning.LightningDataModule, ABC):
         collate_fn: The function used to fused datapoint together when using
             :param:`batch_size` > 1.
         verbose: Verbosity. Default: ``True``.
+    
+    
+    See Also: :class:`lightning.LightningDataModule`.
     """
     
-    tasks = []
+    tasks: list[Task] = []
     
     def __init__(
         self,
@@ -196,20 +198,20 @@ class DataModule(lightning.LightningDataModule, ABC):
         pass
     
     @abstractmethod
-    def setup(self, phase: Literal["training", "testing", None] = None):
+    def setup(self, stage: Literal["train", "test", "predict", None] = None):
         """Use this method to do things on every device:
             - Count number of classes.
             - Build classlabels vocabulary.
-            - Prepare train/val/test splits.
+            - Prepare train/val/test/predict splits.
             - Apply transformations.
             - Define :attr:`collate_fn` for your custom dataset.
 
         Args:
-            phase: The model phase. One of:
-                - ``'training'`` : prepares :attr:`train` and :attr:`val`.
-                - ``'testing'``  : prepares :attr:`test`.
-                - ``'inference'``: prepares :attr:`predict`.
-                - ``None``       : prepares all.
+            stage: The running stage. One of:
+                - ``'train'``  : prepares :attr:`train` and :attr:`val`.
+                - ``'test'``   : prepares :attr:`test`.
+                - ``'predict'``: prepares :attr:`predict`.
+                - ``None``     : prepares all.
                 - Default: ``None``.
         """
         pass
