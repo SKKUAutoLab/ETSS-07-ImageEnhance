@@ -546,11 +546,11 @@ class Model(nn.Module):
         is_cli = (ARGV[0].endswith("yolo") or ARGV[0].endswith("ultralytics")) and any(
             x in ARGV for x in ("predict", "track", "mode=predict", "mode=track")
         )
-
+        
         custom = {"conf": 0.25, "batch": 1, "save": is_cli, "mode": "predict"}  # method defaults
         args = {**self.overrides, **custom, **kwargs}  # highest priority args on the right
         prompts = args.pop("prompts", None)  # for SAM-type models
-
+        
         if not self.predictor:
             self.predictor = predictor or self._smart_load("predictor")(overrides=args, _callbacks=self.callbacks)
             self.predictor.setup_model(model=self.model, verbose=is_cli)

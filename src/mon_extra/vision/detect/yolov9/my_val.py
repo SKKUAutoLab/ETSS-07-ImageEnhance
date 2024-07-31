@@ -37,8 +37,8 @@ from utils.my_torch_utils import select_device, smart_inference_mode
 general.DATASETS_DIR = mon.DATA_DIR
 
 console       = mon.console
-_current_file = mon.Path(__file__).absolute()
-_current_dir  = _current_file.parents[0]
+current_file = mon.Path(__file__).absolute()
+current_dir  = current_file.parents[0]
 
 
 # region Val
