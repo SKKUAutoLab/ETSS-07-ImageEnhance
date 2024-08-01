@@ -1,0 +1,26 @@
+#
+#     /\_____/\
+#    /  o   o  \
+#   ( ==  ^  == )
+#    )         (
+#   (           )
+#  ( (  )   (  ) )
+# (__(__)___(__)__)
+#
+[tool.poetry]
+name        = "yolox"
+version     = "0.3.0"
+description = "YOLOX is a high-performance anchor-free YOLO, exceeding yolov3~v5 with MegEngine, ONNX, TensorRT, ncnn, and OpenVINO supported. Documentation: https://yolox.readthedocs.io/"
+license     = "MIT License"
+authors     = [
+]
+packages = [
+    {include="yolox", from="."},
+]
+# packages = { find = { where = ["."], include = ["yolox", "yolox.*"] } }
+include  = []
+exclude  = []
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
