@@ -10,7 +10,7 @@ from ultralytics import YOLO
 
 console = mon.console
 current_file = mon.Path(__file__).absolute()
-_current_dir = current_file.parents[0]
+current_dir = current_file.parents[0]
 
 ultralytics.utils.DATASETS_DIR = mon.DATA_DIR
 
@@ -27,15 +27,15 @@ def train(args: dict):
 
 def main() -> str:
     # Parse arguments
-    args         = mon.parse_train_args(model_root=_current_dir)
+    args         = mon.parse_train_args(model_root=current_dir)
     # model        = mon.Path(args.model)
-    # model        = model if model.exists() else _current_dir / "config" / model.name
+    # model        = model if model.exists() else current_dir / "config" / model.name
     # model        = str(model.config_file())
     data_        = mon.Path(args.data)
-    data_        = data_ if data_.exists() else _current_dir / "data" / data_.name
+    data_        = data_ if data_.exists() else current_dir / "data" / data_.name
     data_        = str(data_.config_file())
     hyp          = mon.Path(args.hyp)
-    hyp          = hyp if hyp.exists() else _current_dir / "data" / hyp.name
+    hyp          = hyp if hyp.exists() else current_dir / "data" / hyp.name
     hyp          = hyp.yaml_file()
     weights      = mon.to_list(args.weights)
     weights      = weights[0] if isinstance(weights, list | tuple) and len(weights) == 1 else weights

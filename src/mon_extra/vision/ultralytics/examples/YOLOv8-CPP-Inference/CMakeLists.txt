@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Yolov8CPPInference VERSION 0.1)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDEcurrent_dir ON)
 
 # CUDA
 set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda")

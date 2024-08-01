@@ -44,7 +44,7 @@ from utils.plots import plot_evolution, plot_images, plot_results
 from utils.torch_utils import intersect_dicts, is_parallel, ModelEMA, select_device, torch_distributed_zero_first
 from utils.wandb_logging.wandb_utils import check_wandb_resume, WandbLogger
 
-logger        = logging.getLogger(__name__)
+logger       = logging.getLogger(__name__)
 console      = core.console
 current_file = core.Path(__file__).absolute()
 current_dir  = current_file.parents[0]
@@ -641,7 +641,7 @@ def main(
     hostname = socket.gethostname().lower()
     
     # Get config args
-    config = core.parse_config_file(project_root=_current_dir / "config", config=config)
+    config = core.parse_config_file(project_root=current_dir / "config", config=config)
     args   = core.load_config(config)
     
     # Prioritize input args --> config file args
@@ -649,10 +649,10 @@ def main(
     root     = core.Path(root)
     weights  = weights   or args["weights"]
     model    = core.Path(model or args["model"])
-    model    = model if model.exists() else _current_dir / "config/training" / model.name
+    model    = model if model.exists() else current_dir / "config/training" / model.name
     model    = model.config_file()
     data     = core.Path(args["data"])
-    data     = data  if data.exists() else _current_dir / "data" / data.name
+    data     = data  if data.exists() else current_dir / "data" / data.name
     data     = data.config_file()
     project  = root.name or args["project"]
     fullname = fullname  or args["name"]
@@ -660,7 +660,7 @@ def main(
     save_dir = core.Path(save_dir)
     device   = device   or args["device"]
     hyp      = core.Path(args["hyp"])
-    hyp      = hyp if hyp.exists() else _current_dir / "data" / hyp.name
+    hyp      = hyp if hyp.exists() else current_dir / "data" / hyp.name
     hyp      = hyp.config_file()
     epochs   = epochs   or args["epochs"]
     exist_ok = exist_ok or args["exist_ok"]

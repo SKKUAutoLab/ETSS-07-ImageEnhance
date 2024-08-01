@@ -10,7 +10,7 @@ from ultralytics import YOLO
 
 console = mon.console
 current_file = mon.Path(__file__).absolute()
-_current_dir = current_file.parents[0]
+current_dir = current_file.parents[0]
 
 ultralytics.utils.DATASETS_DIR = mon.DATA_DIR
 
@@ -36,7 +36,7 @@ def predict(args: dict):
 
 def main() -> str:
     # Parse args
-    args         = mon.parse_predict_args(model_root=_current_dir)
+    args         = mon.parse_predict_args(model_root=current_dir)
     args.mode    = "predict"
     args.model   = args.weights
     args.project = str(args.save_dir.parent)

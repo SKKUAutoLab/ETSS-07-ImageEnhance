@@ -15,7 +15,7 @@ import torch.optim
 import mon
 from depth_anything_v2.dpt import DepthAnythingV2
 
-console       = mon.console
+console      = mon.console
 current_file = mon.Path(__file__).absolute()
 current_dir  = current_file.parents[0]
 
@@ -113,7 +113,7 @@ def predict(args: argparse.Namespace):
 # region Main
 
 def main() -> str:
-    args = mon.parse_predict_args(model_root=_current_dir)
+    args = mon.parse_predict_args(model_root=current_dir)
     predict(args)
 
 

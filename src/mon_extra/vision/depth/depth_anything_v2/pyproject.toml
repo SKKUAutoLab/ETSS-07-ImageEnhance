@@ -15,7 +15,7 @@ license     = "Depth-Anything-V2-Small model is under the Apache-2.0 license. De
 authors     = [
 ]
 packages = [
-    {include="depth_anything_v2", from=".."},
+    {include="depth_anything_v2"},
 ]
 include  = []
 exclude  = []
