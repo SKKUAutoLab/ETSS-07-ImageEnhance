@@ -15,9 +15,8 @@ license     = "MIT License"
 authors     = [
 ]
 packages = [
-    {include="yolox", from="."},
+    {include="yolox"},
 ]
-# packages = { find = { where = ["."], include = ["yolox", "yolox.*"] } }
 include  = []
 exclude  = []
 

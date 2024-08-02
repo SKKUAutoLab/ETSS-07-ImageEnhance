@@ -174,12 +174,9 @@ class DepthAnythingV2(nn.Module):
     
     def forward(self, x):
         patch_h, patch_w = x.shape[-2] // 14, x.shape[-1] // 14
-        
         features = self.pretrained.get_intermediate_layers(x, self.intermediate_layer_idx[self.encoder], return_class_token=True)
-        
-        depth = self.depth_head(features, patch_h, patch_w)
-        depth = F.relu(depth)
-        
+        depth    = self.depth_head(features, patch_h, patch_w)
+        depth    = F.relu(depth)
         return depth.squeeze(1)
     
     @torch.no_grad()

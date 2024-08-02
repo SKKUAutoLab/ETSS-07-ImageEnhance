@@ -30,4 +30,4 @@ encoder     : "vits"
 features    : 64
 out_channels: [48, 96, 192, 384]
 pred_only   : True
-grayscale   : False
+grayscale   : True

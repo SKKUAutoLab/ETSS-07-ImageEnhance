@@ -11,27 +11,17 @@ __all__ = [
     "D2CE",
 ]
 
-import sys
 from typing import Any, Literal
 
 import torch
 
 from mon import core, nn
 from mon.core import _callable
-from mon.globals import MODELS, Scheme, ZOO_DIR
+from mon.globals import MODELS, Scheme
 from mon.vision import filtering, geometry, prior
+from mon.vision.depth import depth_anything_v2
 from mon.vision.enhance.llie import base
 
-try:
-    import depth_anything_v2
-    from depth_anything_v2.dpt import DepthAnythingV2
-    depth_anything_v2s_available = True
-except ImportError:
-    depth_anything_v2_available = False
-    print("The package 'depth_anything_v2' has not been installed.")
-    # sys.exit(1)  # Exit and raise error
-    sys.exit(0)  # Exit without error
-    
 console = core.console
 
 
@@ -175,7 +165,7 @@ class EnhanceNet(nn.Module):
     ):
         super().__init__()
         out_channels = 3  # in_channels * num_iters
-        self.e_conv1 = ConvBlock(in_channels,      num_channels, norm=norm)
+        self.e_conv1 = ConvBlock(in_channels + 1,  num_channels, norm=norm)
         self.e_conv2 = ConvBlock(num_channels,     num_channels, norm=norm)
         self.e_conv3 = ConvBlock(num_channels,     num_channels, norm=norm)
         self.e_conv4 = ConvBlock(num_channels,     num_channels, norm=norm)
@@ -199,9 +189,10 @@ class EnhanceNet(nn.Module):
                 m.weight.data.normal_(1.0, 0.02)
                 m.bias.data.fill_(0)
     
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
+    def forward(self, input: torch.Tensor, depth: torch.Tensor | None = None) -> torch.Tensor:
         x   = input
-        x1  = self.e_conv1(x)
+        d   = depth
+        x1  = self.e_conv1(torch.cat([x, d], 1))
         x2  = self.e_conv2(x1)
         x3  = self.e_conv3(x2)
         x4  = self.e_conv4(x3)
@@ -209,31 +200,6 @@ class EnhanceNet(nn.Module):
         x6  = self.e_conv6(torch.cat([x2, x5], 1))
         x_r = self.e_conv7(torch.cat([x1, x6], 1))
         return x_r
-
-
-class DepthNet(nn.Module):
-    
-    def __init__(self, encoder: str):
-        super().__init__()
-        model_configs = {
-            "vits": {"encoder": "vits", "features": 64,  "out_channels": [48,   96,   192,  384 ]},
-            "vitb": {"encoder": "vitb", "features": 128, "out_channels": [96,   192,  384,  768 ]},
-            "vitl": {"encoder": "vitl", "features": 256, "out_channels": [256,  512,  1024, 1024]},
-            "vitg": {"encoder": "vitg", "features": 384, "out_channels": [1536, 1536, 1536, 1536]},
-        }
-        pretrained_weights = {
-            "vits": ZOO_DIR/"vision/depth/depth_anything_v2/depth_anything_v2_vits/depth_anything_v2_vits.pth",
-            "vitb": ZOO_DIR/"vision/depth/depth_anything_v2/depth_anything_v2_vitb/depth_anything_v2_vitb.pth",
-            "vitl": ZOO_DIR/"vision/depth/depth_anything_v2/depth_anything_v2_vitl/depth_anything_v2_vitl.pth",
-            "vitg": None,
-        }
-        self.depth_anything_v2 = DepthAnythingV2(**model_configs[encoder])
-        self.depth_anything_v2.load_state_dict(torch.load(str(pretrained_weights[encoder])))
-        
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        x = input
-        y = self.depth_anything_v2(x)
-        return y
 
 # endregion
 
@@ -290,13 +256,13 @@ class D2CE(base.LowLightImageEnhancementModel):
         self.de_encoder   = de_encoder
         
         # Construct model
+        self.de = depth_anything_v2.DepthAnythingV2_ViTS(weights="da_2k")
         self.en = EnhanceNet(
             in_channels  = self.in_channels,
             num_channels = self.num_channels,
             num_iters    = self.num_iters,
-            norm         = nn.AdaptiveBatchNorm2d,
+            norm         = None,  # nn.AdaptiveBatchNorm2d,
         )
-        self.de = DepthNet(encoder=self.de_encoder)
         self.gf = filtering.GuidedFilter(radius=self.radius, eps=self.eps)
         
         # Loss
@@ -307,7 +273,10 @@ class D2CE(base.LowLightImageEnhancementModel):
             self.load_weights()
         else:
             self.apply(self.init_weights)
-    
+        
+        # Freeze DepthAnythingV2 model
+        self.de.eval()
+        
     def init_weights(self, m: nn.Module):
         pass
     
@@ -377,7 +346,8 @@ class D2CE(base.LowLightImageEnhancementModel):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         x  = input
         # Enhancement
-        c1 = self.en(x)
+        d  = self.de(x)
+        c1 = self.en(x, d)
         # Enhancement loop
         if self.gamma in [None, 0.0]:
             y  = x
@@ -386,15 +356,14 @@ class D2CE(base.LowLightImageEnhancementModel):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            # c2 = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
-            c2 = self.de(x)
+            c2 = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
             for i in range(0, self.num_iters):
-                # b = y * (1 - c2)
-                # d = y * c2
-                # y = b + d + c1 * (torch.pow(d, 2) - d)
-                y = c1 * c2 * (torch.pow(y, 2) - y)
+                b = y * (1 - c2)
+                d = y * c2
+                y = b + d + c1 * (torch.pow(d, 2) - d)
         # Guided Filter
         y_gf = self.gf(x, y)
+        # y_gf = y
         return c1, c2, y, y_gf
     
 # endregion
