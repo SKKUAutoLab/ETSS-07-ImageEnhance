@@ -1026,11 +1026,14 @@ class Transweather(base.DerainingModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred  = self.forward(input=input, *args, **kwargs)
         loss, self.previous = self.loss(pred, target) 
         loss += self.regularization_loss(alpha=0.1)
-        return pred, loss
+        return {
+            "pred": pred,
+            "loss": loss,
+        }
 
     def forward(
         self,

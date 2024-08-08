@@ -43,6 +43,3 @@ class MainWindow(QMainWindow):
         status_bar = QStatusBar()
         status_bar.showMessage(f"{__appname__} - {__appdescription__}")
         self.setStatusBar(status_bar)
-
-    def closeEvent(self, event):
-        self.labeling_widget.closeEvent(event)

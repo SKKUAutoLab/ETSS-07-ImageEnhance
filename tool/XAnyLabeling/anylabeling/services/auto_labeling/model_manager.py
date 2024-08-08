@@ -63,8 +63,6 @@ class ModelManager(QObject):
         "yolow",
         "yolov10",
         "depth_anything_v2",
-        "yolow_ram",
-        "rtdetrv2",
     ]
 
     model_configs_changed = pyqtSignal(list)
@@ -211,7 +209,8 @@ class ModelManager(QObject):
             "type" not in model_config
             or "display_name" not in model_config
             or "name" not in model_config
-            or model_config["type"] not in self.CUSTOM_MODELS
+            or model_config["type"]
+            not in self.CUSTOM_MODELS
         ):
             self.new_model_status.emit(
                 self.tr(
@@ -515,28 +514,6 @@ class ModelManager(QObject):
 
             try:
                 model_config["model"] = YOLOv5_RAM(
-                    model_config, on_message=self.new_model_status.emit
-                )
-                self.auto_segmentation_model_unselected.emit()
-            except Exception as e:  # noqa
-                self.new_model_status.emit(
-                    self.tr(
-                        "Error in loading model: {error_message}".format(
-                            error_message=str(e)
-                        )
-                    )
-                )
-                print(
-                    "Error in loading model: {error_message}".format(
-                        error_message=str(e)
-                    )
-                )
-                return
-        elif model_config["type"] == "yolow_ram":
-            from .yolow_ram import YOLOW_RAM
-
-            try:
-                model_config["model"] = YOLOW_RAM(
                     model_config, on_message=self.new_model_status.emit
                 )
                 self.auto_segmentation_model_unselected.emit()
@@ -1054,28 +1031,6 @@ class ModelManager(QObject):
                     )
                 )
                 return
-        elif model_config["type"] == "rtdetrv2":
-            from .rtdetrv2 import RTDETRv2
-
-            try:
-                model_config["model"] = RTDETRv2(
-                    model_config, on_message=self.new_model_status.emit
-                )
-                self.auto_segmentation_model_unselected.emit()
-            except Exception as e:  # noqa
-                self.new_model_status.emit(
-                    self.tr(
-                        "Error in loading model: {error_message}".format(
-                            error_message=str(e)
-                        )
-                    )
-                )
-                print(
-                    "Error in loading model: {error_message}".format(
-                        error_message=str(e)
-                    )
-                )
-                return
         elif model_config["type"] == "yolov6_face":
             from .yolov6_face import YOLOv6Face
 
@@ -1368,13 +1323,13 @@ class ModelManager(QObject):
         self.loaded_model_config["model"].set_auto_labeling_marks(marks)
 
     def set_auto_labeling_conf(self, value):
-        """Set auto labeling confidences"""
+        """Set auto labeling confidences
+        """
         model_list = [
             "damo_yolo",
             "gold_yolo",
             "grounding_dino",
             "rtdetr",
-            "rtdetrv2",
             "yolo_nas",
             "yolov5_obb",
             "yolov5_seg",
@@ -1400,7 +1355,8 @@ class ModelManager(QObject):
         self.loaded_model_config["model"].set_auto_labeling_conf(value)
 
     def set_auto_labeling_iou(self, value):
-        """Set auto labeling iou"""
+        """Set auto labeling iou
+        """
         model_list = [
             "damo_yolo",
             "gold_yolo",
@@ -1416,7 +1372,8 @@ class ModelManager(QObject):
             "yolov8_seg",
             "yolov8_track",
             "yolov8",
-            "yolov9" "yolox",
+            "yolov9"
+            "yolox",
         ]
         if (
             self.loaded_model_config is None
@@ -1431,9 +1388,7 @@ class ModelManager(QObject):
             self.loaded_model_config is not None
             and self.loaded_model_config["type"] not in invalid_model_list
         ):
-            self.loaded_model_config[
-                "model"
-            ].set_auto_labeling_preserve_existing_annotations_state(state)
+            self.loaded_model_config["model"].set_auto_labeling_preserve_existing_annotations_state(state)
 
     def unload_model(self):
         """Unload model"""
@@ -1468,9 +1423,7 @@ class ModelManager(QObject):
         except Exception as e:  # noqa
             print(f"Error in predict_shapes: {e}")
             self.new_model_status.emit(
-                self.tr(
-                    f"Error in model prediction: {e}. Please check the model."
-                )
+                self.tr(f"Error in model prediction: {e}. Please check the model.")
             )
         self.prediction_finished.emit()
 

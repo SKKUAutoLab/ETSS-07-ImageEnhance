@@ -1,0 +1,40 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "sam"
+model       : "sam_vit_h"
+data        : ~
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : ~
+save_dir    : ~
+weights     : "zoo/vision/segment/sam/sam_vit_h/sa_1b/sam_vit_h_sa_1b_4b8939.pth"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 1000
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+model_type                    : "vit_h"
+points_per_side               : 32
+points_per_batch              : 64
+pred_iou_thresh               : 0.88
+stability_score_thresh        : 0.95
+stability_score_offset        : 1.0
+box_nms_thresh                : 0.7
+crop_n_layers                 : 0
+crop_nms_thresh               : 0.7
+crop_n_points_downscale_factor: 1
+min_mask_region_area          : 0
+output_mode                   : "binary_mask"

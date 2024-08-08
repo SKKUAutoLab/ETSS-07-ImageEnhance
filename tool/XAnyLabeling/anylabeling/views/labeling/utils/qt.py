@@ -30,7 +30,6 @@ def new_action(
     checkable=False,
     enabled=True,
     checked=False,
-    auto_trigger=False,
 ):
     """Create a new action and assign callbacks, shortcuts, etc."""
     action = QtWidgets.QAction(text, parent)
@@ -51,8 +50,6 @@ def new_action(
         action.setCheckable(True)
     action.setEnabled(enabled)
     action.setChecked(checked)
-    if auto_trigger:
-        action.triggered.emit(checked)
     return action
 
 

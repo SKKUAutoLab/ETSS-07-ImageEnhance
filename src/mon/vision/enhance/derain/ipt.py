@@ -395,11 +395,14 @@ class IPT(base.DerainingModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred  = self.forward(input=input, *args, **kwargs)
         loss, self.previous = self.loss(input, pred, self.previous) if self.loss else (None, None)
         loss += self.regularization_loss(alpha=0.1)
-        return pred[-1], loss
+        return {
+            "pred": pred[-1],
+            "loss": loss,
+        }
 
     def forward(
         self,

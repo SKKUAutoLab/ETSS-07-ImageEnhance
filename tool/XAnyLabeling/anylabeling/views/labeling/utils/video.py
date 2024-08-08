@@ -25,7 +25,7 @@ def extract_frames_from_video(parent, source_video_path):
             parent,
             "Directory Exists",
             f"The directory '{folder_name}' already exists. Do you want to overwrite it?",
-            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No
         )
         if reply == QMessageBox.No:
             # If no, return None
@@ -47,14 +47,12 @@ def extract_frames_from_video(parent, source_video_path):
         1,  # default value
         1,  # minimum value
         total_frames,  # maximum value
-        1,  # step
+        1  # step
     )
 
     if not ok:
         # If the user cancels the dialog, show a message box and return
-        QMessageBox.warning(
-            parent, "Cancelled", "Frame extraction was cancelled."
-        )
+        QMessageBox.warning(parent, "Cancelled", "Frame extraction was cancelled.")
         return None
 
     os.makedirs(output_dir)
@@ -64,12 +62,11 @@ def extract_frames_from_video(parent, source_video_path):
         parent.tr("Extracting frames. Please wait..."),
         parent.tr("Cancel"),
         0,
-        total_frames // interval,
+        total_frames // interval
     )
     progress_dialog.setWindowModality(Qt.WindowModal)
     progress_dialog.setWindowTitle("Progress")
-    progress_dialog.setStyleSheet(
-        """
+    progress_dialog.setStyleSheet("""
     QProgressDialog QProgressBar {
         border: 1px solid grey;
         border-radius: 5px;
@@ -78,8 +75,7 @@ def extract_frames_from_video(parent, source_video_path):
     QProgressDialog QProgressBar::chunk {
         background-color: orange;
     }
-    """
-    )
+    """)
 
     frame_count = 0
     saved_frame_count = 0

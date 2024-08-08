@@ -1,0 +1,33 @@
+#
+#     /\_____/\
+#    /  o   o  \
+#   ( ==  ^  == )
+#    )         (
+#   (           )
+#  ( (  )   (  ) )
+# (__(__)___(__)__)
+#
+[tool.poetry]
+name        = "sam2"
+version     = "1.0.0"
+description = "SAM 2: Segment Anything in Images and Videos."
+license     = "Apache 2.0"
+authors     = ["Meta AI"]
+packages = [
+    {include="sam2"},
+]
+include  = []
+exclude  = []
+
+[tool.poetry.dependencies]
+black      = "*"
+hydra-core = "*"
+ufmt       = "*"
+usort      = "*"
+
+[build-system]
+requires = [
+    "setuptools>=61.0",  
+    "torch>=2.3.1",
+]
+build-backend = "setuptools.build_meta"

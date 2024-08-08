@@ -50,7 +50,7 @@ def conv(
         elif downsample_mode in ["lanczos2", "lanczos3"]:
             downsampler = nn.CustomDownsample(
                 in_channels   = out_channels,
-                factor        = stride,
+                scale_factor  = stride,
                 kernel_type   = downsample_mode,
                 phase         = 0.5,
                 preserve_size = True,
@@ -391,7 +391,7 @@ class ZID(base.DehazingModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred = self.forward(input=input, *args, **kwargs)
         image, ambient, mask, _ = pred
         
@@ -403,12 +403,14 @@ class ZID(base.DehazingModel):
         dcp_prior    = torch.min(image.permute(0, 2, 3, 1), 3)[0]
         loss        += self.mse_loss(dcp_prior, torch.zeros_like(dcp_prior)) - 0.05
         #
-        from mon.vision import prior
-        atmosphere   = prior.get_atmosphere_prior(input.detach().cpu().numpy()[0])
+        atmosphere   = nn.atmospheric_prior(input.detach().cpu().numpy()[0])
         ambient_val  = nn.Parameter(data=torch.cuda.FloatTensor(atmosphere.reshape((1, 3, 1, 1))), requires_grad=False)
         loss        += self.mse_loss(ambient, ambient_val * torch.ones_like(ambient))
         
-        return pred[-1], loss
+        return {
+            "pred": pred[-1],
+            "loss": loss,
+        }
     
     def forward(
         self,

@@ -9,16 +9,13 @@ keep_prev_contrast: false
 auto_use_last_label: false
 auto_highlight_shape: true
 auto_switch_to_edit_mode: true
-show_groups: false
+show_groups: true
 show_texts: true
 show_labels: true
-show_scores: true
 show_degrees: false
 show_shapes: true
-show_linking: true
 logger_level: info
 save_mode: default
-system_clipboard: false
 
 flags: null
 label_flags: null
@@ -41,8 +38,8 @@ shape:
   select_line_color: [255, 255, 255, 255]
   select_fill_color: [0, 255, 0, 155]
   hvertex_fill_color: [255, 255, 255, 255]
-  point_size: 10
-  line_width: 4
+  point_size: 8
+  line_width: 2
 
 # main
 flag_dock:
@@ -69,7 +66,6 @@ file_dock:
 # label_dialog
 show_label_text_field: true
 label_completion: startswith
-move_mode: auto  # 'auto', 'center'
 fit_to_content:
   column: true
   row: false
@@ -135,7 +131,6 @@ shortcuts:
   show_overview: Ctrl+G
   show_texts: Ctrl+T
   show_labels: Ctrl+L
-  show_linking: Ctrl+K
   toggle_auto_use_last_label: Ctrl+Y
   toggle_visibility_shapes: Ctrl+H
 

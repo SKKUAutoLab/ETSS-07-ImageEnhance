@@ -8,7 +8,7 @@
 
 site_name: MON
 
-copyright: Copyright &copy; 2021 - 2023 Long H. Pham
+copyright: Copyright &copy; 2021 - 2024 Long H. Pham
 
 theme:
   name: "material"
@@ -108,12 +108,9 @@ markdown_extensions:
   - pymdownx.tilde
 
 nav:
-  - Home: index.md
+  - Home: README.md
   - "Guidelines": styleguide.md
   - "Glossary": glossary.md
-  # - Home: index.md
-  # - "Guides":
-  #     - "Style Guide": styleguide.md
   
 plugins:
   - mkdocstrings

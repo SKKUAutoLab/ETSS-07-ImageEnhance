@@ -9,7 +9,6 @@ from __future__ import annotations
 __all__ = [
     "ExtraModel",
     "Model",
-    "check_weights_loaded",
     "get_epoch_from_checkpoint",
     "get_global_step_from_checkpoint",
     "get_latest_checkpoint",
@@ -107,14 +106,12 @@ def load_state_dict(
     contains a URL, download it.
     """
     path = None
-    map  = {}
-    
+    url  = None
+
     # Obtain weight's path
     if isinstance(weights, dict):
-        assert "path" in weights and "url" in weights
         path = weights.get("path", path)
-        url  = weights.get("url",  None)
-        map  = weights.get("map",  map)
+        url  = weights.get("url",  url)
         if path is not None and url is not None:
             path = core.Path(path)
             core.mkdirs(paths=[path.parent], exist_ok=True)
@@ -135,10 +132,11 @@ def load_state_dict(
     
     # Load state dict
     weights_state_dict = torch.load(str(path), weights_only=weights_only, map_location=model.device)
+    '''
     weights_state_dict = weights_state_dict.get("state_dict", weights_state_dict)
     model_state_dict   = copy.deepcopy(model.state_dict())
     new_state_dict     = {}
-
+    
     for k, v in weights_state_dict.items():
         replace = False
         for k1, k2 in map.items():
@@ -154,6 +152,8 @@ def load_state_dict(
             model_state_dict[k] = v
     
     return model_state_dict
+    '''
+    return weights_state_dict
 
 
 def load_weights(
@@ -167,23 +167,6 @@ def load_weights(
     model.load_state_dict(model_state_dict)
     return model
 
-
-def check_weights_loaded(
-    old_state_dict: dict,
-    new_state_dict: dict,
-    verbose       : bool = False,
-) -> bool:
-    # Manually check if weights have been loaded
-    if verbose:
-        console.log(f"Checking layer's weights")
-    for k, v in new_state_dict.items():
-        new_state_dict[k] = float(torch.sum(new_state_dict[k] - old_state_dict[k]))
-        if verbose:
-            if new_state_dict[k] == 0.0:
-                console.log(f"{k}: ❌")
-            else:
-                console.log(f"{k}: ✅")
-    
 # endregion
 
 
@@ -553,16 +536,16 @@ class Model(lightning.LightningModule, ABC):
         state_dict = None
         if isinstance(self.weights, core.Path | str) and core.Path(self.weights).is_weights_file():
             self.zoo_dir.mkdir(parents=True, exist_ok=True)
-            state_dict = load_state_dict(model=self, weights=self.weights, weights_only=True)
-            state_dict = getattr(state_dict, "state_dict", state_dict)
+            state_dict = load_state_dict(model=self, weights=self.weights, weights_only=False)
+            state_dict = state_dict.get("state_dict", state_dict)
         elif isinstance(self.weights, dict):
             if "path" in self.weights:
                 path = core.Path(self.weights["path"])
                 if path.is_weights_file():
-                    state_dict = load_state_dict(model=self, weights=path, weights_only=True)
-                    state_dict = getattr(state_dict, "state_dict", state_dict)
+                    state_dict = load_state_dict(model=self, weights=path, weights_only=False)
+                    state_dict = state_dict.get("state_dict", state_dict)
             else:
-                state_dict = getattr(self.weights, "state_dict", self.weights)
+                state_dict = self.weights.get("state_dict", self.weights)
         else:
             error_console.log(f"[yellow]Cannot load from weights from: {self.weights}!")
         
@@ -685,10 +668,7 @@ class Model(lightning.LightningModule, ABC):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> (
-        tuple[torch.Tensor, torch.Tensor | None] |
-        tuple[torch.Tensor, torch.Tensor | None, torch.Tensor | None]
-    ):
+    ) -> dict | None:
         """Forward pass with loss value. Loss function may need more arguments
         beside the ground-truth and prediction values. For calculating the
         metrics, we only need the final predictions and ground-truth.
@@ -696,15 +676,20 @@ class Model(lightning.LightningModule, ABC):
         Args:
             input: An input of shape :math:`[B, C, H, W]`.
             target: A ground-truth of shape :math:`[B, C, H, W]`. Default: ``None``.
-            
+        
         Return:
-            Prediction, loss, and extra values.
+            A :class:`dict` of all predictions with corresponding names. Note
+            that the dictionary must contain the key ``'loss'`` and ``'pred'``.
+            Default: ``None``.
         """
         pred = self.forward(input=input, *args, **kwargs)
         pred = pred[-1] if isinstance(pred, list | tuple) else pred
         loss = self.loss(pred, target)
-        return pred, loss
-    
+        return {
+            "pred": pred,
+            "loss": loss,
+        }
+        
     def forward_debug(self, input: torch.Tensor, *args, **kwargs) -> dict | None:
         """Forward pass for debugging. This function is used to visualize the
         intermediate layers of the model.
@@ -713,7 +698,8 @@ class Model(lightning.LightningModule, ABC):
             input: An input of shape :math:`[B, C, H, W]`.
             
         Return:
-            Prediction. Default: ``None``.
+            A :class:`dict` of all predictions with corresponding names.
+            Default: ``None``.
         """
         return None
     
@@ -785,28 +771,29 @@ class Model(lightning.LightningModule, ABC):
                 - ``None``, training will skip to the next batch.
         """
         # Forward
-        input, target, extra = batch[0], batch[1], batch[2:]
+        input, target, meta = batch[0], batch[1], batch[2:]
         results = self.forward_loss(input=input, target=target, *args, **kwargs)
-        if len(results) == 2:
-            pred, loss = results
-            extra      = None
-        else:
-            pred, loss, extra = results
+        pred    = results.pop("pred", None)
+        loss    = results.pop("loss", None)
         
-        # Log
-        log_dict = {
+        # Log data
+        log_images = {}
+        log_values = {
             f"step"      : self.current_epoch,
             f"train/loss": loss,
         }
-        if extra is not None and isinstance(extra, dict):
-            for k, v in extra.items():
-                log_dict[f"train/{k}"] = v
+        for k, v in results.items():
+            if core.is_image(v):
+                log_images[k] = v
+            else:
+                log_values[f"train/{k}"] = v
+        
+        # Log values
         if self.train_metrics:
             for i, metric in enumerate(self.train_metrics):
-                log_dict[f"train/{metric.name}"] = metric(pred, target)
-        
+                log_values[f"train/{metric.name}"] = metric(pred, target)
         self.log_dict(
-            dictionary     = log_dict,
+            dictionary     = log_values,
             prog_bar       = False,
             logger         = True,
             on_step        = False,
@@ -814,7 +801,7 @@ class Model(lightning.LightningModule, ABC):
             sync_dist      = True,
             rank_zero_only = False,
         )
-
+        
         return loss
 
     def on_train_epoch_end(self):
@@ -865,28 +852,29 @@ class Model(lightning.LightningModule, ABC):
             - Any object or value.
             - ``None``, validation will skip to the next batch.
         """
-        input, target, extra = batch[0], batch[1], batch[2:]
+        input, target, meta = batch[0], batch[1], batch[2:]
         results = self.forward_loss(input=input, target=target, *args, **kwargs)
-        if len(results) == 2:
-            pred, loss = results
-            extra      = None
-        else:
-            pred, loss, extra = results
+        pred    = results.pop("pred", None)
+        loss    = results.pop("loss", None)
         
-        # Log
-        log_dict = {
+        # Log data
+        log_images = {}
+        log_values = {
             f"step"    : self.current_epoch,
             f"val/loss": loss,
         }
-        if extra is not None and isinstance(extra, dict):
-            for k, v in extra.items():
-                log_dict[f"val/{k}"] = v
+        for k, v in results.items():
+            if core.is_image(v):
+                log_images[k] = v
+            else:
+                log_values[f"val/{k}"] = v
+                
+        # Log values
         if self.val_metrics:
             for i, metric in enumerate(self.val_metrics):
-                log_dict[f"val/{metric.name}"] = metric(pred, target)
-        
+                log_values[f"val/{metric.name}"] = metric(pred, target)
         self.log_dict(
-            dictionary     = log_dict,
+            dictionary     = log_values,
             prog_bar       = False,
             logger         = True,
             on_step        = False,
@@ -895,6 +883,7 @@ class Model(lightning.LightningModule, ABC):
             rank_zero_only = False,
         )
         
+        # Log images
         if self.should_log_image():
             self.log_image(
                 epoch  = self.current_epoch,
@@ -902,7 +891,7 @@ class Model(lightning.LightningModule, ABC):
                 input  = input,
                 pred   = pred,
                 target = target,
-                extra  = extra,
+                extra  = log_images,
             )
         
         return loss
@@ -931,28 +920,29 @@ class Model(lightning.LightningModule, ABC):
                 - Any object or value.
                 - ``None``, testing will skip to the next batch.
         """
-        input, target, extra = batch[0], batch[1], batch[2:]
+        input, target, meta = batch[0], batch[1], batch[2:]
         results = self.forward_loss(input=input, target=target, *args, **kwargs)
-        if len(results) == 2:
-            pred, loss = results
-            extra      = None
-        else:
-            pred, loss, extra = results
+        pred    = results.pop("pred", None)
+        loss    = results.pop("loss", None)
         
-        # Log
-        log_dict = {
+        # Log data
+        log_images = {}
+        log_values = {
             f"step"     : self.current_epoch,
             f"test/loss": loss,
         }
-        if extra is not None and isinstance(extra, dict):
-            for k, v in extra.items():
-                log_dict[f"test/{k}"] = v
+        for k, v in results.items():
+            if core.is_image(v):
+                log_images[k] = v
+            else:
+                log_values[f"test/{k}"] = v
+        
+        # Log values
         if self.test_metrics:
             for i, metric in enumerate(self.test_metrics):
-                log_dict[f"test/{metric.name}"] = metric(pred, target)
-       
+                log_values[f"test/{metric.name}"] = metric(pred, target)
         self.log_dict(
-            dictionary     = log_dict,
+            dictionary     = log_values,
             prog_bar       = False,
             logger         = True,
             on_step        = False,
@@ -960,6 +950,17 @@ class Model(lightning.LightningModule, ABC):
             sync_dist      = True,
             rank_zero_only = False,
         )
+        
+        # Log images
+        if self.should_log_image():
+            self.log_image(
+                epoch  = self.current_epoch,
+                step   = self.global_step,
+                input  = input,
+                pred   = pred,
+                target = target,
+                extra  = log_images,
+            )
         
         return loss
     
@@ -1054,7 +1055,7 @@ class Model(lightning.LightningModule, ABC):
         input    : torch.Tensor,
         pred     : torch.Tensor,
         target   : torch.Tensor | None = None,
-        extra    : list         | None = None,
+        extra    : dict         | None = None,
         extension: str = ".jpg"
     ):
         """Log debug images to :attr:`debug_dir`."""
@@ -1068,7 +1069,7 @@ class Model(lightning.LightningModule, ABC):
                 torchvision.utils.save_image(image, str(save_file))
         '''
         pass
-        
+    
     # endregion
     
 # endregion
@@ -1093,7 +1094,7 @@ class ExtraModel(Model, ABC):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.model = None
+        self.model: nn.Module = None
     
     def load_weights(self, weights: Any = None, overwrite: bool = False):
         """Load weights. It only loads the intersection layers of matching keys
@@ -1105,21 +1106,20 @@ class ExtraModel(Model, ABC):
         state_dict = None
         if isinstance(self.weights, core.Path | str) and core.Path(self.weights).is_weights_file():
             self.zoo_dir.mkdir(parents=True, exist_ok=True)
-            state_dict = load_state_dict(model=self, weights=self.weights, weights_only=True)
-            state_dict = getattr(state_dict, "state_dict", state_dict)
+            state_dict = load_state_dict(model=self, weights=self.weights, weights_only=False)
+            state_dict = state_dict.get("state_dict", state_dict)
         elif isinstance(self.weights, dict):
             if "path" in self.weights:
                 path = core.Path(self.weights["path"])
                 if path.is_weights_file():
-                    state_dict = load_state_dict(model=self, weights=path, weights_only=True)
-                    state_dict = getattr(state_dict, "state_dict", state_dict)
+                    state_dict = load_state_dict(model=self, weights=path, weights_only=False)
+                    state_dict = state_dict.get("state_dict", state_dict)
             else:
-                state_dict = getattr(self.weights, "state_dict", self.weights)
+                state_dict = self.weights.get("state_dict", self.weights)
         else:
             error_console.log(f"[yellow]Cannot load from weights from: {self.weights}!")
         
         if state_dict is not None:
-            state_dict = {k.replace("model.", ""): v for k, v in state_dict.items()}
             self.model.load_state_dict(state_dict=state_dict)
             if self.verbose:
                 console.log(f"Load model's weights from: {self.weights}!")

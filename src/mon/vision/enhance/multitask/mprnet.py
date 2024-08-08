@@ -457,7 +457,7 @@ class MPRNet(base.MultiTaskImageEnhancementModel):
 		input : torch.Tensor,
 		target: torch.Tensor | None,
 		*args, **kwargs
-	) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor | None]:
+	) -> dict | None:
 		pred = self.forward(input=input, *args, **kwargs)
 		if self.loss:
 			loss = 0
@@ -465,7 +465,10 @@ class MPRNet(base.MultiTaskImageEnhancementModel):
 				loss += self.loss(p, target)
 		else:
 			loss = None
-		return pred[-1], loss
+		return {
+			"pred": pred[-1],
+			"loss": loss,
+		}
 	
 	def forward(
 		self,

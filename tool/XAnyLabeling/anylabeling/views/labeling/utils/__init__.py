@@ -34,4 +34,6 @@ from .shape import (
     shapes_to_label,
     rectangle_from_diagonal,
 )
-from .video import extract_frames_from_video
+from .video import (
+    extract_frames_from_video
+)

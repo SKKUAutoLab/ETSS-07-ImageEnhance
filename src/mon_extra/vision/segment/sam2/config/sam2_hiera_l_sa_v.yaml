@@ -1,0 +1,43 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "sam2"
+model       : "sam2_hiera_l"
+data        : ~
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : ~
+save_dir    : ~
+weights     : "zoo/vision/segment/sam2/sam2_hiera_l/sa_v/sam2_hiera_l_sa_v.pt"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 1000
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+config_file                   : "sam2_hiera_l.yaml"
+points_per_side               : 64
+points_per_batch              : 128
+pred_iou_thresh               : 0.7
+stability_score_thresh        : 0.92
+stability_score_offset        : 0.7
+mask_threshold                : 0.0
+box_nms_thresh                : 0.7
+crop_n_layers                 : 1
+crop_nms_thresh               : 0.7
+crop_n_points_downscale_factor: 2
+min_mask_region_area          : 25.0
+output_mode                   : "binary_mask"
+use_m2m                       : True
+multimask_output              : True

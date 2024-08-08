@@ -213,10 +213,13 @@ class LLUnetpp_RE(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred = self.forward(input=input, *args, **kwargs)
         loss = self.loss(pred, target)
-        return pred, loss
+        return {
+            "pred": pred,
+            "loss": loss,
+        }
 
     def forward(
         self,

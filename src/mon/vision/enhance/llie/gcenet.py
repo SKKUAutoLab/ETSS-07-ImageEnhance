@@ -22,7 +22,7 @@ from mon import core, nn
 from mon.core import _callable
 from mon.globals import MODELS, Scheme
 from mon.nn import functional as F, init
-from mon.vision import filtering, geometry, prior
+from mon.vision import filtering, geometry
 from mon.vision.enhance.llie import base
 
 console = core.console
@@ -353,9 +353,10 @@ class GCENet(base.LowLightImageEnhancementModel):
         in_channels : int   = 3,
         num_channels: int   = 32,
         num_iters   : int   = 15,
-        radius      : int   = 3,
-        eps         : float = 1e-4,
-        gamma       : float = 2.6,
+        gf_radius   : int   = 3,
+        gf_eps      : float = 1e-4,
+        bam_gamma   : float = 2.6,
+        bam_ksize   : int   = 9,
         weights     : Any   = None,
         *args, **kwargs
     ):
@@ -371,24 +372,27 @@ class GCENet(base.LowLightImageEnhancementModel):
             in_channels  = self.weights.get("in_channels" , in_channels)
             num_channels = self.weights.get("num_channels", num_channels)
             num_iters    = self.weights.get("num_iters"   , num_iters)
-            radius       = self.weights.get("radius"      , radius)
-            eps          = self.weights.get("eps"         , eps)
-            gamma        = self.weights.get("gamma"       , gamma)
+            gf_radius    = self.weights.get("gf_radius"   , gf_radius)
+            gf_eps       = self.weights.get("gf_eps"      , gf_eps)
+            bam_gamma    = self.weights.get("bam_gamma"   , bam_gamma)
+            bam_ksize    = self.weights.get("bam_ksize"   , bam_ksize)
         self.in_channels  = in_channels or self.in_channels
         self.num_channels = num_channels
         self.num_iters    = num_iters
-        self.radius       = radius
-        self.eps          = eps
-        self.gamma        = gamma
+        self.gf_radius    = gf_radius
+        self.gf_eps       = gf_eps
+        self.bam_gamma    = bam_gamma
+        self.bam_ksize    = bam_ksize
         
         # Construct model
-        self.en = EnhanceNet(
+        self.en  = EnhanceNet(
             in_channels  = self.in_channels,
             num_channels = self.num_channels,
             num_iters    = self.num_iters,
             norm         = None,
         )
-        self.gf = filtering.GuidedFilter(radius=self.radius, eps=self.eps)
+        self.gf  = filtering.GuidedFilter(radius=self.gf_radius, eps=self.gf_eps)
+        self.bam = nn.BrightnessAttentionMap(gamma=self.bam_gamma, denoise_ksize = self.bam_ksize)
         
         # Loss
         self._loss = Loss(reduction="mean")
@@ -407,56 +411,14 @@ class GCENet(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        # Symmetric Loss 1
-        i        = input
-        i1, i2   = geometry.pair_downsample(i)
-        c1_1, c1_2, gf1, j1 = self.forward(input=i1, *args, **kwargs)
-        c2_1, c2_2, gf2, j2 = self.forward(input=i2, *args, **kwargs)
-        c_1 , c_2 , gf , o  = self.forward(input=i,  *args, **kwargs)
-        o1, o2   = geometry.pair_downsample(o)
-        mse_loss = nn.MSELoss()
-        loss_res = 0.5 * (mse_loss(i1, j2) + mse_loss(i2, j1))
-        loss_con = 0.5 * (mse_loss(j1, o1) + mse_loss(j2, o2))
-        loss_enh = self.loss(i, c_1, o)
-        loss     = 0.5 * (loss_res + loss_con) + 0.5 * loss_enh
-        
-        # Symmetric Loss 2
-        # i        = input
-        # i1, i2   = geometry.pair_downsample(i)
-        # c1_1, c1_2, gf1, j1 = self.forward(input=i1, *args, **kwargs)
-        # c2_1, c2_2, gf2, j2 = self.forward(input=i2, *args, **kwargs)
-        # c_1 , c_2 , gf , o  = self.forward(input=i,  *args, **kwargs)
-        # n1       = i1 - j1
-        # n2       = i2 - j2
-        # n        =  i - o
-        # o_1, o_2 = geometry.pair_downsample(o)
-        # n_1, n_2 = geometry.pair_downsample(n)
-        # mse_loss = nn.MSELoss()
-        # loss_res = 0.5 * (mse_loss(i1 - n2,  j2) + mse_loss(i2 - n1, j1 ))
-        # loss_con = 0.5 * (mse_loss(j1     , o_1) + mse_loss(j2     , o_2))
-        # loss_enh = self.loss(i, c_1, o)
-        # loss     = 0.5 * (loss_res + loss_con) + 0.5 * loss_enh
-        
-        # Symmetric Loss 3
-        # i        = input
-        # i1, i2   = geometry.pair_downsample(i)
-        # c1_1, c1_2, gf1, j1 = self.forward(input=i1, *args, **kwargs)
-        # c2_1, c2_2, gf2, j2 = self.forward(input=i2, *args, **kwargs)
-        # c_1 , c_2 , gf , o  = self.forward(input=i,  *args, **kwargs)
-        # n1       = i1 - j1
-        # n2       = i2 - j2
-        # n        =  i - o
-        # o_1, o_2 = geometry.pair_downsample(o)
-        # n_1, n_2 = geometry.pair_downsample(n)
-        # mse_loss = nn.MSELoss()
-        # loss_res = (1 / 3) * (mse_loss(i1 - n2,  j2) + mse_loss(i2 - n1, j1 ))
-        # loss_noi = (1 / 3) * (mse_loss(n1     , n_1) + mse_loss(n2     , n_2))
-        # loss_con = (1 / 3) * (mse_loss(j1     , o_1) + mse_loss(j2     , o_2))
-        # loss_enh = self.loss(i, c_1, o)
-        # loss     = 0.5 * (loss_res + loss_con + loss_noi) + 0.5 * loss_enh
-        
-        return o, loss
+    ) -> dict | None:
+        i    = input
+        c1, c2, gf, o = self.forward(input=i, *args, **kwargs)
+        loss = self.loss(i, c1, o)
+        return {
+            "pred": o,
+            "loss": loss,
+        }
     
     def forward_debug(self, input: torch.Tensor, *args, **kwargs) -> dict | None:
         i      = input
@@ -591,14 +553,14 @@ class GCENet(base.LowLightImageEnhancementModel):
         # Enhancement
         c1 = self.en(x)
         # Enhancement loop
-        if self.gamma in [None, 0.0]:
+        if self.bam_gamma in [None, 0.0]:
             y  = x
             c2 = None
             for i in range(self.num_iters):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            c2 = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
+            c2 = self.bam(x)
             for i in range(0, self.num_iters):
                 b = y * (1 - c2)
                 d = y * c2
@@ -615,40 +577,23 @@ class GCENetA1(GCENet):
     See Also: :class:`GCENet`
     """
     
-    def __init__(
-        self,
-        in_channels : int   = 3,
-        num_channels: int   = 32,
-        num_iters   : int   = 15,
-        radius      : int   = 3,
-        eps         : float = 1e-4,
-        gamma       : float = 2.6,
-        weights     : Any   = None,
-        *args, **kwargs
-    ):
-        super().__init__(
-            name         = "gcenet_a1",
-            in_channels  = in_channels,
-            num_channels = num_channels,
-            num_iters    = num_iters,
-            radius       = radius,
-            eps          = eps,
-            gamma        = gamma,
-            weights      = weights,
-            *args, **kwargs
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="gcenet_a1", *args, **kwargs)
     
     def forward_loss(
         self,
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         # Symmetric Loss
         i = input
-        c1, c2, gf, o = self.forward(input=i,  *args, **kwargs)
+        c1, c2, gf, o = self.forward(input=i, *args, **kwargs)
         loss = self.loss(i, c1, o)
-        return o, loss
+        return {
+            "pred": o,
+            "loss": loss,
+        }
     
     def forward(
         self,
@@ -662,14 +607,14 @@ class GCENetA1(GCENet):
         # Enhancement
         c1 = self.en(x)
         # Enhancement loop
-        if self.gamma in [None, 0.0]:
+        if self.bam_gamma in [None, 0.0]:
             y  = x
             c2 = None
             for i in range(self.num_iters):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            c2 = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
+            c2 = self.bam(x)
             for i in range(0, self.num_iters):
                 b = y * (1 - c2)
                 d = y * c2
@@ -686,28 +631,8 @@ class GCENetA2(GCENet):
     See Also: :class:`GCENet`
     """
     
-    def __init__(
-        self,
-        in_channels : int   = 3,
-        num_channels: int   = 32,
-        num_iters   : int   = 15,
-        radius      : int   = 3,
-        eps         : float = 1e-4,
-        gamma       : float = 2.6,
-        weights     : Any   = None,
-        *args, **kwargs
-    ):
-        super().__init__(
-            name         = "gcenet_a2",
-            in_channels  = in_channels,
-            num_channels = num_channels,
-            num_iters    = num_iters,
-            radius       = radius,
-            eps          = eps,
-            gamma        = gamma,
-            weights      = weights,
-            *args, **kwargs
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="gcenet_a2", *args, **kwargs)
     
     def forward(
         self,
@@ -721,14 +646,14 @@ class GCENetA2(GCENet):
         # Enhancement
         c1 = self.en(x)
         # Enhancement loop
-        if self.gamma in [None, 0.0]:
+        if self.bam_gamma in [None, 0.0]:
             y  = x
             c2 = None
             for i in range(self.num_iters):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            c2 = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
+            c2 = self.bam(x)
             for i in range(0, self.num_iters):
                 b = y * (1 - c2)
                 d = y * c2
@@ -745,40 +670,23 @@ class GCENetB1(GCENet):
     See Also: :class:`GCENet`
     """
     
-    def __init__(
-        self,
-        in_channels : int   = 3,
-        num_channels: int   = 32,
-        num_iters   : int   = 15,
-        radius      : int   = 3,
-        eps         : float = 1e-4,
-        gamma       : float = 2.6,
-        weights     : Any   = None,
-        *args, **kwargs
-    ):
-        super().__init__(
-            name         = "gcenet_b1",
-            in_channels  = in_channels,
-            num_channels = num_channels,
-            num_iters    = num_iters,
-            radius       = radius,
-            eps          = eps,
-            gamma        = gamma,
-            weights      = weights,
-            *args, **kwargs
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="gcenet_b1", *args, **kwargs)
     
     def forward_loss(
         self,
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         # Symmetric Loss
         i = input
         c1, c2, gf, o = self.forward(input=i,  *args, **kwargs)
         loss = self.loss(i, c1, o)
-        return o, loss
+        return {
+            "pred": o,
+            "loss": loss,
+        }
     
     def forward(
         self,
@@ -801,7 +709,7 @@ class GCENetB1(GCENet):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            c2 = prior.get_guided_brightness_enhancement_map_prior(x_gf, self.gamma, 9)
+            c2 = self.bam(x)
             for i in range(0, self.num_iters):
                 b = y * (1 - c2)
                 d = y * c2
@@ -816,28 +724,8 @@ class GCENetB2(GCENet):
     See Also: :class:`GCENet`
     """
     
-    def __init__(
-        self,
-        in_channels : int   = 3,
-        num_channels: int   = 32,
-        num_iters   : int   = 15,
-        radius      : int   = 3,
-        eps         : float = 1e-4,
-        gamma       : float = 2.6,
-        weights     : Any   = None,
-        *args, **kwargs
-    ):
-        super().__init__(
-            name         = "gcenet_b2",
-            in_channels  = in_channels,
-            num_channels = num_channels,
-            num_iters    = num_iters,
-            radius       = radius,
-            eps          = eps,
-            gamma        = gamma,
-            weights      = weights,
-            *args, **kwargs
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="gcenet_b2", *args, **kwargs)
     
     def forward(
         self,
@@ -860,7 +748,7 @@ class GCENetB2(GCENet):
                 y = y + c1 * (torch.pow(y, 2) - y)
         else:
             y  = x
-            c2 = prior.get_guided_brightness_enhancement_map_prior(x_gf, self.gamma, 9)
+            c2 = self.bam(x)
             for i in range(0, self.num_iters):
                 b = y * (1 - c2)
                 d = y * c2
@@ -960,11 +848,14 @@ class GCENetOld(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred = self.forward(input=input, *args, **kwargs)
         adjust, enhance = pred
         loss = self.loss(input, adjust, enhance)
-        return enhance, loss
+        return {
+            "pred": enhance,
+            "loss": loss,
+        }
     
     def forward(
         self,
@@ -999,7 +890,7 @@ class GCENetOld(base.LowLightImageEnhancementModel):
                 y = y + l * (torch.pow(y, 2) - y)
         else:
             y = x
-            g = prior.get_guided_brightness_enhancement_map_prior(x, self.gamma, 9)
+            g = nn.brightness_attention_map(x, self.gamma, 9)
             for _ in range(self.num_iters):
                 b = y * (1 - g)
                 d = y * g

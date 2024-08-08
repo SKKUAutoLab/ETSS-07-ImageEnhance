@@ -1,0 +1,30 @@
+#
+#     /\_____/\
+#    /  o   o  \
+#   ( ==  ^  == )
+#    )         (
+#   (           )
+#  ( (  )   (  ) )
+# (__(__)___(__)__)
+#
+[tool.poetry]
+name        = "sam"
+version     = "1.0.0"
+description = "The repository provides code for running inference with the SegmentAnything Model (SAM), links for downloading the trained model checkpoints, and example notebooks that show how to use the model."
+license     = "Apache 2.0"
+authors     = ["Meta AI"]
+packages = [
+    {include="segment_anything"},
+]
+include  = []
+exclude  = []
+
+[tool.poetry.dependencies]
+black  = "*"
+flake8 = "*"
+isort  = "*"
+mypy   = "*"
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

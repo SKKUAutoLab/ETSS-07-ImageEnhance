@@ -4,12 +4,7 @@ import json
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import QCoreApplication, Qt
-from PyQt5.QtWidgets import (
-    QColorDialog,
-    QTableWidgetItem,
-    QTableWidget,
-    QCheckBox,
-)
+from PyQt5.QtWidgets import QColorDialog, QTableWidgetItem, QTableWidget, QCheckBox
 
 from .. import utils
 from ..logger import logger
@@ -29,19 +24,15 @@ class LabelColorButton(QtWidgets.QWidget):
     def init_ui(self):
         self.color_label = QtWidgets.QLabel()
         self.color_label.setFixedSize(15, 15)
-        self.color_label.setStyleSheet(
-            f"background-color: {self.color.name()}; border: 1px solid transparent; border-radius: 10px;"
-        )
-
+        self.color_label.setStyleSheet(f'background-color: {self.color.name()}; border: 1px solid transparent; border-radius: 10px;')
+        
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.color_label)
-
+        
     def set_color(self, color):
         self.color = color
-        self.color_label.setStyleSheet(
-            f"background-color: {self.color.name()}; border: 1px solid transparent; border-radius: 10px;"
-        )
+        self.color_label.setStyleSheet(f'background-color: {self.color.name()}; border: 1px solid transparent; border-radius: 10px;')
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -60,11 +51,7 @@ class LabelModifyDialog(QtWidgets.QDialog):
 
     def init_ui(self):
         self.setWindowTitle(self.tr("Label Change Manager"))
-        self.setWindowFlags(
-            self.windowFlags()
-            | Qt.WindowMinimizeButtonHint
-            | Qt.WindowMaximizeButtonHint
-        )
+        self.setWindowFlags(self.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         self.resize(600, 400)
         self.move_to_center()
 
@@ -133,9 +120,7 @@ class LabelModifyDialog(QtWidgets.QDialog):
 
             delete_checkbox.setCheckable(not info["hidden"])
 
-            value_item = QTableWidgetItem(
-                info["value"] if info["value"] else ""
-            )
+            value_item = QTableWidgetItem(info["value"] if info["value"] else "")
             value_item.setFlags(
                 value_item.flags() & ~QtCore.Qt.ItemIsEditable
                 if info["delete"]
@@ -147,8 +132,8 @@ class LabelModifyDialog(QtWidgets.QDialog):
                 else QtGui.QColor("white")
             )
 
-            color = QColor(*info["color"])
-            color.setAlpha(info["opacity"])
+            color = QColor(*info['color'])
+            color.setAlpha(info['opacity'])
             color_button = LabelColorButton(color, self)
             color_button.setParent(self.table_widget)
             self.table_widget.setItem(i, 0, class_item)
@@ -159,17 +144,11 @@ class LabelModifyDialog(QtWidgets.QDialog):
 
     def change_color(self, button):
         row = self.table_widget.indexAt(button.pos()).row()
-        current_color = self.parent.label_info[
-            self.table_widget.item(row, 0).text()
-        ]["color"]
+        current_color = self.parent.label_info[self.table_widget.item(row, 0).text()]['color']
         color = QColorDialog.getColor(QColor(*current_color), self)
         if color.isValid():
-            self.parent.label_info[self.table_widget.item(row, 0).text()][
-                "color"
-            ] = [color.red(), color.green(), color.blue()]
-            self.parent.label_info[self.table_widget.item(row, 0).text()][
-                "opacity"
-            ] = color.alpha()
+            self.parent.label_info[self.table_widget.item(row, 0).text()]['color'] = [color.red(), color.green(), color.blue()]
+            self.parent.label_info[self.table_widget.item(row, 0).text()]['opacity'] = color.alpha()
             button.set_color(color)
 
     def on_delete_checkbox_changed(self, row, state):
@@ -228,7 +207,9 @@ class LabelModifyDialog(QtWidgets.QDialog):
 
             # Handle hidden classes
             if not is_delete and is_hidden:
-                self.hidden_cls.append(label if new_value == "" else new_value)
+                self.hidden_cls.append(
+                    label if new_value == "" else new_value
+                )
 
             # Update the color
             color = self.parent.label_info[label]["color"]
@@ -297,9 +278,7 @@ class LabelModifyDialog(QtWidgets.QDialog):
         for c in sorted(classes):
             # Update unique label list
             if not self.parent.unique_label_list.find_items_by_label(c):
-                unique_label_item = (
-                    self.parent.unique_label_list.create_item_from_label(c)
-                )
+                unique_label_item = self.parent.unique_label_list.create_item_from_label(c)
                 self.parent.unique_label_list.addItem(unique_label_item)
                 rgb = self.parent._get_rgb_by_label(c, skip_label_info=True)
                 self.parent.unique_label_list.set_item_label(
@@ -313,19 +292,16 @@ class LabelModifyDialog(QtWidgets.QDialog):
                 qlabel = self.parent.unique_label_list.itemWidget(item)
                 if qlabel:
                     style_sheet = qlabel.styleSheet()
-                    start_index = style_sheet.find("rgba(") + 5
-                    end_index = style_sheet.find(")", start_index)
-                    rgba_color = style_sheet[start_index:end_index].split(",")
+                    start_index = style_sheet.find('rgba(') + 5
+                    end_index = style_sheet.find(')', start_index)
+                    rgba_color = style_sheet[start_index:end_index].split(',')
                     rgba_color = [int(x.strip()) for x in rgba_color]
                     color = rgba_color[:-1]
                     opacity = rgba_color[-1]
                     break
             self.parent.label_info[c] = dict(
-                delete=False,
-                value=None,
-                hidden=c in self.hidden_cls,
-                color=color,
-                opacity=opacity,
+                delete=False, value=None, hidden=c in self.hidden_cls,
+                color=color, opacity=opacity
             )
 
 
@@ -420,20 +396,14 @@ class LabelDialog(QtWidgets.QDialog):
 
         # Add linking input
         self.linking_input = QtWidgets.QLineEdit()
-        self.linking_input.setPlaceholderText(
-            self.tr("Enter linking, e.g., [0,1]")
-        )
-        linking_font = (
-            self.linking_input.font()
-        )  # Adjust placeholder font size
+        self.linking_input.setPlaceholderText(self.tr("Enter linking, e.g., [0,1]"))
+        linking_font = self.linking_input.font()  # Adjust placeholder font size
         linking_font.setPointSize(8)
         self.linking_input.setFont(linking_font)
         self.linking_list = QtWidgets.QListWidget()
         self.linking_list.setHidden(True)  # Initially hide the list
         row_height = self.linking_list.fontMetrics().height()
-        self.linking_list.setFixedHeight(
-            row_height * 4 + 2 * self.linking_list.frameWidth()
-        )
+        self.linking_list.setFixedHeight(row_height * 4 + 2 * self.linking_list.frameWidth())
         self.add_linking_button = QtWidgets.QPushButton(self.tr("Add"))
         self.add_linking_button.clicked.connect(self.add_linking_pair)
 
@@ -441,14 +411,14 @@ class LabelDialog(QtWidgets.QDialog):
         layout.setContentsMargins(10, 10, 10, 10)
         if show_text_field:
             layout_edit = QtWidgets.QHBoxLayout()
-            layout_edit.addWidget(self.edit, 4)
-            layout_edit.addWidget(self.edit_group_id, 2)
+            layout_edit.addWidget(self.edit, 2.5)
+            layout_edit.addWidget(self.edit_group_id, 1.5)
             layout.addLayout(layout_edit)
 
         # Add linking layout
         layout_linking = QtWidgets.QHBoxLayout()
-        layout_linking.addWidget(self.linking_input, 4)
-        layout_linking.addWidget(self.add_linking_button, 2)
+        layout_linking.addWidget(self.linking_input, 2.5)
+        layout_linking.addWidget(self.add_linking_button, 1.5)
         layout.addLayout(layout_linking)
         layout.addWidget(self.linking_list)
 
@@ -527,11 +497,9 @@ class LabelDialog(QtWidgets.QDialog):
         linking_text = self.linking_input.text()
         try:
             linking_pairs = eval(linking_text)
-            if (
-                isinstance(linking_pairs, list)
-                and len(linking_pairs) == 2
-                and all(isinstance(item, int) for item in linking_pairs)
-            ):
+            if (isinstance(linking_pairs, list) 
+                and len(linking_pairs) == 2 
+                and all(isinstance(item, int) for item in linking_pairs)):
                 if linking_pairs in self.get_kie_linking():
                     QtWidgets.QMessageBox.warning(
                         self,
@@ -540,18 +508,14 @@ class LabelDialog(QtWidgets.QDialog):
                     )
                 self.linking_list.addItem(str(linking_pairs))
                 self.linking_input.clear()
-                self.linking_list.setHidden(
-                    False
-                )  # Show the list when an item is added
+                self.linking_list.setHidden(False)  # Show the list when an item is added
             else:
                 raise ValueError
         except:
             QtWidgets.QMessageBox.warning(
                 self,
-                self.tr("Invalid Input"),
-                self.tr(
-                    "Please enter a valid list of linking pairs like [1,2]."
-                ),
+                self.tr("Invalid Input"), 
+                self.tr("Please enter a valid list of linking pairs like [1,2]."),
             )
 
     def keyPressEvent(self, event):
@@ -609,9 +573,6 @@ class LabelDialog(QtWidgets.QDialog):
         else:
             text = text.trimmed()
         self.edit.setText(text)
-
-    def upload_flags(self, flags):
-        self._flags = flags
 
     def update_flags(self, label_new):
         # keep state of shared flags
@@ -676,7 +637,6 @@ class LabelDialog(QtWidgets.QDialog):
         self,
         text=None,
         move=True,
-        move_mode="auto",
         flags=None,
         group_id=None,
         description=None,
@@ -725,29 +685,19 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit.setFocus(QtCore.Qt.PopupFocusReason)
 
         if move:
-            if move_mode == "auto":
-                cursor_pos = QtGui.QCursor.pos()
-                screen = QtWidgets.QApplication.desktop().screenGeometry(
-                    cursor_pos
-                )
-                dialog_frame_size = self.frameGeometry()
-                # Calculate the ideal top-left corner position for the dialog based on the mouse click
-                ideal_pos = cursor_pos
-                # Adjust to prevent the dialog from exceeding the right screen boundary
-                if (ideal_pos.x() + dialog_frame_size.width()) > screen.right():
-                    ideal_pos.setX(screen.right() - dialog_frame_size.width())
-                # Adjust to prevent the dialog's bottom from going off-screen
-                if (ideal_pos.y() + dialog_frame_size.height()) > screen.bottom():
-                    ideal_pos.setY(screen.bottom() - dialog_frame_size.height())
-                self.move(ideal_pos)
-            elif move_mode == "center":
-                # Calculate the center position to move the dialog to
-                screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-                centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
-                qr = self.frameGeometry()
-                qr.moveCenter(centerPoint)
-                self.move(qr.topLeft())
-
+            cursor_pos = QtGui.QCursor.pos()
+            screen = QtWidgets.QApplication.desktop().screenGeometry(cursor_pos)
+            dialog_frame_size = self.frameGeometry()
+            # Calculate the ideal top-left corner position for the dialog based on the mouse click
+            ideal_pos = cursor_pos
+            # Adjust to prevent the dialog from exceeding the right screen boundary
+            if (ideal_pos.x() + dialog_frame_size.width()) > screen.right():
+                ideal_pos.setX(screen.right() - dialog_frame_size.width())
+            # Adjust to prevent the dialog's bottom from going off-screen
+            if (ideal_pos.y() + dialog_frame_size.height()) > screen.bottom():
+                ideal_pos.setY(screen.bottom() - dialog_frame_size.height())
+            self.move(ideal_pos)
+        
         if self.exec_():
             return (
                 self.edit.text(),

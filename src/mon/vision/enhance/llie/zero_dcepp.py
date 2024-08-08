@@ -208,11 +208,14 @@ class ZeroDCEpp_RE(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        pred = self.forward(input=input, *args, **kwargs)
+    ) -> dict | None:
+        pred            = self.forward(input=input, *args, **kwargs)
         adjust, enhance = pred
-        loss = self.loss(input, adjust, enhance)
-        return enhance, loss
+        loss            = self.loss(input, adjust, enhance)
+        return {
+            "pred": enhance,
+            "loss": loss,
+        }
     
     def forward(
         self,

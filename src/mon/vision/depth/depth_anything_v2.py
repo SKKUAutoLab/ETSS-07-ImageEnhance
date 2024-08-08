@@ -17,6 +17,7 @@ __all__ = [
     "DepthAnythingV2_ViTB",
     "DepthAnythingV2_ViTL",
     "DepthAnythingV2_ViTS",
+    "build_depth_anything_v2",
 ]
 
 import sys
@@ -84,11 +85,10 @@ class DepthAnythingV2(nn.ExtraModel, ABC):
         
         # Load weights
         if self.weights:
-            # print(self.weights)
             self.load_weights()
         else:
             self.apply(self.init_weights)
-        
+
     def init_weights(self, model: nn.Module):
         pass
     
@@ -102,9 +102,8 @@ class DepthAnythingV2(nn.ExtraModel, ABC):
     ) -> torch.Tensor:
         x = input
         y = self.model(x)
+        y = (y - y.min()) / (y.max() - y.min())  # Normalize the depth map in the range [0, 1].
         y = y.unsqueeze(1)
-        # Normalize the depth map in the range [0, 1].
-        y = (y - y.min()) / (y.max() - y.min())
         return y
 
 
@@ -185,4 +184,20 @@ class DepthAnythingV2_ViTL(DepthAnythingV2):
             *args, **kwargs
         )
 
+
+def build_depth_anything_v2(
+    encoder     : Literal["vits", "vitb", "vitl", "vitg"] = "vits",
+    in_channels : int = 3,
+    weights     : Any = "da_2k",
+    *args, **kwargs
+) -> DepthAnythingV2:
+    if encoder not in ["vits", "vitb", "vitl", "vitg"]:
+        raise ValueError(f":param:`encoder` must be one of ['vits', 'vitb', 'vitl', 'vitg'], but got {encoder}.")
+    if encoder == "vits":
+        return DepthAnythingV2_ViTS(in_channels=in_channels, weights=weights, *args, **kwargs)
+    elif encoder == "vitb":
+        return DepthAnythingV2_ViTB(in_channels=in_channels, weights=weights, *args, **kwargs)
+    elif encoder == "vitl":
+        return DepthAnythingV2_ViTL(in_channels=in_channels, weights=weights, *args, **kwargs)
+    
 # endregion

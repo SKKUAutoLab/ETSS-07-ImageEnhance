@@ -230,10 +230,13 @@ class LLLINet(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred = self.forward(input=input, *args, **kwargs)
         loss = self.loss(pred, target)
-        return pred, loss
+        return {
+            "pred": pred,
+            "loss": loss,
+        }
 
     def forward(
         self,
@@ -373,7 +376,7 @@ class LLLINetHVI(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         # pred = self.forward(input=input, *args, **kwargs)
         # loss = self.loss(pred, target)
         # return pred, loss
@@ -384,10 +387,11 @@ class LLLINetHVI(base.LowLightImageEnhancementModel):
         loss_rgb   = self.loss(pred_rgb, target_rgb)
         loss_hvi   = self.loss(pred_hvi, target_hvi)
         loss       = loss_rgb + self.hvi_weight * loss_hvi
-        extra      = {
-            "hvi_k": float(self.trans.density_k.item())
+        return {
+            "pred" : pred_rgb,
+            "loss" : loss,
+            "hvi_k": float(self.trans.density_k.item()),
         }
-        return pred_rgb, loss, extra
     
     def forward(
         self,

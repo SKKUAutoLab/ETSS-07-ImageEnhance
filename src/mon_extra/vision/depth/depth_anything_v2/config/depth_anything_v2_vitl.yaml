@@ -10,7 +10,7 @@ project     : ~
 variant     : ~
 fullname    : ~
 save_dir    : ~
-weights     : ~
+weights     : "zoo/vision/depth/depth_anything_v2/depth_anything_v2_vitl/da_2k/depth_anything_v2_vitl_da_2k.pth"
 device      : 0
 local_rank  : -1
 launcher    : ~

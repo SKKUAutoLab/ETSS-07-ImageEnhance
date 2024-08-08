@@ -262,7 +262,7 @@ class RRDNet(base.LowLightImageEnhancementModel):
         input : torch.Tensor,
         target: torch.Tensor | None,
         *args, **kwargs
-    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> dict | None:
         pred = self.forward(input=input, *args, **kwargs)
         illumination          = pred[0]
         adjusted_illumination = pred[1]
@@ -275,7 +275,10 @@ class RRDNet(base.LowLightImageEnhancementModel):
             reflectance  = reflectance,
             noise        = noise,
         ) if self.loss else None
-        return pred, loss
+        return {
+            "pred": pred,
+            "loss": loss,
+        }
     
     def forward(
         self,
