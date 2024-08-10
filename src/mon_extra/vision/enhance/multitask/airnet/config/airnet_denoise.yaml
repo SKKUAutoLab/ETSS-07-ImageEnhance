@@ -1,8 +1,8 @@
 # Basic
 hostname    : ~
 config      : ~
-arch        : "depth_anything_v2"
-model       : "depth_anything_v2_vits"
+arch        : "airnet"
+model       : "airnet"
 data        : ~
 data_dir    : ~
 root        : ~
@@ -10,7 +10,7 @@ project     : ~
 variant     : ~
 fullname    : ~
 save_dir    : ~
-weights     : "zoo/vision/depth/depth_anything_v2/depth_anything_v2_vits/da_2k/depth_anything_v2_vits_da_2k.pth"
+weights     : "zoo/vision/enhance/multitask/airnet/airnet/pretrained/airnet_denoise.pth"
 device      : 0
 local_rank  : -1
 launcher    : ~
@@ -26,8 +26,5 @@ exist_ok    : False
 verbose     : True
 
 # Model Specific
-encoder     : "vits"
-features    : 64
-out_channels: [48, 96, 192, 384]
-pred_only   : True
-format      : 2  # 0: grayscale, 1: color, 2: both
+mode        : 0  # 0 for denoise, 1 for derain, 2 for dehaze, 3 for all-in-one
+batch_size  : 1

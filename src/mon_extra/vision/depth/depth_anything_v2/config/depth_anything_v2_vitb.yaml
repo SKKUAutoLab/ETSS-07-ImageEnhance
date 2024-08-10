@@ -30,4 +30,4 @@ encoder     : "vitb"
 features    : 128
 out_channels: [96, 192, 384, 768]
 pred_only   : True
-grayscale   : False
+format      : 2  # 0: grayscale, 1: color, 2: both

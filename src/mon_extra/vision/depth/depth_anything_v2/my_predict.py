@@ -34,8 +34,8 @@ def predict(args: argparse.Namespace):
     encoder      = args.encoder
     features     = args.features
     out_channels = args.out_channels
-    grayscale    = args.grayscale
     pred_only    = args.pred_only
+    format       = args.format
     
     # Model
     '''
@@ -48,7 +48,7 @@ def predict(args: argparse.Namespace):
     depth_anything = DepthAnythingV2(**model_configs[args.encoder])
     '''
     depth_anything = DepthAnythingV2(encoder=encoder, features=features, out_channels=out_channels)
-    depth_anything.load_state_dict(torch.load(str(weights), map_location="cpu"))
+    depth_anything.load_state_dict(torch.load(str(weights), map_location="cpu", weights_only=True))
     depth_anything = depth_anything.to(device).eval()
     
     # Benchmark
@@ -74,8 +74,12 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
+    save_dir       = save_dir / data_name
+    gray_save_dir  = save_dir / "gray"
+    color_save_dir = save_dir / "color"
     save_dir.mkdir(parents=True, exist_ok=True)
+    gray_save_dir.mkdir(parents=True, exist_ok=True)
+    color_save_dir.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     cmap  = matplotlib.colormaps.get_cmap("Spectral_r")
@@ -96,22 +100,32 @@ def predict(args: argparse.Namespace):
                 depth      = depth.astype(np.uint8)
                 timer.tock()
                 
-                if grayscale:
-                    depth = np.repeat(depth[..., np.newaxis], 3, axis=-1)
-                else:
-                    depth = (cmap(depth)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
-
-                if pred_only:
-                    output = depth
-                else:
-                    split_region    = np.ones((raw_image.shape[0], 50, 3), dtype=np.uint8) * 255
-                    combined_result = cv2.hconcat([raw_image, split_region, depth])
-                    output          = combined_result
-                output_path = save_dir / image_path.name
-                cv2.imwrite(str(output_path), output)
+                gray    = {
+                    "file": gray_save_dir / image_path.name,
+                    "data": np.repeat(depth[..., np.newaxis], 3, axis=-1),
+                }
+                color   = {
+                    "file": color_save_dir / image_path.name,
+                    "data": (cmap(depth)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8),
+                }
+                results = []
+                if format in [2, "all"]:
+                    results = [gray, color]
+                elif format in [0, "gray", "grayscale"]:
+                    results = [gray]
+                elif format in [1, "color"]:
+                    results = [color]
                 
-        # avg_time = float(timer.total_time / len(data_loader))
-        avg_time   = float(timer.avg_time)
+                for result in results:
+                    output_path = result["file"]
+                    output      = result["data"]
+                    if not pred_only:
+                        split_region    = np.ones((raw_image.shape[0], 50, 3), dtype=np.uint8) * 255
+                        combined_result = cv2.hconcat([raw_image, split_region, output])
+                        output          = combined_result
+                    cv2.imwrite(str(output_path), output)
+                
+        avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 
 # endregion

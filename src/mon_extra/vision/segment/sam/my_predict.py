@@ -108,7 +108,7 @@ def predict(args: argparse.Namespace):
                 
                 # Binary
                 for i, mask in enumerate(masks):
-                    output_path = save_dir_binary / f"{image_path.stem}_binary_{i}.png"
+                    output_path = save_dir_binary / f"{image_path.stem}_mask_{i}.jpg"
                     cv2.imwrite(str(output_path), np.uint8(mask["segmentation"]) * 255)
                     
                 # Color
@@ -116,13 +116,12 @@ def predict(args: argparse.Namespace):
                 output[:, :, 3] = 0
                 for i, mask in enumerate(masks):
                     mask_bool         = mask["segmentation"]
-                    color_mask        = np.concatenate([np.random.random(3), [0.35]])
+                    color_mask        = np.concatenate([np.random.random(3), [1.0]])  # 0.35
                     output[mask_bool] = color_mask
-                output_path  = save_dir_color / image_path.name
+                output_path = save_dir_color / f"{image_path.stem}.jpg"
                 cv2.imwrite(str(output_path), np.uint8(output * 255))
                 
-        # avg_time = float(timer.total_time / len(data_loader))
-        avg_time   = float(timer.avg_time)
+        avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 
 # endregion

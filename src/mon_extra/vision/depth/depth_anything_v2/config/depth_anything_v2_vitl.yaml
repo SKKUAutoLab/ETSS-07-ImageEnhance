@@ -30,4 +30,4 @@ encoder     : "vitl"
 features    : 256
 out_channels: [256, 512, 1024, 1024]
 pred_only   : True
-grayscale   : False
+format      : 2  # 0: grayscale, 1: color, 2: both

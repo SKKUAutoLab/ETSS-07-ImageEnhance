@@ -30,4 +30,4 @@ encoder     : "vitg"
 features    : 384
 out_channels: [1536, 1536, 1536, 1536]
 pred_only   : True
-grayscale   : False
+format      : 2  # 0: grayscale, 1: color, 2: both
