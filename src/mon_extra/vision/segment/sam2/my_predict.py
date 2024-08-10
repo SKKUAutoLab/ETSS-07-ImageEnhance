@@ -107,22 +107,21 @@ def predict(args: argparse.Namespace):
     timer = mon.Timer()
     with torch.no_grad():
         with mon.get_progress_bar() as pbar:
-            for image, target, meta in pbar.track(
-                sequence    = data_loader,
+            for i, datapoint in pbar.track(
+                sequence    = enumerate(data_loader),
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                image      = datapoint.get("input")
+                meta       = datapoint.get("meta")
                 image_path = meta["path"]
-                
                 timer.tick()
                 masks = mask_generator.generate(image)
                 timer.tock()
-                
                 # Binary
                 for i, mask in enumerate(masks):
                     output_path = save_dir_binary / f"{image_path.stem}_mask_{i}.jpg"
                     cv2.imwrite(str(output_path), np.uint8(mask["segmentation"]) * 255)
-                
                 # Color
                 output          = np.ones((masks[0]["segmentation"].shape[0], masks[0]["segmentation"].shape[1], 4))
                 output[:, :, 3] = 0
@@ -132,9 +131,7 @@ def predict(args: argparse.Namespace):
                     output[mask_bool] = color_mask
                 output_path = save_dir_color / f"{image_path.stem}.jpg"
                 cv2.imwrite(str(output_path), np.uint8(output * 255))
-                
-        # avg_time = float(timer.total_time / len(data_loader))
-        avg_time   = float(timer.avg_time)
+        avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 
 # endregion
