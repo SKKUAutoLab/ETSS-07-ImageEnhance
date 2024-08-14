@@ -88,7 +88,7 @@ def get_project_default_config(project_root: str | pathlib.Path) -> dict:
 def list_config_files(
     project_root: str | pathlib.Path,
     model_root  : str | pathlib.Path | None = None,
-    model       : str | None             = None
+    model       : str | None                = None
 ) -> list[pathlib.Path]:
     """List configuration files in the given :param:`project`."""
     config_files = []
@@ -119,7 +119,7 @@ def list_config_files(
 def list_configs(
     project_root: str | pathlib.Path,
     model_root  : str | pathlib.Path | None = None,
-    model       : str | None             = None
+    model       : str | None                = None
 ) -> list[str]:
     config_files = list_config_files(project_root=project_root, model_root=model_root, model=model)
     config_files = [str(f.name) for f in config_files]
@@ -137,33 +137,31 @@ def parse_config_file(
     weights_path: str | pathlib.Path | None = None,
 ) -> pathlib.Path | None:
     # assert config not in [None, "None", ""]
-    if config in [None, "None", ""]:
-        error_console.log(f"No configuration given.")
-        return None
-    # Check ``config`` itself
-    config = pathlib.Path(config)
-    if config.is_config_file():
-        return config
-    # Check for other config file extensions in the same directory
-    config_ = config.config_file()
-    if config_.is_config_file():
-        return config_
-    # Check for config file in ``'config'`` directory in ``project_root``.
-    if project_root not in [None, "None", ""]:
-        config_dirs  = [pathlib.Path(project_root / "config")]
-        config_dirs += pathlib.Path(project_root / "config").subdirs(recursive=True)
-        for config_dir in config_dirs:
-            config_ = (config_dir / config.name).config_file()
-            if config_.is_config_file():
-                return config_
-    # Check for config file in ``'config'`` directory in ``model_root``.
-    if model_root not in [None, "None", ""]:
-        config_dirs  = [pathlib.Path(model_root / "config")]
-        config_dirs += pathlib.Path(model_root / "config").subdirs(recursive=True)
-        for config_dir in config_dirs:
-            config_ = (config_dir / config.name).config_file()
-            if config_.is_config_file():
-                return config_
+    if config not in [None, "None", ""]:
+        # Check ``config`` itself
+        config = pathlib.Path(config)
+        if config.is_config_file():
+            return config
+        # Check for other config file extensions in the same directory
+        config_ = config.config_file()
+        if config_.is_config_file():
+            return config_
+        # Check for config file in ``'config'`` directory in ``project_root``.
+        if project_root not in [None, "None", ""]:
+            config_dirs  = [pathlib.Path(project_root / "config")]
+            config_dirs += pathlib.Path(project_root / "config").subdirs(recursive=True)
+            for config_dir in config_dirs:
+                config_ = (config_dir / config.name).config_file()
+                if config_.is_config_file():
+                    return config_
+        # Check for config file in ``'config'`` directory in ``model_root``.
+        if model_root not in [None, "None", ""]:
+            config_dirs  = [pathlib.Path(model_root / "config")]
+            config_dirs += pathlib.Path(model_root / "config").subdirs(recursive=True)
+            for config_dir in config_dirs:
+                config_ = (config_dir / config.name).config_file()
+                if config_.is_config_file():
+                    return config_
     # Check for config file that comes along with ``weights_path``.
     if weights_path not in [None, "None", ""]:
         weights_path = weights_path[0] if isinstance(weights_path, list) else weights_path
@@ -413,11 +411,11 @@ def list_mon_models(
     mode   = Scheme(mode) if mode in ["online", "instance"] else None
     arch   = arch         if arch not in [None, "None", ""] else None
     models = list(flatten_models.keys())
-    if task is not None:
+    if task:
         models = [m for m in models if task in flatten_models[m].tasks]
-    if mode is not None:
+    if mode:
         models = [m for m in models if mode in flatten_models[m]._schemes]
-    if arch is not None:
+    if arch:
         models = [m for m in models if arch in flatten_models[m].arch]
     return sorted(models)
 
@@ -433,11 +431,11 @@ def list_extra_models(
     mode   = Scheme(mode) if mode in ["online", "instance"] else None
     arch   = arch         if arch not in [None, "None", ""] else None
     models = list(flatten_models.keys())
-    if task is not None:
+    if task:
         models = [m for m in models if task in flatten_models[m]["tasks"]]
-    if mode is not None:
+    if mode:
         models = [m for m in models if mode in flatten_models[m]["schemes"]]
-    if arch is not None:
+    if arch:
         models = [m for m in models if arch in flatten_models[m]["arch"]]
     return sorted(models)
 
@@ -474,9 +472,9 @@ def list_mon_archs(
     task   = Task(task)   if task not in [None, "None", ""] else None
     mode   = Scheme(mode) if mode in ["online", "instance"] else None
     models = list(flatten_models.keys())
-    if task is not None:
+    if task:
         models = [m for m in models if task in flatten_models[m].tasks]
-    if mode is not None:
+    if mode:
         models = [m for m in models if mode in flatten_models[m]._schemes]
     archs  = [flatten_models[m].arch for m in models]
     archs  = [a.strip() for a in archs]
@@ -493,9 +491,9 @@ def list_extra_archs(
     task   = Task(task)   if task not in [None, "None", ""] else None
     mode   = Scheme(mode) if mode in ["online", "instance"] else None
     models = list(flatten_models.keys())
-    if task is not None:
+    if task:
         models = [m for m in models if task in flatten_models[m]["tasks"]]
-    if mode is not None:
+    if mode:
         models = [m for m in models if mode in flatten_models[m]["schemes"]]
     archs  = [flatten_models[m]["arch"] for m in models]
     archs  = [a.strip() for a in archs]

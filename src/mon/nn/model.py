@@ -28,11 +28,11 @@ from thop.profile import *
 from torch import nn
 
 from mon import core
-from mon.core import _callable
+from mon.core import _size_2_t
 from mon.globals import LOSSES, LR_SCHEDULERS, METRICS, OPTIMIZERS, Scheme, Task, ZOO_DIR
 from mon.nn import loss as L, metric as M
 
-console      = core.console
+console       = core.console
 error_console = core.error_console
 StepOutput    = lightning.pytorch.utilities.types.STEP_OUTPUT
 EpochOutput   = Any  # lightning.pytorch.utilities.types.EPOCH_OUTPUT
@@ -110,7 +110,7 @@ def load_state_dict(
     if isinstance(weights, dict):
         path = weights.get("path", path)
         url  = weights.get("url",  url)
-        if path is not None and url is not None:
+        if path and url:
             path = core.Path(path)
             core.mkdirs(paths=[path.parent], exist_ok=True)
             if core.is_url(url):
@@ -372,7 +372,7 @@ class Model(lightning.LightningModule, ABC):
                 weights         = self.zoo[weights]
                 weights["path"] = self.zoo_dir / weights.get("path", "")
                 num_classes     = getattr(weights, "num_classes", None)
-                if num_classes is not None and num_classes != self.num_classes:
+                if num_classes and num_classes != self.num_classes:
                     self.num_classes = num_classes
                     console.log(f"Overriding :attr:`num_classes` with {num_classes}.")
             else:
@@ -547,7 +547,7 @@ class Model(lightning.LightningModule, ABC):
         else:
             error_console.log(f"[yellow]Cannot load from weights from: {self.weights}!")
         
-        if state_dict is not None:
+        if state_dict:
             self.load_state_dict(state_dict=state_dict)
             if self.verbose:
                 console.log(f"Load model's weights from: {self.weights}!")
@@ -628,7 +628,7 @@ class Model(lightning.LightningModule, ABC):
             # Define learning rate scheduler
             if "lr_scheduler" in optim and lr_scheduler is None:
                 optim.pop("lr_scheduler")
-            elif lr_scheduler is not None and isinstance(lr_scheduler, dict):
+            elif lr_scheduler and isinstance(lr_scheduler, dict):
                 scheduler = lr_scheduler.get("scheduler", None)
                 if scheduler is None:
                     raise ValueError(f":param:`scheduler` must be defined.")
@@ -657,108 +657,141 @@ class Model(lightning.LightningModule, ABC):
         self.optims = optims
         return self.optims
     
+    def compute_efficiency_score(self, *args, **kwargs) -> tuple[float, float, float]:
+        """Compute the efficiency score of the model, including FLOPs, number
+        of parameters, and runtime.
+        """
+        error_console.log(f"[yellow]This method has not been implemented yet!")
+        return 0, 0, 0
+    
     # endregion
     
     # region Forward Pass
     
-    def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict | None:
-        """Forward pass with loss value. Loss function may need more arguments
-        beside the ground-truth and prediction values. For calculating the
-        metrics, we only need the final predictions and ground-truth.
-
+    @abstractmethod
+    def assert_datapoint(self, datapoint: dict) -> bool:
+        """Check the datapoint before passing it to the :meth:`forward()`.
+        Because each type of model requires different attributes in the datapoint,
+        this method is used to ensure that the datapoint is valid.
+        
         Args:
-            datapoint: A :class:`dict` containing:
-                - input: An input of shape :math:`[B, C, H, W]`.
-                - target: A ground-truth of shape :math:`[B, C, H, W]`. Default: ``None``.
-                - meta: A :class:`list` containing the metadata. Default: ``None``.
+            datapoint: A :class:`dict` containing all attributes of a datapoint.
+        """
+        pass
+    
+    @abstractmethod
+    def assert_outputs(self, outputs: dict) -> bool:
+        """Check the outputs after passing it to the :meth:`forward()`. Because
+        each type of model returns different attributes in the outputs, this
+        method is used to ensure that the outputs are valid.
+
+		Args:
+			outputs: A :class:`dict` containing all predictions.
+		"""
+        pass
+    
+    @abstractmethod
+    def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict:
+        """Forward pass, then compute the loss value.
+        
+        Args:
+            datapoint: A :class:`dict` containing the attributes of a datapoint.
             
         Return:
             A :class:`dict` of all predictions with corresponding names. Note
             that the dictionary must contain the key ``'loss'`` and ``'pred'``.
-            Default: ``None``.
         """
-        input  = datapoint.get("input",  None)
-        target = datapoint.get("target", None)
-        meta   = datapoint.get("meta",   None)
-        pred   = pred[-1] if isinstance(pred, list | tuple) else pred
-        loss   = self.loss(pred, target)
-        return {
-            "pred": pred,
-            "loss": loss,
-        }
-        
-    def forward_debug(self, input: torch.Tensor, *args, **kwargs) -> dict | None:
-        """Forward pass for debugging. This function is used to visualize the
-        intermediate layers of the model.
+        '''
+        # Forward
+        outputs = forward(datapoint=datapoint, *args, **kwargs)
+        assert_datapoint(datapoint)
+        assert_outputs(outputs)
+        # Loss
+        pred   = outputs.get("pred")
+        target = datapoint.get("target")
+        outputs["loss"] = self.loss(pred, target) if self.loss else None
+        # Return
+        return outputs
+        '''
+        pass
+    
+    @abstractmethod
+    def compute_metrics(
+        self,
+        datapoint: dict,
+        outputs  : dict,
+        metrics  : list[M.Metric] | None = None
+    ) -> dict:
+        """Compute metrics.
 
         Args:
-            input: An input of shape :math:`[B, C, H, W]`.
+            datapoint: A :class:`dict` containing the attributes of a datapoint.
+            outputs: A :class:`dict` containing all predictions.
+            metrics: A list of metric functions to compute. Default: ``None``.
+        """
+        '''
+        # Check
+        self.assert_datapoint(datapoint)
+        self.assert_outputs(outputs)
+        # Metrics
+        pred    = outputs.get(<prediction>)
+        target  = datapoint.get(<class_id>)
+        results = {}
+        if metrics:
+            for i, metric in enumerate(metrics):
+                metric_name = getattr(metric, "name", f"metric_{i}")
+                results[metric_name] = metric(pred, target)
+        # Return
+        return results
+        '''
+        pass
+    
+    def forward_debug(self, datapoint: dict, *args, **kwargs) -> dict:
+        """Forward pass for debugging. This method is used to debug the model's
+        forward pass by returning the intermediate outputs.
+
+        Args:
+            datapoint: A :class:`dict` containing the attributes of a datapoint.
+            
+        Return:
+            A :class:`dict` of all intermediate outputs with corresponding names.
+            Default: ``{}``.
+        """
+        return {}
+    
+    @abstractmethod
+    def forward(self, datapoint: dict, *args, **kwargs) -> dict:
+        """Forward pass. This is the primary :meth:`forward` function of the model.
+        
+        Args:
+            datapoint: A :class:`dict` containing the attributes of a datapoint.
             
         Return:
             A :class:`dict` of all predictions with corresponding names.
-            Default: ``None``.
+            Default: ``{}``.
         """
-        return None
-    
-    @abstractmethod
-    def forward(
-        self,
-        input    : torch.Tensor,
-        augment  : _callable = None,
-        profile  : bool      = False,
-        out_index: int       = -1,
-        *args, **kwargs
-    ) -> torch.Tensor:
-        """Forward pass. This is the primary :meth:`forward` function of the
-        model. It supports augmented inference. In this function, we perform
-        test-time augmentation and pass the transformed input to
-        :meth:`forward_once()`.
-
-        Args:
-            input: An input of shape :math:`[B, C, H, W]`.
-            augment: If ``True``, perform test-time augmentation. Usually used
-                in predicting phase. Default: ``False``.
-            profile: If ``True``, measure processing time. Usually used in
-                predicting phase. Default: ``False``.
-            out_index: If the model produces multiple outputs, return the one
-                with the index :param:`out_index`. Usually used in predicting
-                phase. Default: ``-1`` means the last one.
-            
-        Return:
-            Predictions.
-        """
+        '''
+        assert_datapoint(datapoint)
+        ...
+        return {}
+        '''
         pass
     
     # endregion
     
     # region Training
     
-    def fit_one(self, *args, **kwargs) -> Any:
-        """Train the model with a single sample. This method is used for any
-        learning scheme performed on one single instance such as online learning,
-        zero-shot learning, one-shot learning, etc.
-        
-        Note:
-            In order to use this method, the model must implement the optimizer
-            and/or scheduler.
-        
-        Returns:
-            Return ``None`` by default if the model does not support this feature.
-        """
-        error_console.log(f"[yellow]The {self.__class__.__name__} does not support this feature.")
-        return None
-    
     def on_fit_start(self):
         """Called at the beginning of fit."""
         self.create_dir()
 
-    def training_step(self, batch: Any, batch_idx: int, *args, **kwargs) -> StepOutput | None:
+    def training_step(self, batch: dict, batch_idx: int, *args, **kwargs) -> StepOutput | None:
         """Here you compute and return the training loss, and some additional
         metrics for e.g., the progress bar or logger.
-
+        
         Args:
             batch: The output of :class:`~torch.utils.data.DataLoader`. It is a
-                :class:`dict` containing every piece of data for a datapoint.
+                :class:`dict` containing the attributes of a datapoint.
             batch_idx: An integer displaying index of this batch.
             
         Return:
@@ -768,29 +801,15 @@ class Model(lightning.LightningModule, ABC):
                 - ``None``, training will skip to the next batch.
         """
         # Forward
-        input   = batch.get("input",  None)
-        target  = batch.get("target", None)
-        meta    = batch.get("meta",   None)
-        results = self.forward_loss(datapoint=batch, *args, **kwargs)
-        pred    = results.pop("pred", None)
-        loss    = results.pop("loss", None)
-        
-        # Log data
-        log_images = {}
-        log_values = {
-            f"step"      : self.current_epoch,
-            f"train/loss": loss,
-        }
-        for k, v in results.items():
-            if core.is_image(v):
-                log_images[k] = v
-            else:
-                log_values[f"train/{k}"] = v
-        
+        outputs  = self.forward_loss_metric(datapoint=batch, *args, **kwargs)
+        outputs |= self.compute_metrics(
+            datapoint = batch,
+            outputs   = outputs,
+            metrics   = self.train_metrics
+        )
         # Log values
-        if self.train_metrics:
-            for i, metric in enumerate(self.train_metrics):
-                log_values[f"train/{metric.name}"] = metric(pred, target)
+        log_values  = {"step": self.current_epoch}
+        log_values |= {f"train/{k}": v for k, v in outputs.items() if not core.is_image(v)}
         self.log_dict(
             dictionary     = log_values,
             prog_bar       = False,
@@ -800,7 +819,8 @@ class Model(lightning.LightningModule, ABC):
             sync_dist      = True,
             rank_zero_only = False,
         )
-        
+        # Return
+        loss = outputs.get("loss", None)
         return loss
 
     def on_train_epoch_end(self):
@@ -808,35 +828,6 @@ class Model(lightning.LightningModule, ABC):
         if self.train_metrics:
             for i, metric in enumerate(self.train_metrics):
                 metric.reset()
-        """
-        # Loss
-        loss = torch.stack([x["loss"] for x in epoch_output]).mean()
-        if self.trainer.is_global_zero:
-            self.log(
-                name      = f"loss/train_epoch",
-                value     = loss,
-                prog_bar  = False,
-                on_step   = False,
-                on_epoch  = True,
-                sync_dist = True,
-            )
-            self.tb_log_scalar(f"loss/train_epoch", loss, "epoch")
-        # Metrics
-        if self.train_metrics:
-            for i, metric in enumerate(self.train_metrics):
-                value = metric.compute()
-                metric.reset()
-                if self.trainer.is_global_zero:
-                    self.log(
-                        name      = f"{metric.name}/train_epoch",
-                        value     = value,
-                        prog_bar  = False,
-                        on_step   = False,
-                        on_epoch  = True,
-                        sync_dist = True,
-                    )
-                    self.tb_log_scalar(f"{metric.name}/train_epoch", value, "epoch")
-        """
 
     def validation_step(self, batch: Any, batch_idx: int, *args, **kwargs) -> StepOutput | None:
         """Operates on a single batch of data from the validation set. In this
@@ -845,36 +836,25 @@ class Model(lightning.LightningModule, ABC):
         
         Args:
             batch: The output of :class:`~torch.utils.data.DataLoader`. It is a
-                :class:`dict` containing every piece of data for a datapoint.
-            batch_idx: The index of this batch.
-
+                :class:`dict` containing the attributes of a datapoint.
+            batch_idx: An integer displaying index of this batch.
+            
         Return:
-            - Any object or value.
-            - ``None``, validation will skip to the next batch.
+            Any of:
+                - The loss tensor.
+                - A :class:`dict`. Can include any keys, but must include the key ``'loss'``.
+                - ``None``, training will skip to the next batch.
         """
-        input   = batch.get("input",  None)
-        target  = batch.get("target", None)
-        meta    = batch.get("meta",   None)
-        results = self.forward_loss(datapoint=batch, *args, **kwargs)
-        pred    = results.pop("pred", None)
-        loss    = results.pop("loss", None)
-        
-        # Log data
-        log_images = {}
-        log_values = {
-            f"step"    : self.current_epoch,
-            f"val/loss": loss,
-        }
-        for k, v in results.items():
-            if core.is_image(v):
-                log_images[k] = v
-            else:
-                log_values[f"val/{k}"] = v
-                
+        # Forward
+        outputs  = self.forward_loss_metric(datapoint=batch, *args, **kwargs)
+        outputs |= self.compute_metrics(
+            datapoint = batch,
+            outputs   = outputs,
+            metrics   = self.val_metrics
+        )
         # Log values
-        if self.val_metrics:
-            for i, metric in enumerate(self.val_metrics):
-                log_values[f"val/{metric.name}"] = metric(pred, target)
+        log_values  = {"step": self.current_epoch}
+        log_values |= {f"val/{k}": v for k, v in outputs.items() if not core.is_image(v)}
         self.log_dict(
             dictionary     = log_values,
             prog_bar       = False,
@@ -884,18 +864,16 @@ class Model(lightning.LightningModule, ABC):
             sync_dist      = True,
             rank_zero_only = False,
         )
-        
         # Log images
-        if self.should_log_image():
-            self.log_image(
-                epoch  = self.current_epoch,
-                step   = self.global_step,
-                input  = input,
-                pred   = pred,
-                target = target,
-                extra  = log_images,
+        if self.should_log_images():
+            data = batch | {"outputs": outputs},
+            self.log_images(
+                epoch = self.current_epoch,
+                step  = self.global_step,
+                data  = data,
             )
-        
+        # Return
+        loss = outputs.get("loss", None)
         return loss
     
     def on_validation_epoch_end(self):
@@ -915,37 +893,25 @@ class Model(lightning.LightningModule, ABC):
 
         Args:
             batch: The output of :class:`~torch.utils.data.DataLoader`. It is a
-                :class:`dict` containing every piece of data for a datapoint.
-            batch_idx: The index of this batch.
-
+                :class:`dict` containing the attributes of a datapoint.
+            batch_idx: An integer displaying index of this batch.
+            
         Return:
             Any of:
-                - Any object or value.
-                - ``None``, testing will skip to the next batch.
+                - The loss tensor.
+                - A :class:`dict`. Can include any keys, but must include the key ``'loss'``.
+                - ``None``, training will skip to the next batch.
         """
-        input   = batch.get("input",  None)
-        target  = batch.get("target", None)
-        meta    = batch.get("meta",   None)
-        results = self.forward_loss(datapoint=batch, *args, **kwargs)
-        pred    = results.pop("pred", None)
-        loss    = results.pop("loss", None)
-        
-        # Log data
-        log_images = {}
-        log_values = {
-            f"step"     : self.current_epoch,
-            f"test/loss": loss,
-        }
-        for k, v in results.items():
-            if core.is_image(v):
-                log_images[k] = v
-            else:
-                log_values[f"test/{k}"] = v
-        
+        # Forward
+        outputs  = self.forward_loss_metric(datapoint=batch, *args, **kwargs)
+        outputs |= self.compute_metrics(
+            datapoint = batch,
+            outputs   = outputs,
+            metrics   = self.test_metrics
+        )
         # Log values
-        if self.test_metrics:
-            for i, metric in enumerate(self.test_metrics):
-                log_values[f"test/{metric.name}"] = metric(pred, target)
+        log_values  = {"step": self.current_epoch}
+        log_values |= {f"test/{k}": v for k, v in outputs.items() if not core.is_image(v)}
         self.log_dict(
             dictionary     = log_values,
             prog_bar       = False,
@@ -955,18 +921,16 @@ class Model(lightning.LightningModule, ABC):
             sync_dist      = True,
             rank_zero_only = False,
         )
-        
         # Log images
-        if self.should_log_image():
-            self.log_image(
-                epoch  = self.current_epoch,
-                step   = self.global_step,
-                input  = input,
-                pred   = pred,
-                target = target,
-                extra  = log_images,
+        if self.should_log_images():
+            data = batch | {"outputs": outputs},
+            self.log_images(
+                epoch = self.current_epoch,
+                step  = self.global_step,
+                data  = data,
             )
-        
+        # Return
+        loss = outputs.get("loss", None)
         return loss
     
     def on_test_epoch_end(self):
@@ -974,6 +938,26 @@ class Model(lightning.LightningModule, ABC):
         if self.test_metrics:
             for i, metric in enumerate(self.test_metrics):
                 metric.reset()
+    
+    # endregion
+    
+    # region Predicting
+    
+    @abstractmethod
+    @torch.no_grad()
+    def infer(self, datapoint: dict, *args, **kwargs) -> dict:
+        """Infer the model on a single datapoint. This method is different from
+        :meth:`forward()` in term that you may want to perform additional
+        pre-processing or post-processing steps.
+        
+        Notes:
+            If you want to perform specific pre-processing or post-processing
+            steps, you should override this method.
+        
+        Args:
+            datapoint: A :class:`dict` containing the attributes of a datapoint.
+        """
+        pass
     
     # endregion
     
@@ -1000,7 +984,7 @@ class Model(lightning.LightningModule, ABC):
         if ".onnx" not in str(file_path):
             file_path = core.Path(str(file_path) + ".onnx")
         
-        if input_dims is not None:
+        if input_dims:
             input_sample = torch.randn(input_dims)
         else:
             raise ValueError(f":param:`input_dims` must be defined.")
@@ -1032,7 +1016,7 @@ class Model(lightning.LightningModule, ABC):
         if ".pt" not in str(file_path):
             file_path = core.Path(str(file_path) + ".pt")
         
-        if input_dims is not None:
+        if input_dims:
             input_sample = torch.randn(input_dims)
         else:
             raise ValueError(f":param:`input_dims` must be defined.")
@@ -1044,7 +1028,7 @@ class Model(lightning.LightningModule, ABC):
     
     # region Logging
     
-    def should_log_image(self) -> bool:
+    def should_log_images(self) -> bool:
         """Check if we should save debug images."""
         log_image_every_n_epochs = getattr(self.trainer, "log_image_every_n_epochs", 0)
         return (
@@ -1053,26 +1037,14 @@ class Model(lightning.LightningModule, ABC):
             and self.current_epoch % log_image_every_n_epochs == 0
         )
     
-    def log_image(
+    def log_images(
         self,
         epoch    : int,
         step     : int,
-        input    : torch.Tensor,
-        pred     : torch.Tensor,
-        target   : torch.Tensor | None = None,
-        extra    : dict         | None = None,
+        data     : dict,
         extension: str = ".jpg"
     ):
         """Log debug images to :attr:`debug_dir`."""
-        '''
-        epoch = int(epoch)
-        step  = int(step)
-        for k, v in dictionary.items():
-            v = core.denormalize_image(v)
-            for i, image in enumerate(v):
-                save_file = self.debug_dir / f"{k}_{epoch:06d}_{step:8d}_{i:2d}{extension}"
-                torchvision.utils.save_image(image, str(save_file))
-        '''
         pass
     
     # endregion
@@ -1124,7 +1096,7 @@ class ExtraModel(Model, ABC):
         else:
             error_console.log(f"[yellow]Cannot load from weights from: {self.weights}!")
         
-        if state_dict is not None:
+        if state_dict:
             self.model.load_state_dict(state_dict=state_dict)
             if self.verbose:
                 console.log(f"Load model's weights from: {self.weights}!")

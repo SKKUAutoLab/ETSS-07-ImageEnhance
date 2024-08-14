@@ -143,9 +143,12 @@ def is_image(input: torch.Tensor, bits: int = 8) -> bool:
         >>> is_image(img)
         True
     """
+    if not isinstance(input, torch.Tensor | np.ndarray):
+        return False
     res = is_color_or_image(input)
     if not res:
         return False
+    '''
     if (
         input.dtype in [torch.float16, torch.float32, torch.float64]
         and (input.min() < 0.0 or input.max() > 1.0)
@@ -153,6 +156,7 @@ def is_image(input: torch.Tensor, bits: int = 8) -> bool:
         return False
     elif input.min() < 0 or input.max() > 2 ** bits - 1:
         return False
+    '''
     return True
 
 
@@ -236,37 +240,37 @@ def get_channel(
     if is_channel_first_image(input=input):
         if input.ndim == 5:
             if keep_dim:
-                return input[:, :, i1:i2, :, :] if i2 is not None else input[:, :, i1:, :, :]
+                return input[:, :, i1:i2, :, :] if i2 else input[:, :, i1:, :, :]
             else:
-                return input[:, :, i1, :, :] if i2 is not None else input[:, :, i1, :, :]
+                return input[:, :, i1, :, :] if i2 else input[:, :, i1, :, :]
         elif input.ndim == 4:
             if keep_dim:
-                return input[:, i1:i2, :, :] if i2 is not None else input[:, i1:, :, :]
+                return input[:, i1:i2, :, :] if i2 else input[:, i1:, :, :]
             else:
-                return input[:, i1, :, :] if i2 is not None else input[:, i1, :, :]
+                return input[:, i1, :, :] if i2  else input[:, i1, :, :]
         elif input.ndim == 3:
             if keep_dim:
-                return input[i1:i2, :, :] if i2 is not None else input[i1:, :, :]
+                return input[i1:i2, :, :] if i2 else input[i1:, :, :]
             else:
-                return input[i1, :, :] if i2 is not None else input[i1, :, :]
+                return input[i1, :, :] if i2 else input[i1, :, :]
         else:
             raise ValueError
     else:
         if input.ndim == 5:
             if keep_dim:
-                return input[:, :, :, :, i1:i2] if i2 is not None else input[:, :, :, :, i1:]
+                return input[:, :, :, :, i1:i2] if i2 else input[:, :, :, :, i1:]
             else:
-                return input[:, :, :, :, i1] if i2 is not None else input[:, :, :, :, i1]
+                return input[:, :, :, :, i1] if i2 else input[:, :, :, :, i1]
         elif input.ndim == 4:
             if keep_dim:
-                return input[:, :, :, i1:i2] if i2 is not None else input[:, :, :, i1:]
+                return input[:, :, :, i1:i2] if i2 else input[:, :, :, i1:]
             else:
-                return input[:, :, :, i1] if i2 is not None else input[:, :, :, i1]
+                return input[:, :, :, i1] if i2 else input[:, :, :, i1]
         elif input.ndim == 3:
             if keep_dim:
-                return input[:, :, i1:i2] if i2 is not None else input[:, :, i1:]
+                return input[:, :, i1:i2] if i2 else input[:, :, i1:]
             else:
-                return input[:, :, i1] if i2 is not None else input[:, :, i1]
+                return input[:, :, i1] if i2 else input[:, :, i1]
         else:
             raise ValueError
     
@@ -864,7 +868,7 @@ def to_image_tensor(
     input = normalize_image(input=input) if normalize else input
     # Place in memory
     input = input.contiguous()
-    if device is not None:
+    if device:
         input = input.to(device)
     return input
 

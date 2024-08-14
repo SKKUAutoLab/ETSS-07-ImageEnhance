@@ -86,7 +86,7 @@ class ImageDetectionDataset(img.LabeledImageDataset, ABC):
 		bboxes = self.annotations[index].data if self.has_annotations else None
 		meta   = self.images[index].meta
 		
-		if self.transform is not None:
+		if self.transform:
 			if self.has_annotations:
 				transformed = self.transform(image=image, bboxes=bboxes)
 				image       = transformed["image"]
@@ -136,7 +136,7 @@ class ImageDetectionDataset(img.LabeledImageDataset, ABC):
 				l[:, -1] = i  # add target image index for build_targets()
 		
 		return {
-			"input" : image,
+			"input" : input,
 			"target": None,
 			"meta"  : meta,
 		}

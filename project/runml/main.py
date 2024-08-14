@@ -176,7 +176,7 @@ def run_predict(args: dict):
         weights_path = weights,
         config       = config,
     )
-    config   = config or "default"
+    config   = config or ""
     # if use_data_dir:
     #     save_dir = save_dir or mon.parse_save_dir(mon.DATA_DIR/task.value/"#predict", arch, model, None, project, variant)
     # else:
@@ -424,7 +424,7 @@ def main(
     weights_str_ = mon.parse_menu_string(weights_)
     weights      = click.prompt(click.style(f"Weights {weights_str_}", fg="bright_green", bold=True), type=str, default=weights or "")
     weights      = weights if weights not in [None, ""] else None
-    if weights is not None:
+    if weights:
         if isinstance(weights, str):
             weights = mon.to_list(weights)
         weights = [weights_[int(w)] if mon.is_int(w) else w for w in weights]
