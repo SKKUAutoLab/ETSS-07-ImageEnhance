@@ -14,7 +14,7 @@ current_file = mon.Path(__file__).absolute()
 
 # region Basic
 
-model_name = "d2ce_04_depth_brightness_attention"
+model_name = "d2ce"
 data_name  = "ulol"
 root       = current_file.parents[1] / "run"
 data_root  = mon.DATA_DIR / "enhance" / "llie"
@@ -32,8 +32,8 @@ verbose    = True
 
 model = {
 	"name"        : model_name,     # The model's name.
-	"root"        : root,           # The root directory of the model.
 	"fullname"    : fullname,       # A full model name to save the checkpoint or weight.
+	"root"        : root,           # The root directory of the model.
 	"in_channels" : 3,              # The first layer's input channel.
 	"out_channels": None,           # A number of classes, which is also the last layer's output channels.
 	"num_channels": 32,		        # The number of input and output channels for subsequent layers.
@@ -44,6 +44,8 @@ model = {
 	"gf_eps"	  : 1e-4,           # The epsilon for GuidedFilter.
 	"bam_gamma"	  : 2.6,            # The gamma for BrightnessAttentionMap.
 	"bam_ksize"   : 9,			    # The kernel size for BrightnessAttentionMap.
+	"use_depth"   : True,           # If ``True``, use depth map.
+	"use_edge"    : True,           # If ``True``, use edge map.
 	"weights"     : None,           # The model's weights.
 	"metrics"     : {
 	    "train": None,

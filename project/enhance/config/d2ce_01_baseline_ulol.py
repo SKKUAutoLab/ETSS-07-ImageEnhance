@@ -14,7 +14,7 @@ current_file = mon.Path(__file__).absolute()
 
 # region Basic
 
-model_name = "d2ce_05_depth_attention"
+model_name = "d2ce_01_baseline"
 data_name  = "ulol"
 root       = current_file.parents[1] / "run"
 data_root  = mon.DATA_DIR / "enhance" / "llie"
@@ -32,8 +32,8 @@ verbose    = True
 
 model = {
 	"name"        : model_name,     # The model's name.
-	"root"        : root,           # The root directory of the model.
 	"fullname"    : fullname,       # A full model name to save the checkpoint or weight.
+	"root"        : root,           # The root directory of the model.
 	"in_channels" : 3,              # The first layer's input channel.
 	"out_channels": None,           # A number of classes, which is also the last layer's output channels.
 	"num_channels": 32,		        # The number of input and output channels for subsequent layers.
@@ -72,8 +72,9 @@ model = {
 
 data = {
     "name"      : data_name,
-    "root"      : data_root,     # A root directory where the data is stored.
+    "root"      : data_root,  # A root directory where the data is stored.
 	"transform" : A.Compose(transforms=[
+		# A.Resize(height=image_size[0], width=image_size[1], interpolation=cv2.INTER_AREA),
 		A.ResizeMultipleOf(
 			height            = image_size[0],
 			width             = image_size[1],
@@ -82,6 +83,10 @@ data = {
 			resize_method     = "lower_bound",
 			interpolation     = cv2.INTER_AREA,
 		),
+		# A.NormalizeImageMeanStd(
+		# 	mean = [0.485, 0.456, 0.406],
+		# 	std  = [0.229, 0.224, 0.225]
+		# ),
 		# A.Flip(),
 		# A.Rotate(),
 	]),  # Transformations performing on both the input and target.
@@ -132,7 +137,7 @@ trainer = default.trainer | {
 # region Predicting
 
 predictor = default.predictor | {
-	"default_root_dir": root,  # Default path for saving results.
+	"default_root_dir": root,   # Default path for saving results.
 }
 
 # endregion
