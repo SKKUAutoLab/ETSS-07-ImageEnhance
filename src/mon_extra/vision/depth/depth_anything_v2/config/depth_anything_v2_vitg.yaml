@@ -3,12 +3,12 @@ hostname    : ~
 config      : ~
 arch        : "depth_anything_v2"
 model       : "depth_anything_v2_vitg"
-data        : ~
+data        : "da_2k"
 data_dir    : ~
 root        : ~
 project     : ~
 variant     : ~
-fullname    : ~
+fullname    : "depth_anything_v2_vitg_da_2k"
 save_dir    : ~
 weights     : ~
 device      : 0
@@ -22,6 +22,7 @@ benchmark   : True
 save_image  : True
 save_debug  : False
 use_data_dir: False
+use_fullpath: False
 exist_ok    : False
 verbose     : True
 

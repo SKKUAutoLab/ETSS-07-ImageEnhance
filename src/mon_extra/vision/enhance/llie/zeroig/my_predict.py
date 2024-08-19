@@ -46,14 +46,17 @@ def calculate_model_flops(model, input_tensor):
 
 def predict(args: argparse.Namespace):
     # General config
-    data      = args.data
-    save_dir  = args.save_dir
-    weights   = args.weights
-    device    = mon.set_device(args.device)
-    seed      = args.seed
-    imgsz     = args.imgsz
-    resize    = args.resize
-    benchmark = args.benchmark
+    data         = args.data
+    save_dir     = args.save_dir
+    weights      = args.weights
+    device       = mon.set_device(args.device)
+    seed         = args.seed
+    imgsz        = args.imgsz
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
     mon.set_random_seed(seed)
     
     # Model
@@ -90,10 +93,6 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir  = save_dir / data_name
-    save_dir2 = save_dir.parent / f"{data_name}_denoise"
-    save_dir.mkdir(parents=True, exist_ok=True)
-    save_dir2.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     for p in model.parameters():
@@ -107,8 +106,9 @@ def predict(args: argparse.Namespace):
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                # Input
                 meta            = datapoint.get("meta")
-                image_path      = meta["path"]
+                image_path      = mon.Path(meta["path"])
                 data_lowlight   = Image.open(image_path).convert("RGB")
                 # data_lowlight   = transforms.ToTensor()(data_lowlight).numpy()
                 # data_lowlight   = np.transpose(data_lowlight, (1, 2, 0))
@@ -120,15 +120,36 @@ def predict(args: argparse.Namespace):
                 data_lowlight   = data_lowlight.permute(2, 0, 1)
                 data_lowlight   = data_lowlight.to(device).unsqueeze(0)
                 input           = Variable(data_lowlight, volatile=True).to(device)
+                
+                # Infer
                 timer.tick()
                 enhance, output = model(input)
                 timer.tock()
-                enhance         = save_images(enhance)
-                output          = save_images(output)
-                # output_path     = save_dir / image_path.name
-                # torchvision.utils.save_image(enhanced_image, str(output_path))
-                Image.fromarray(output).save(str(save_dir2 / f"{image_path.stem}.png"), "PNG")
-                Image.fromarray(enhance).save(str(save_dir / f"{image_path.stem}.png"), "PNG")
+                
+                # Post-process
+                enhance = save_images(enhance)
+                output  = save_images(output)
+                
+                # Save
+                if save_image:
+                    if use_fullpath:
+                        rel_path   = image_path.relative_path(data_name)
+                        output_dir = save_dir / rel_path.parents[0]
+                    else:
+                        output_dir = save_dir / data_name
+                    output_path    = save_dir / image_path.name
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    Image.fromarray(enhance).save(str(output_dir / f"{image_path.stem}.png"), "PNG")
+                if save_debug:
+                    if use_fullpath:
+                        rel_path   = image_path.relative_path(data_name)
+                        debug_dir  = save_dir / rel_path.parents[1] / f"{rel_path.parent.name}_denoise"
+                    else:
+                        debug_dir  = save_dir / f"{data_name}_denoise"
+                    output_path    = save_dir / image_path.name
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    Image.fromarray(output).save(str(debug_dir / f"{image_path.stem}.png"), "PNG")
+                
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 

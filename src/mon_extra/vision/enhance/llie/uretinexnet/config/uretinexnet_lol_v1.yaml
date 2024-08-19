@@ -1,0 +1,27 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "uretinexnet"
+model       : "uretinexnet"
+data        : "lol_v1"
+data_dir    : "data/enhance/llie/lol_v1"
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "uretinexnet_lol_v1"
+save_dir    : ~
+weights     : "zoo/vision/enhance/llie/uretinexnet/uretinexnet/lol_v1"
+device      : 0
+local_rank  : ~
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True

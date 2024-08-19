@@ -102,15 +102,18 @@ def process(
 
 def predict(args: argparse.Namespace):
     # General config
-    data        = args.data
-    save_dir    = args.save_dir
-    # weights     = args.weights or mon.ZOO_DIR / "vision/enhance/llie/quadprior/quadprior/coco/control_sd15_coco_final.ckpt"
-    weights     = mon.ZOO_DIR / args.weights
-    device      = mon.set_device(args.device)
-    imgsz       = args.imgsz[0]
-    resize      = args.resize
-    benchmark   = args.benchmark
-    use_float16 = args.use_float16
+    data         = args.data
+    save_dir     = args.save_dir
+    # weights    = args.weights or mon.ZOO_DIR / "vision/enhance/llie/quadprior/quadprior/coco/control_sd15_coco_final.ckpt"
+    weights      = mon.ZOO_DIR / args.weights
+    device       = mon.set_device(args.device)
+    imgsz        = args.imgsz[0]
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
+    use_float16  = args.use_float16
     
     config_path = current_dir / args.config_path  # "./models/cldm_v15.yaml"
     init_ckpt   = mon.ZOO_DIR / "vision/enhance/llie/quadprior/quadprior/coco/control_sd15_init.ckpt"
@@ -151,8 +154,6 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     timer = mon.Timer()
@@ -163,13 +164,16 @@ def predict(args: argparse.Namespace):
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                # Input
                 image       = datapoint.get("image")
                 meta        = datapoint.get("meta")
-                image_path  = meta["path"]
-                input_image = image  # cv2.imread(str(image_path))
+                image_path  = mon.Path(meta["path"])
+                input_image = image
                 h0, w0      = input_image.shape[0], input_image.shape[1]
+                
+                # Infer
                 timer.tick()
-                # if you set num_samples > 1, process will return multiple results
+                # If you set num_samples > 1, process will return multiple results
                 output      = process(
                     model, diffusion_sampler,
                     input_image      = input_image,
@@ -178,9 +182,21 @@ def predict(args: argparse.Namespace):
                     use_float16      = use_float16,
                 )[0]
                 timer.tock()
-                output      = mon.resize(output, (h0, w0))
-                output_path = save_dir / image_path.name
-                cv2.imwrite(str(output_path), output)
+                
+                # Post-process
+                output = mon.resize(output, (h0, w0))
+                
+                # Save
+                if save_image:
+                    if use_fullpath:
+                        rel_path = image_path.relative_path(data_name)
+                        save_dir = save_dir / rel_path.parent
+                    else:
+                        save_dir = save_dir / data_name
+                    output_path  = save_dir / image_path.name
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    cv2.imwrite(str(output_path), output)
+        
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 

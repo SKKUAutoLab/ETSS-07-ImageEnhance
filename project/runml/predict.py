@@ -8,6 +8,7 @@ from __future__ import annotations
 import socket
 
 import torch
+from platformdirs import user_data_dir
 
 import mon
 
@@ -20,16 +21,18 @@ current_dir  = current_file.parents[0]
 
 def predict(args: dict) -> str:
     # Get arguments
-    fullname   = args["fullname"]
-    imgsz      = mon.parse_hw(args["image_size"])
-    seed       = args["seed"]
-    save_dir   = args["predictor"]["default_root_dir"]
-    source     = args["predictor"]["source"]
-    devices    = args["predictor"]["devices"] or "auto"
-    resize     = args["predictor"]["resize"]
-    benchmark  = args["predictor"]["benchmark"]
-    save_image = args["predictor"]["save_image"]
-    save_debug = args["predictor"]["save_debug"]
+    fullname     = args["fullname"]
+    imgsz        = mon.parse_hw(args["image_size"])
+    seed         = args["seed"]
+    save_dir     = args["predictor"]["default_root_dir"]
+    source       = args["predictor"]["source"]
+    devices      = args["predictor"]["devices"] or "auto"
+    resize       = args["predictor"]["resize"]
+    benchmark    = args["predictor"]["benchmark"]
+    save_image   = args["predictor"]["save_image"]
+    save_debug   = args["predictor"]["save_debug"]
+    use_data_dir = args["predictor"]["use_data_dir"]
+    use_fullpath = args["predictor"]["use_fullpath"]
     console.rule(f"[bold red] {fullname}")
     
     # Seed
@@ -79,8 +82,11 @@ def predict(args: dict) -> str:
             total       = len(data_loader),
             description = f"[bright_yellow] Predicting"
         ):
+            # Input
+            meta       = datapoint.get("meta")
+            image_path = mon.Path(meta["path"])
+            
             # Infer
-            meta    = datapoint.get("meta")
             outputs = model.infer(
                 datapoint = datapoint,
                 imgsz     = imgsz,
@@ -89,18 +95,32 @@ def predict(args: dict) -> str:
             time = outputs.pop("time", None)
             if time:
                 run_time.append(time)
+            
             # Save
             if save_image:
                 _,   output = outputs.popitem()
-                output_path = save_dir / f"{meta['stem']}.png"
+                if use_fullpath:
+                    rel_path   = image_path.relative_path(data_name)
+                    output_dir = save_dir / rel_path.parent
+                else:
+                    output_dir = save_dir / data_name
+                output_path  = output_dir / f"{meta['stem']}.png"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
                 mon.write_image(output_path, output, denormalize=True)
+                # Save video
                 if data_writer:
                     data_writer.write_batch(data=output)
                 # Save Debug
                 if save_debug:
+                    if use_fullpath:
+                        rel_path         = image_path.relative_path(data_name)
+                        debug_output_dir = save_dir / rel_path.parents[1] / f"{rel_path.parent.name}_debug"
+                    else:
+                        debug_output_dir = save_dir / f"{data_name}_debug"
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
                     for k, v in outputs.items():
                         if mon.is_image(v):
-                            path = debug_save_dir / f"{meta['stem']}_{k}.png"
+                            path = debug_output_dir / f"{meta['stem']}_{k}.png"
                             mon.write_image(path, v, denormalize=True)
     
     # Finish
@@ -131,22 +151,24 @@ def parse_predict_args(model_root: str | mon.Path | None = None) -> dict:
     args   = mon.load_config(config)
     
     # Prioritize input args --> config file args
-    arch       = input_args.get("arch")
-    model      = input_args.get("model")      or args.get("model_name")
-    data       = input_args.get("data")       or args["predictor"]["source"]
-    project    = input_args.get("project")    or args.get("project")
-    variant    = input_args.get("variant")    or args.get("variant")
-    fullname   = input_args.get("fullname")   or args.get("fullname")
-    save_dir   = input_args.get("save_dir")   # or args["predictor"]["default_root_dir"]
-    weights    = input_args.get("weights")    or args["model"]["weights"]
-    devices    = input_args.get("device")     or args["predictor"]["devices"]
-    imgsz      = input_args.get("imgsz")      or args.get("image_size")
-    resize     = input_args.get("resize")     or args.get("resize")
-    benchmark  = input_args.get("benchmark")  or args.get("benchmark")
-    save_image = input_args.get("save_image") or args.get("save_image")
-    save_debug = input_args.get("save_debug") or args.get("save_debug")
-    verbose    = input_args.get("verbose")    or args.get("verbose")
-    extra_args = input_args.get("extra_args")
+    arch         = input_args.get("arch")
+    model        = input_args.get("model")        or args.get("model_name")
+    data         = input_args.get("data")         or args["predictor"]["source"]
+    project      = input_args.get("project")      or args.get("project")
+    variant      = input_args.get("variant")      or args.get("variant")
+    fullname     = input_args.get("fullname")     or args.get("fullname")
+    save_dir     = input_args.get("save_dir")     # or args["predictor"]["default_root_dir"]
+    weights      = input_args.get("weights")      or args["model"]["weights"]
+    devices      = input_args.get("device")       or args["predictor"]["devices"]
+    imgsz        = input_args.get("imgsz")        or args.get("image_size")
+    resize       = input_args.get("resize")       or args.get("resize")
+    benchmark    = input_args.get("benchmark")    or args.get("benchmark")
+    save_image   = input_args.get("save_image")   or args.get("save_image")
+    save_debug   = input_args.get("save_debug")   or args.get("save_debug")
+    use_data_dir = input_args.get("use_data_dir") or args.get("use_data_dir")
+    use_fullpath = input_args.get("use_fullpath") or args.get("use_fullpath")
+    verbose      = input_args.get("verbose")      or args.get("verbose")
+    extra_args   = input_args.get("extra_args")
     
     # Parse arguments
     save_dir = save_dir or mon.parse_save_dir(root/"run"/"predict", arch, model, None, project, variant)
@@ -182,6 +204,8 @@ def parse_predict_args(model_root: str | mon.Path | None = None) -> dict:
         "benchmark"       : benchmark,
         "save_image"      : save_image,
         "save_debug"      : save_debug,
+        "use_data_dir"    : use_data_dir,
+        "use_fullpath"    : use_fullpath,
         "verbose"         : verbose,
     }
     

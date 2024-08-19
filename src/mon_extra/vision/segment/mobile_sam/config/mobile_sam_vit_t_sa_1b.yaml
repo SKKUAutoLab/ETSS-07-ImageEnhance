@@ -1,0 +1,41 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "mobile_sam"
+model       : "mobile_sam_vit_t"
+data        : "sa_1b"
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "mobile_sam_vit_t_sa_1b"
+save_dir    : ~
+weights     : "zoo/vision/segment/mobile_sam/mobile_sam_vit_t/sa_1b/mobile_sam_vit_t_sa_1b.pt"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 1000
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+model_type                    : "vit_t"
+points_per_side               : 32
+points_per_batch              : 64
+pred_iou_thresh               : 0.88
+stability_score_thresh        : 0.95
+stability_score_offset        : 1.0
+box_nms_thresh                : 0.7
+crop_n_layers                 : 0
+crop_nms_thresh               : 0.7
+crop_n_points_downscale_factor: 1
+min_mask_region_area          : 0
+output_mode                   : "binary_mask"

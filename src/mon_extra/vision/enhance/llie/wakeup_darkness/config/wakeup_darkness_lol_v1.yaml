@@ -4,7 +4,7 @@ config      : ~
 arch        : "wakeup_darkness"
 model       : "wakeup_darkness"
 data        : "lol_v1"
-data_dir    : ~
+data_dir    : "data/enhance/llie/lol_v1"
 root        : ~
 project     : ~
 variant     : ~
@@ -22,6 +22,7 @@ benchmark   : True
 save_image  : True
 save_debug  : False
 use_data_dir: False
+use_fullpath: False
 exist_ok    : False
 verbose     : True
 
@@ -29,6 +30,6 @@ verbose     : True
 seed        : 2
 lr          : 0.0003
 stage       : 3
-pretrained  : "vision/enhance/llie/wakeup_darkness/pretrained/sci_difficult.pth"
+pretrained  : "zoo/vision/enhance/llie/wakeup_darkness/pretrained/sci_difficult.pth"
 arch_       : "WithCalNet"  # "WithCalNet", "WithoutCalNet"
 frozen      : ~  # "CalEnl", "Cal", "Enl"

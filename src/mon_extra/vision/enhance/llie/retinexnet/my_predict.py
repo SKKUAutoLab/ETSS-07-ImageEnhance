@@ -17,15 +17,18 @@ current_dir  = current_file.parents[0]
 
 def predict(args: argparse.Namespace):
     # General config
-    data      = args.data
-    save_dir  = args.save_dir
-    # weights   = args.weights
-    # weights   = weights[0] if isinstance(weights, list | tuple) and len(weights) == 1 else weights
-    weights   = mon.ZOO_DIR / "vision/enhance/llie/retinexnet/retinexnet/lol_v1"
-    device    = mon.set_device(args.device)
-    imgsz     = args.imgsz
-    resize    = args.resize
-    benchmark = args.benchmark
+    data         = args.data
+    save_dir     = args.save_dir
+    # weights    = args.weights
+    # weights    = weights[0] if isinstance(weights, list | tuple) and len(weights) == 1 else weights
+    weights      = mon.ZOO_DIR / "vision/enhance/llie/retinexnet/retinexnet/lol_v1"
+    device       = mon.set_device(args.device)
+    imgsz        = args.imgsz
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
     
     # Model
     model = RetinexNet(imgsz, benchmark).to(device)

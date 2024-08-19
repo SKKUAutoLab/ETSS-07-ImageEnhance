@@ -30,6 +30,9 @@ def predict(args: argparse.Namespace):
     imgsz                          = args.imgsz[0]
     resize                         = args.resize
     benchmark                      = False  # args.benchmark
+    save_image                     = args.save_image
+    save_debug                     = args.save_debug
+    use_fullpath                   = args.use_fullpath
     model_type                     = args.model_type
     points_per_side                = args.points_per_side
     points_per_batch               = args.points_per_batch
@@ -84,13 +87,7 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir        = save_dir / data_name
-    save_dir_binary = save_dir / "binary"
-    save_dir_color  = save_dir / "color"
-    save_dir.mkdir(parents=True, exist_ok=True)
-    save_dir_binary.mkdir(parents=True, exist_ok=True)
-    save_dir_color.mkdir(parents=True, exist_ok=True)
-    
+
     # Predicting
     timer = mon.Timer()
     with torch.no_grad():
@@ -100,25 +97,41 @@ def predict(args: argparse.Namespace):
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                # Input
                 image      = datapoint.get("image")
                 meta       = datapoint.get("meta")
-                image_path = meta["path"]
+                image_path = mon.Path(meta["path"])
+                
+                # Infer
                 timer.tick()
                 masks = mask_generator.generate(image)
                 timer.tock()
-                # Binary
-                for i, mask in enumerate(masks):
-                    output_path = save_dir_binary / f"{image_path.stem}_mask_{i}.jpg"
-                    cv2.imwrite(str(output_path), np.uint8(mask["segmentation"]) * 255)
-                # Color
-                output          = np.ones((masks[0]["segmentation"].shape[0], masks[0]["segmentation"].shape[1], 4))
-                output[:, :, 3] = 0
-                for i, mask in enumerate(masks):
-                    mask_bool         = mask["segmentation"]
-                    color_mask        = np.concatenate([np.random.random(3), [1.0]])  # 0.35
-                    output[mask_bool] = color_mask
-                output_path = save_dir_color / f"{image_path.stem}.jpg"
-                cv2.imwrite(str(output_path), np.uint8(output * 255))
+                
+                # Save
+                if save_image:
+                    if use_fullpath:
+                        relative_path   = image_path.relative_path(data_name)
+                        binary_save_dir = save_dir / relative_path.parent / "binary"
+                        color_save_dir  = save_dir / relative_path.parent / "color"
+                    else:
+                        binary_save_dir = save_dir / data_name / "binary"
+                        color_save_dir  = save_dir / data_name / "color"
+                    # Binary
+                    for i, mask in enumerate(masks):
+                        output_path = binary_save_dir / f"{image_path.stem}_mask_{i}.jpg"
+                        output_path.parent.mkdir(parents=True, exist_ok=True)
+                        cv2.imwrite(str(output_path), np.uint8(mask["segmentation"]) * 255)
+                    # Color
+                    output          = np.ones((masks[0]["segmentation"].shape[0], masks[0]["segmentation"].shape[1], 4))
+                    output[:, :, 3] = 0
+                    for i, mask in enumerate(masks):
+                        mask_bool         = mask["segmentation"]
+                        color_mask        = np.concatenate([np.random.random(3), [1.0]])  # 0.35
+                        output[mask_bool] = color_mask
+                    output_path = color_save_dir / f"{image_path.stem}.jpg"
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    cv2.imwrite(str(output_path), np.uint8(output * 255))
+        
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 

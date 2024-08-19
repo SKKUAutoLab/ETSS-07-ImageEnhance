@@ -4,14 +4,14 @@ config      : ~
 arch        : "zeroig"
 model       : "zeroig"
 data        : "npe"
-data_dir    : "llie/npe/test/lq"
+data_dir    : "data/enhance/llie/npe"
 root        : ~
 project     : ~
 variant     : ~
 fullname    : "zeroig_npe"
 save_dir    : ~
-weights     : ~
-device      : ~
+weights     : "zoo/vision/enhance/llie/zeroig/zeroig/npe/zeroig_npe.pt"
+device      : 0
 local_rank  : ~
 launcher    : ~
 epochs      : 2001
@@ -22,6 +22,7 @@ benchmark   : True
 save_image  : True
 save_debug  : False
 use_data_dir: False
+use_fullpath: False
 exist_ok    : False
 verbose     : True
 

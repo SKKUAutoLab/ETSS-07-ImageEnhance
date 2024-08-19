@@ -21,13 +21,16 @@ current_dir  = current_file.parents[0]
 
 def predict(args: argparse.Namespace):
     # General config
-    data      = args.data
-    save_dir  = mon.Path(args.save_dir)
-    weights   = args.weights
-    device    = mon.set_device(args.device)
-    imgsz     = args.imgsz
-    resize    = args.resize
-    benchmark = args.benchmark
+    data         = args.data
+    save_dir     = mon.Path(args.save_dir)
+    weights      = args.weights
+    device       = mon.set_device(args.device)
+    imgsz        = args.imgsz
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -38,8 +41,6 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     timer = mon.Timer()
@@ -49,12 +50,15 @@ def predict(args: argparse.Namespace):
             total       = len(data_loader),
             description = f"[bright_yellow] Predicting"
         ):
+            # Input
             image      = datapoint.get("image")
             meta       = datapoint.get("meta")
-            image_path = meta["path"]
+            image_path = mon.Path(meta["path"])
             h, w       = mon.get_image_size(image)
             if resize:
                 image = cv2.resize(image, (imgsz, imgsz))
+            
+            # Infer
             timer.tick()
             enhanced_image = enhance_image_exposure(
                 im      = image,
@@ -68,10 +72,22 @@ def predict(args: argparse.Namespace):
                 eps     = args.eps
             )
             timer.tock()
+            
+            # Post-process
             if resize:
                 enhanced_image = cv2.resize(enhanced_image, (w, h))
-            output_path = save_dir / image_path.name
-            cv2.imwrite(str(output_path), enhanced_image)
+            
+            # Save
+            if save_image:
+                if use_fullpath:
+                    rel_path = image_path.relative_path(data_name)
+                    save_dir = save_dir / rel_path.parent
+                else:
+                    save_dir = save_dir / data_name
+                output_path  = save_dir / image_path.name
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(output_path), enhanced_image)
+    
     avg_time = float(timer.avg_time)
     console.log(f"Average time: {avg_time}")
 

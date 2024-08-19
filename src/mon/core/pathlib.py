@@ -21,6 +21,7 @@ __all__ = [
     "get_files",
     "get_image_file",
     "get_next_version",
+    "get_relative_path",
     "get_yaml_file",
     "hash_files",
     "is_url",
@@ -255,6 +256,10 @@ class Path(type(pathlib.Path())):
         """Return the image file with the given path."""
         return get_image_file(self)
     
+    def relative_path(self, start_part: Path | str) -> Path:
+        """Get the relative path starting from the given :param:`part`."""
+        return get_relative_path(self, start_part)
+    
     def yaml_file(self) -> Path:
         """Return the YAML file with the given path."""
         return get_yaml_file(self)
@@ -371,6 +376,20 @@ def get_next_version(path: Path | str, prefix: str | None = None) -> int:
         return 0
     return max(existing_versions) + 1
 
+
+def get_relative_path(path: Path | str, start_part: Path | str) -> Path:
+    """Get the relative path starting from the given :param:`part`.
+    
+    Args:
+        path: The path to the file.
+        start_part: The starting part of the relative path.
+    """
+    path       = Path(path)
+    start_part = str(start_part)
+    if start_part in [None, "None", "", "."] or start_part not in str(path):
+        return path
+    return Path(*path.parts[path.parts.index(start_part):])
+    
 
 def get_yaml_file(path: Path) -> Path:
     """Get the YAML file of an arbitrary extension from the given path."""

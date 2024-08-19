@@ -3,12 +3,12 @@ hostname    : ~
 config      : ~
 arch        : "sam"
 model       : "sam_vit_b"
-data        : ~
+data        : "sa_1b"
 data_dir    : ~
 root        : ~
 project     : ~
 variant     : ~
-fullname    : ~
+fullname    : "sam_vit_b_sa_1b"
 save_dir    : ~
 weights     : "zoo/vision/segment/sam/sam_vit_b/sa_1b/sam_vit_b_sa_1b_01ec64.pth"
 device      : 0
@@ -22,6 +22,7 @@ benchmark   : True
 save_image  : True
 save_debug  : False
 use_data_dir: False
+use_fullpath: False
 exist_ok    : False
 verbose     : True
 

@@ -8,7 +8,7 @@ data_dir    : ~
 root        : ~
 project     : ~
 variant     : ~
-fullname    : ~
+fullname    : "colie_sice_mix"
 save_dir    : ~
 weights     : ~
 device      : 0
@@ -22,6 +22,7 @@ benchmark   : False
 save_image  : True
 save_debug  : False
 use_data_dir: False
+use_fullpath: False
 exist_ok    : False
 verbose     : True
 

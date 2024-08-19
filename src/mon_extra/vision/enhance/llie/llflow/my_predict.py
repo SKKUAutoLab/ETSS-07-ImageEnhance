@@ -83,14 +83,17 @@ def format_measurements(meas):
 
 def predict(args: argparse.Namespace):
     # General config
-    opt       = args.opt
-    data      = args.data
-    save_dir  = mon.Path(args.save_dir)
-    weights   = args.weights
-    device    = mon.set_device(args.device)
-    imgsz     = args.imgsz
-    resize    = args.resize
-    benchmark = args.benchmark
+    opt          = args.opt
+    data         = args.data
+    save_dir     = mon.Path(args.save_dir)
+    weights      = args.weights
+    device       = mon.set_device(args.device)
+    imgsz        = args.imgsz
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
     
     opt            = option.parse(opt, is_train=False)
     opt["gpu_ids"] = None
@@ -118,8 +121,6 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     timer = mon.Timer()
@@ -130,12 +131,14 @@ def predict(args: argparse.Namespace):
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                # Input
                 image      = datapoint.get("image")
                 meta       = datapoint.get("meta")
-                image_path = meta["path"]
+                image_path = mon.Path(meta["path"])
                 lr         = image  # imread(str(image_path))
                 raw_shape  = lr.shape
                 
+                # Infer
                 timer.tick()
                 lr, padding_params = auto_padding(lr)
                 his = hiseq_color_cv2_img(lr)
@@ -160,8 +163,18 @@ def predict(args: argparse.Namespace):
                 )
                 # assert raw_shape == sr.shape
                 timer.tock()
-                output_path = save_dir / image_path.name
-                imwrite(str(output_path), sr)
+                
+                # Save
+                if save_image:
+                    if use_fullpath:
+                        rel_path = image_path.relative_path(data_name)
+                        save_dir = save_dir / rel_path.parent
+                    else:
+                        save_dir = save_dir / data_name
+                    output_path  = save_dir / image_path.name
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    imwrite(str(output_path), sr)
+       
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 

@@ -1,0 +1,27 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "dccnet"
+model       : "dccnet"
+data        : "lol_v1"
+data_dir    : "data/enhance/llie/lol_v1"
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "dccnet_lol_v1"
+save_dir    : ~
+weights     : "zoo/vision/enhance/llie/dccnet/dccnet/lol_v1/dccnet_lol_v1.pth"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 400
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : False
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True

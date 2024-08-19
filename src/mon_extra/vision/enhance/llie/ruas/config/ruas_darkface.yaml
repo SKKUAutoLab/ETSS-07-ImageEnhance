@@ -1,0 +1,27 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "ruas"
+model       : "ruas"
+data        : "darkface"
+data_dir    : "data/enhance/llie/darkface"
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "ruas_darkface"
+save_dir    : ~
+weights     : "zoo/vision/enhance/llie/ruas/ruas/darkface/ruas_darkface.pt"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True

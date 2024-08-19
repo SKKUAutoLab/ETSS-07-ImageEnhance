@@ -33,14 +33,17 @@ def save_images(tensor, path):
 
 def predict(args: argparse.Namespace):
     # General config
-    data      = args.data
-    save_dir  = args.save_dir
-    weights   = args.weights
-    device    = mon.set_device(args.device)
-    seed      = args.seed
-    imgsz     = args.imgsz
-    resize    = args.resize
-    benchmark = args.benchmark
+    data         = args.data
+    save_dir     = args.save_dir
+    weights      = args.weights
+    device       = mon.set_device(args.device)
+    seed         = args.seed
+    imgsz        = args.imgsz
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
     
     # Seed
     mon.set_random_seed(seed)
@@ -79,8 +82,6 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
     
     # Predicting
     timer = mon.Timer()
@@ -91,23 +92,36 @@ def predict(args: argparse.Namespace):
                 total       = len(data_loader),
                 description = f"[bright_yellow] Predicting"
             ):
+                # Input
                 image      = datapoint.get("image")
                 meta       = datapoint.get("meta")
-                image_path = meta["path"]
-                input      = image.to(device)
+                image_path = mon.Path(meta["path"])
+                image      = image.to(device)
+                
+                # Infer
                 timer.tick()
-                u_list, r_list = model(input)
+                u_list, r_list = model(image)
                 timer.tock()
-                output_path = save_dir / image_path.name
-                save_images(u_list[-1], str(output_path))
-                # save_images(u_list[-1], str(args.output_dir / "lol" / u_name))
-                # save_images(u_list[-2], str(args.output_dir / "dark" / u_name))
-                """
-                if args.model == "lol":
-                    save_images(u_list[-1], u_path)
-                elif args.model == "upe" or args.model == "dark":
-                    save_images(u_list[-2], u_path)
-                """
+                
+                # Save
+                if save_image:
+                    if use_fullpath:
+                        rel_path = image_path.relative_path(data_name)
+                        save_dir = save_dir / rel_path.parent
+                    else:
+                        save_dir = save_dir / data_name
+                    output_path  = save_dir / image_path.name
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    save_images(u_list[-1], str(output_path))
+                    # save_images(u_list[-1], str(args.output_dir / "lol" / u_name))
+                    # save_images(u_list[-2], str(args.output_dir / "dark" / u_name))
+                    """
+                    if args.model == "lol":
+                        save_images(u_list[-1], u_path)
+                    elif args.model == "upe" or args.model == "dark":
+                        save_images(u_list[-2], u_path)
+                    """
+        
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
 
@@ -118,7 +132,6 @@ def predict(args: argparse.Namespace):
 
 def main() -> str:
     args = mon.parse_predict_args(model_root=current_dir)
-    args.weights = args.weights or mon.ZOO_DIR / "vision/enhance/llie/ruas/ruas/lol_v1/ruas_lol_v1_pretrained.pt"
     predict(args)
 
 

@@ -22,21 +22,23 @@ current_dir  = current_file.parents[0]
 
 def predict(args: argparse.Namespace):
     # General config
-    data      = args.data
-    save_dir  = args.save_dir
-    weights   = args.weights
-    device    = mon.set_device(args.device)
-    epochs    = args.epochs
-    imgsz     = args.imgsz[0]
-    resize    = args.resize
-    benchmark = args.benchmark
-    window    = int(args.window)
-    L         = float(args.L)
-    alpha     = float(args.alpha)
-    beta      = float(args.beta)
-    gamma     = float(args.gamma)
-    delta     = float(args.delta)
-    # print(window, L, alpha, beta, gamma, delta)
+    data         = args.data
+    save_dir     = args.save_dir
+    weights      = args.weights
+    device       = mon.set_device(args.device)
+    epochs       = args.epochs
+    imgsz        = args.imgsz[0]
+    resize       = args.resize
+    benchmark    = args.benchmark
+    save_image   = args.save_image
+    save_debug   = args.save_debug
+    use_fullpath = args.use_fullpath
+    window       = int(args.window)
+    L            = float(args.L)
+    alpha        = float(args.alpha)
+    beta         = float(args.beta)
+    gamma        = float(args.gamma)
+    delta        = float(args.delta)
     
     # Benchmark
     if benchmark:
@@ -62,9 +64,7 @@ def predict(args: argparse.Namespace):
         denormalize = True,
         verbose     = False,
     )
-    save_dir = save_dir / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Predicting
     timer = mon.Timer()
     with mon.get_progress_bar() as pbar:
@@ -73,17 +73,9 @@ def predict(args: argparse.Namespace):
             total       = len(data_loader),
             description = f"[bright_yellow] Predicting"
         ):
-            # Model
-            img_siren  = INF(patch_dim=window ** 2, num_layers=4, hidden_dim=256, add_layer=2)
-            img_siren  = img_siren.to(device)
-            # Optimizer
-            optimizer  = torch.optim.Adam(img_siren.parameters(), lr=1e-5, betas=(0.9, 0.999), weight_decay=3e-4)
-            # Loss Functions
-            l_exp      = L_exp(16, L)
-            l_TV       = L_TV()
             # Input
             meta       = datapoint.get("meta")
-            image_path = meta["path"]
+            image_path = mon.Path(meta["path"])
             img_rgb    = get_image(str(image_path))
             # h0, w0     = img_rgb.shape[0], img_rgb.shape[1]
             # img_rgb    = mon.resize(img_rgb, (imgsz, imgsz))
@@ -92,6 +84,17 @@ def predict(args: argparse.Namespace):
             img_v_lr   = interpolate_image(img_v, imgsz, imgsz)
             coords     = get_coords(imgsz, imgsz)
             patches    = get_patches(img_v_lr, window)
+            # Model
+            img_siren  = INF(patch_dim=window ** 2, num_layers=4, hidden_dim=256, add_layer=2)
+            img_siren  = img_siren.to(device)
+           
+            # Optimizer
+            optimizer  = torch.optim.Adam(img_siren.parameters(), lr=1e-5, betas=(0.9, 0.999), weight_decay=3e-4)
+            
+            # Loss Functions
+            l_exp = L_exp(16, L)
+            l_TV  = L_TV()
+
             # Training
             timer.tick()
             for epoch in range(epochs):
@@ -103,11 +106,11 @@ def predict(args: argparse.Namespace):
                 illu_lr        = illu_res_lr + img_v_lr
                 img_v_fixed_lr = img_v_lr / (illu_lr + 1e-4)
                 #
-                loss_spa      = torch.mean(torch.abs(torch.pow(illu_lr - img_v_lr, 2))) * alpha
-                loss_tv       = l_TV(illu_lr) * beta
-                loss_exp      = torch.mean(l_exp(illu_lr)) * gamma
-                loss_sparsity = torch.mean(img_v_fixed_lr) * delta
-                loss          = loss_spa * alpha + loss_tv * beta + loss_exp * gamma + loss_sparsity * delta  # ???
+                loss_spa       = torch.mean(torch.abs(torch.pow(illu_lr - img_v_lr, 2))) * alpha
+                loss_tv        = l_TV(illu_lr) * beta
+                loss_exp       = torch.mean(l_exp(illu_lr)) * gamma
+                loss_sparsity  = torch.mean(img_v_fixed_lr) * delta
+                loss           = loss_spa * alpha + loss_tv * beta + loss_exp * gamma + loss_sparsity * delta  # ???
                 loss.backward()
                 optimizer.step()
             img_v_fixed   = filter_up(img_v_lr, img_v_fixed_lr, img_v)
@@ -116,10 +119,20 @@ def predict(args: argparse.Namespace):
             img_rgb_fixed = img_rgb_fixed / torch.max(img_rgb_fixed)
             # img_rgb_fixed = mon.resize(img_rgb_fixed, (h0, w0))
             timer.tock()
-            output_path   = save_dir / image_path.name
-            Image.fromarray(
-                (torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)
-            ).save(str(output_path))
+            
+            # Save
+            if save_image:
+                if use_fullpath:
+                    rel_path = image_path.relative_path(data_name)
+                    save_dir = save_dir / rel_path.parent
+                else:
+                    save_dir = save_dir / data_name
+                output_path  = save_dir / image_path.name
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                Image.fromarray(
+                    (torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)
+                ).save(str(output_path))
+    
     avg_time = float(timer.avg_time)
     console.log(f"Average time: {avg_time}")
 
