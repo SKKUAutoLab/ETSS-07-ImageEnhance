@@ -1,69 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements GCENet (Guided Curve Estimation Network) models."""
+"""GCE-Net
+
+This module implements the model "Guided Curve Estimation Network".
+"""
 
 from __future__ import annotations
 
 __all__ = [
     "GCENet",
-    "GCENetA1",
-    "GCENetA2",
-    "GCENetB1",
-    "GCENetB2",
+    "GCENet_01_GF_OldLoss",
+    "GCENet_02_GF_NewLoss",
+    "GCENet_03_FilterInput_OldLoss",
+    "GCENet_04_FilterInput_NewLoss",
 ]
 
 from typing import Any, Literal
 
-import kornia
 import torch
 
 from mon import core, nn
-from mon.core import _callable
-from mon.globals import MODELS, Scheme
-from mon.nn import functional as F, init
-from mon.vision import filtering, geometry
-from mon.vision.enhance.llie import base
+from mon.globals import MODELS, Scheme, Task
+from mon.nn import init
+from mon.vision import filtering
+from mon.vision.enhance import base
 
 console = core.console
 
 
 # region Loss
-
-class TotalVariationLoss(nn.Loss):
-    """Total Variation Loss on the Illumination (Illumination Smoothness Loss)
-    :math:`\mathcal{L}_{tvA}` preserve the monotonicity relations between
-    neighboring pixels. It is used to avoid aggressive and sharp changes between
-    neighboring pixels.
-    
-    References:
-        `<https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py>`__
-    """
-    
-    def __init__(
-        self,
-        loss_weight: float = 1.0,
-        reduction  : Literal["none", "mean", "sum"] = "mean",
-    ):
-        super().__init__(loss_weight=loss_weight, reduction=reduction)
-    
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor | None = None
-    ) -> torch.Tensor:
-        x       = input
-        b       = x.size()[0]
-        h_x     = x.size()[2]
-        w_x     = x.size()[3]
-        count_h =  (x.size()[2]-1) * x.size()[3]
-        count_w = x.size()[2] * (x.size()[3] - 1)
-        h_tv    = torch.pow((x[:, :, 1:, :] - x[:, :, :h_x - 1, :]), 2).sum()
-        w_tv    = torch.pow((x[:, :, :, 1:] - x[:, :, :, :w_x - 1]), 2).sum()
-        loss    = self.loss_weight * 2 * (h_tv / count_h + w_tv / count_w) / b
-        # loss    = base.reduce_loss(loss=loss, reduction=self.reduction)
-        return loss
-    
 
 class Loss(nn.Loss):
     
@@ -86,25 +52,24 @@ class Loss(nn.Loss):
         self.weight_spa  = weight_spa
         self.weight_tva  = weight_tva
         
-        self.loss_col    = nn.ColorConstancyLoss(reduction=reduction)
-        self.loss_exp    = nn.ExposureControlLoss(
+        self.loss_col = nn.ColorConstancyLoss(reduction=reduction)
+        self.loss_exp = nn.ExposureControlLoss(
             reduction  = reduction,
             patch_size = exp_patch_size,
             mean_val   = exp_mean_val,
         )
-        self.loss_spa    = nn.SpatialConsistencyLoss(
+        self.loss_spa = nn.SpatialConsistencyLoss(
             num_regions = spa_num_regions,
             patch_size  = spa_patch_size,
             reduction   = reduction,
         )
-        self.loss_tva    = TotalVariationLoss(reduction=reduction)
+        self.loss_tva = nn.TotalVariationLoss(reduction=reduction)
     
     def forward(
         self,
         input   : torch.Tensor,
         adjust  : torch.Tensor,
         enhance : torch.Tensor,
-        **_
     ) -> tuple[torch.Tensor, torch.Tensor]:
         loss_col = self.loss_col(input=enhance)               if self.weight_col  > 0 else 0
         loss_exp = self.loss_exp(input=enhance)               if self.weight_exp  > 0 else 0
@@ -131,34 +96,34 @@ class LRNet(nn.Module):
     
     def __init__(
         self,
-        in_channels : int       = 3,
-        mid_channels: int       = 24,
-        layers      : int       = 5,
-        relu_slope  : float     = 0.2,
+        in_channels : int   = 3,
+        mid_channels: int   = 24,
+        layers      : int   = 5,
+        relu_slope  : float = 0.2,
         norm        : nn.Module = nn.AdaptiveBatchNorm2d,
     ):
         super().__init__()
         net = [
-            nn.Conv2d(in_channels, mid_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=False),
+            nn.Conv2d(in_channels, mid_channels, 3, 1, 1, 1, bias=False),
             norm(mid_channels),
             nn.LeakyReLU(relu_slope, inplace=True),
         ]
         for l in range(1, layers):
             net += [
-                nn.Conv2d(mid_channels, mid_channels, kernel_size=3, stride=1, padding=2**l, dilation=2**l, bias=False),
+                nn.Conv2d(mid_channels, mid_channels, 3, 1, 2**l, 2**l, bias=False),
                 norm(mid_channels),
                 nn.LeakyReLU(relu_slope, inplace=True)
             ]
         net += [
-            nn.Conv2d(mid_channels, mid_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=False),
+            nn.Conv2d(mid_channels, mid_channels, 3, 1, 1, 1, bias=False),
             norm(mid_channels),
             nn.LeakyReLU(relu_slope, inplace=True),
-            nn.Conv2d(mid_channels, in_channels, kernel_size=1, stride=1, padding=0, dilation=1)
+            nn.Conv2d(mid_channels, in_channels, 1, 1, 0, 1)
         ]
         self.net = nn.Sequential(*net)
-        self.apply(self._init_weights)
+        self.apply(self.init_weights)
         
-    def _init_weights(self, m: nn.Module):
+    def init_weights(self, m: nn.Module):
         classname = m.__class__.__name__
         if classname.find("Conv") != -1:
             n_out, n_in, h, w = m.weight.data.size()
@@ -200,9 +165,9 @@ class GuidedMap(nn.Module):
         self.norm  = norm(channels)
         self.relu  = nn.LeakyReLU(relu_slope, inplace=True)
         self.conv2 = nn.Conv2d(channels, in_channels, 1)
-        self.apply(self._init_weights)
+        self.apply(self.init_weights)
         
-    def _init_weights(self, m: nn.Module):
+    def init_weights(self, m: nn.Module):
         classname = m.__class__.__name__
         if classname.find("Conv") != -1:
             n_out, n_in, h, w = m.weight.data.size()
@@ -239,10 +204,10 @@ class ConvBlock(nn.Module):
         out_channels : int,
         relu_slope   : float = 0.2,
         is_last_layer: bool  = False,
-        norm         : nn.Module | None = nn.AdaptiveBatchNorm2d,
+        norm         : nn.Module = nn.AdaptiveBatchNorm2d,
     ):
         super().__init__()
-        self.conv = nn.DSConv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv = nn.DSConv2d(in_channels, out_channels, 3, 1, 1, bias=True)
         #
         if norm:
             self.norm = norm(out_channels)
@@ -270,7 +235,7 @@ class EnhanceNet(nn.Module):
         in_channels : int,
         num_channels: int,
         num_iters   : int,
-        norm        : nn.Module | None = nn.AdaptiveBatchNorm2d,
+        norm        : nn.Module = nn.AdaptiveBatchNorm2d,
     ):
         super().__init__()
         out_channels = 3  # in_channels * num_iters
@@ -319,9 +284,9 @@ class DenoiseNet(nn.Module):
         relu_slope  : float = 0.2,
     ):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channels,  num_channels, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(num_channels, num_channels, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(num_channels, in_channels,  kernel_size=1)
+        self.conv1 = nn.Conv2d(in_channels,  num_channels, 3, padding=1)
+        self.conv2 = nn.Conv2d(num_channels, num_channels, 3, padding=1)
+        self.conv3 = nn.Conv2d(num_channels, in_channels,  1)
         self.act   = nn.LeakyReLU(negative_slope=relu_slope, inplace=True)
             
     def forward(self, input: torch.Tensor) -> torch.Tensor:
@@ -337,13 +302,11 @@ class DenoiseNet(nn.Module):
 # region Model
 
 @MODELS.register(name="gcenet", arch="gcenet")
-class GCENet(base.LowLightImageEnhancementModel):
-    """GCENet (Guided Curve Estimation Network) model.
-    
-    See Also: :class:`base.LowLightImageEnhancementModel`
-    """
+class GCENet(base.ImageEnhancementModel):
+    """Guided Curve Estimation Network."""
     
     arch   : str  = "gcenet"
+    tasks  : list[Task]   = [Task.LLIE]
     schemes: list[Scheme] = [Scheme.UNSUPERVISED, Scheme.ZERO_SHOT, Scheme.ZERO_REFERENCE]
     zoo    : dict = {}
     
@@ -392,10 +355,10 @@ class GCENet(base.LowLightImageEnhancementModel):
             norm         = None,
         )
         self.gf  = filtering.GuidedFilter(radius=self.gf_radius, eps=self.gf_eps)
-        self.bam = nn.BrightnessAttentionMap(gamma=self.bam_gamma, denoise_ksize = self.bam_ksize)
+        self.bam = nn.BrightnessAttentionMap(gamma=self.bam_gamma, denoise_ksize=self.bam_ksize)
         
         # Loss
-        self._loss = Loss(reduction="mean")
+        self.loss = Loss(reduction="mean")
         
         # Load weights
         if self.weights:
@@ -408,205 +371,81 @@ class GCENet(base.LowLightImageEnhancementModel):
     
     def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict:
         # Forward
-        i          = datapoint.get("image")
-        i1, i2     = geometry.pair_downsample(i)
-        datapoint1 = datapoint | {"image": i1}
-        datapoint2 = datapoint | {"image": i2}
-        outputs1   = self.forward(datapoint=datapoint1, *args, **kwargs)
-        outputs2   = self.forward(datapoint=datapoint2, *args, **kwargs)
-        outputs    = self.forward(datapoint=datapoint, *args, **kwargs)
         self.assert_datapoint(datapoint)
+        image          = datapoint.get("image")
+        image1, image2 = core.pair_downsample(image)
+        datapoint1     = datapoint | {"image": image1}
+        datapoint2     = datapoint | {"image": image2}
+        outputs1       = self.forward(datapoint=datapoint1, *args, **kwargs)
+        outputs2       = self.forward(datapoint=datapoint2, *args, **kwargs)
+        outputs        = self.forward(datapoint=datapoint,  *args, **kwargs)
         self.assert_outputs(outputs)
         # Symmetric Loss
-        c1_1, c1_2, gf1, j1 = outputs1.values()
-        c2_1, c2_2, gf2, j2 = outputs2.values()
-        c_1 , c_2 , gf , o  = outputs.values()
-        o1, o2   = geometry.pair_downsample(o)
+        adjust1, bam1, bright1, dark1, guide1, enhanced1 = outputs1.values()
+        adjust2, bam2, bright2, dark2, guide2, enhanced2 = outputs2.values()
+        adjust , bam , bright,  dark,  guide , enhanced  = outputs.values()
+        enhanced_1, enhanced_2 = core.pair_downsample(enhanced)
         mse_loss = nn.MSELoss()
-        loss_res = 0.5 * (mse_loss(i1, j2) + mse_loss(i2, j1))
-        loss_con = 0.5 * (mse_loss(j1, o1) + mse_loss(j2, o2))
-        loss_enh = self.loss(i, c_1, o)
+        loss_res = 0.5 * (mse_loss(image1,     enhanced2) + mse_loss(image2,     enhanced1))
+        loss_con = 0.5 * (mse_loss(enhanced_1, enhanced1) + mse_loss(enhanced_2, enhanced2))
+        loss_enh = self.loss(image, adjust, enhanced)
         loss     = 0.5 * (loss_res + loss_con) + 0.5 * loss_enh
         outputs["loss"] = loss
         # Return
         return outputs
-    
-    def forward_debug(self, datapoint: dict, *args, **kwargs) -> dict:
-        self.assert_datapoint(datapoint)
-        i          = datapoint.get("image")
-        i1, i2     = geometry.pair_downsample(i)
-        datapoint1 = datapoint | {"image": i1}
-        datapoint2 = datapoint | {"image": i2}
-        outputs1   = self.forward(datapoint=datapoint1, *args, **kwargs)
-        outputs2   = self.forward(datapoint=datapoint2, *args, **kwargs)
-        outputs    = self.forward(datapoint=datapoint,  *args, **kwargs)
-        self.assert_outputs(outputs)
-        # Extract
-        c1_1, c1_2, gf1, j1 = outputs1.values()
-        c2_1, c2_2, gf2, j2 = outputs2.values()
-        c_1 , c_2 , gf , o  = outputs.values()
-        o1, o2   = geometry.pair_downsample(o)
-        #
-        c_1        = c_1  * -1
-        c1_1       = c1_1 * -1
-        c2_1       = c2_1 * -1
-        d_gf_i_1   = (gf1 - i1) * -10
-        d_gf_i_2   = (gf2 - i2) * -10
-        d_gf_i     = (gf  - i ) * -10
-        d_gf_j_1   = (gf1 - j1) * -10
-        d_gf_j_2   = (gf2 - j2) * -10
-        d_gf_j     = (gf  - o ) * -10
-        d_j_i_1    = (j1  - i1) * -10
-        d_j_i_2    = (j2  - i2) * -10
-        d_j_i      = (o   - i ) * -10
-        #
-        c_1_r      =      c_1[:, 0:1, :, :]
-        c_1_g      =      c_1[:, 1:2, :, :]
-        c_1_b      =      c_1[:, 2:3, :, :]
-        c1_1_r     =     c1_1[:, 0:1, :, :]
-        c1_1_g     =     c1_1[:, 1:2, :, :]
-        c1_1_b     =     c1_1[:, 2:3, :, :]
-        c2_1_r     =     c2_1[:, 0:1, :, :]
-        c2_1_g     =     c2_1[:, 1:2, :, :]
-        c2_1_b     =     c2_1[:, 2:3, :, :]
-        d_gf_i_1_r = d_gf_i_1[:, 0:1, :, :]
-        d_gf_i_1_g = d_gf_i_1[:, 1:2, :, :]
-        d_gf_i_1_b = d_gf_i_1[:, 2:3, :, :]
-        d_gf_i_2_r = d_gf_i_2[:, 0:1, :, :]
-        d_gf_i_2_g = d_gf_i_2[:, 1:2, :, :]
-        d_gf_i_2_b = d_gf_i_2[:, 2:3, :, :]
-        d_gf_i_r   =   d_gf_i[:, 0:1, :, :]
-        d_gf_i_g   =   d_gf_i[:, 1:2, :, :]
-        d_gf_i_b   =   d_gf_i[:, 2:3, :, :]
-        d_gf_j_1_r = d_gf_j_1[:, 0:1, :, :]
-        d_gf_j_1_g = d_gf_j_1[:, 1:2, :, :]
-        d_gf_j_1_b = d_gf_j_1[:, 2:3, :, :]
-        d_gf_j_2_r = d_gf_j_2[:, 0:1, :, :]
-        d_gf_j_2_g = d_gf_j_2[:, 1:2, :, :]
-        d_gf_j_2_b = d_gf_j_2[:, 2:3, :, :]
-        d_gf_j_r   =   d_gf_j[:, 0:1, :, :]
-        d_gf_j_g   =   d_gf_j[:, 1:2, :, :]
-        d_gf_j_b   =   d_gf_j[:, 2:3, :, :]
-        d_j_i_1_r  =  d_j_i_1[:, 0:1, :, :]
-        d_j_i_1_g  =  d_j_i_1[:, 1:2, :, :]
-        d_j_i_1_b  =  d_j_i_1[:, 2:3, :, :]
-        d_j_i_2_r  =  d_j_i_2[:, 0:1, :, :]
-        d_j_i_2_g  =  d_j_i_2[:, 1:2, :, :]
-        d_j_i_2_b  =  d_j_i_2[:, 2:3, :, :]
-        d_j_i_r    =    d_j_i[:, 0:1, :, :]
-        d_j_i_g    =    d_j_i[:, 1:2, :, :]
-        d_j_i_b    =    d_j_i[:, 2:3, :, :]
-        #
-        return {
-            "i"         : i,
-            "i1"        : i1,
-            "i2"        : i2,
-            "c1_1"      : c1_1,
-            "c1_1_r"    : c1_1_r,
-            "c1_1_g"    : c1_1_g,
-            "c1_1_b"    : c1_1_b,
-            "c1_2"      : c1_2,
-            "c2_1"      : c2_1,
-            "c2_1_r"    : c2_1_r,
-            "c2_1_g"    : c2_1_g,
-            "c2_1_b"    : c2_1_b,
-            "c2_2"      : c2_2,
-            "c_1"       : c_1,
-            "c_1_r"     : c_1_r,
-            "c_1_g"     : c_1_g,
-            "c_1_b"     : c_1_b,
-            "c_2"       : c_2,
-            "gf1"       : gf1,
-            "gf2"       : gf2,
-            "gf"        : gf,
-            "o"         : o,
-            "o1"        : o1,
-            "o2"        : o2,
-            "d_gf_i_1"  : d_gf_i_1,
-            "d_gf_i_2"  : d_gf_i_2,
-            "d_gf_i"    : d_gf_i,
-            "d_gf_j_1"  : d_gf_j_1,
-            "d_gf_j_2"  : d_gf_j_2,
-            "d_gf_j"    : d_gf_j,
-            "d_j_i_1"   : d_j_i_1,
-            "d_j_i_2"   : d_j_i_2,
-            "d_j_i"     : d_j_i,
-            "d_gf_i_1_r": d_gf_i_1_r,
-            "d_gf_i_1_g": d_gf_i_1_g,
-            "d_gf_i_1_b": d_gf_i_1_b,
-            "d_gf_i_2_r": d_gf_i_2_r,
-            "d_gf_i_2_g": d_gf_i_2_g,
-            "d_gf_i_2_b": d_gf_i_2_b,
-            "d_gf_i_r"  : d_gf_i_r,
-            "d_gf_i_g"  : d_gf_i_g,
-            "d_gf_i_b"  : d_gf_i_b,
-            "d_gf_j_1_r": d_gf_j_1_r,
-            "d_gf_j_1_g": d_gf_j_1_g,
-            "d_gf_j_1_b": d_gf_j_1_b,
-            "d_gf_j_2_r": d_gf_j_2_r,
-            "d_gf_j_2_g": d_gf_j_2_g,
-            "d_gf_j_2_b": d_gf_j_2_b,
-            "d_gf_j_r"  : d_gf_j_r,
-            "d_gf_j_g"  : d_gf_j_g,
-            "d_gf_j_b"  : d_gf_j_b,
-            "d_j_i_1_r" : d_j_i_1_r,
-            "d_j_i_1_g" : d_j_i_1_g,
-            "d_j_i_1_b" : d_j_i_1_b,
-            "d_j_i_2_r" : d_j_i_2_r,
-            "d_j_i_2_g" : d_j_i_2_g,
-            "d_j_i_2_b" : d_j_i_2_b,
-            "d_j_i_r"   : d_j_i_r,
-            "d_j_i_g"   : d_j_i_g,
-            "d_j_i_b"   : d_j_i_b,
-        }
         
     def forward(self, datapoint: dict, *args, **kwargs) -> dict:
         self.assert_datapoint(datapoint)
-        x  = datapoint.get("image")
+        image  = datapoint.get("image")
         # Enhancement
-        c1 = self.en(x)
+        adjust = self.en(image)
         # Enhancement loop
         if self.bam_gamma in [None, 0.0]:
-            y  = x
-            c2 = None
+            guide  = image
+            bam    = None
+            bright = None
+            dark   = None
             for i in range(self.num_iters):
-                y = y + c1 * (torch.pow(y, 2) - y)
+                guide = guide + adjust * (torch.pow(guide, 2) - guide)
         else:
-            y  = x
-            c2 = self.bam(x)
+            guide  = image
+            bam    = self.bam(image)
+            bright = None
+            dark   = None
             for i in range(0, self.num_iters):
-                b = y * (1 - c2)
-                d = y * c2
-                y = b + d + c1 * (torch.pow(d, 2) - d)
+                bright = guide * (1 - bam)
+                dark   = guide * bam
+                guide  = bright + dark + adjust * (torch.pow(dark, 2) - dark)
         # Guided Filter
-        y_gf = self.gf(x, y)
+        enhanced = self.gf(image, guide)
         return {
-            "adjust"   : c1,
-            "attention": c2,
-            "guidance" : y,
-            "enhanced" : y_gf,
+            "adjust"  : adjust,
+            "bam"     : bam,
+            "bright"  : bright,
+            "dark"    : dark,
+            "guidance": guide,
+            "enhanced": enhanced,
         }
     
 
-@MODELS.register(name="gcenet_a1", arch="gcenet")
-class GCENetA1(GCENet):
-    """GCENet-A1 (Guided Curve Estimation Network) model with simple guided filter.
-    
-    See Also: :class:`GCENet`
-    """
-    
+@MODELS.register(name="gcenet_01_gf_oldloss", arch="gcenet")
+class GCENet_01_GF_OldLoss(GCENet):
+
     def __init__(self, *args, **kwargs):
-        super().__init__(name="gcenet_a1", *args, **kwargs)
+        super().__init__(
+            name="gcenet_01_gf_oldloss",
+            *args, **kwargs
+        )
     
     def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict:
         # Forward
-        outputs = self.forward(datapoint=datapoint, *args, **kwargs)
         self.assert_datapoint(datapoint)
+        outputs = self.forward(datapoint=datapoint, *args, **kwargs)
         self.assert_outputs(outputs)
         # Loss
-        i             = datapoint.get("image")
-        c1, c2, gf, o = outputs.values()
-        loss          = self.loss(i, c1, o)
+        image = datapoint.get("image")
+        adjust, bam, bright, dark, guide, enhanced = outputs.values()
+        loss  = self.loss(image, adjust, enhanced)
         # Return
         outputs["loss"] = loss
         # Return
@@ -614,89 +453,99 @@ class GCENetA1(GCENet):
     
     def forward(self, datapoint: dict, *args, **kwargs) -> dict:
         self.assert_datapoint(datapoint)
-        x  = datapoint.get("image")
+        image  = datapoint.get("image")
         # Enhancement
-        c1 = self.en(x)
+        adjust = self.en(image)
         # Enhancement loop
         if self.bam_gamma in [None, 0.0]:
-            y  = x
-            c2 = None
+            guide  = image
+            bam    = None
+            bright = None
+            dark   = None
             for i in range(self.num_iters):
-                y = y + c1 * (torch.pow(y, 2) - y)
+                guide = guide + adjust * (torch.pow(guide, 2) - guide)
         else:
-            y  = x
-            c2 = self.bam(x)
+            guide  = image
+            bam    = self.bam(image)
+            bright = None
+            dark   = None
             for i in range(0, self.num_iters):
-                b = y * (1 - c2)
-                d = y * c2
-                y = b + d + c1 * (torch.pow(d, 2) - d)
+                bright = guide * (1 - bam)
+                dark   = guide * bam
+                guide  = bright + dark + adjust * (torch.pow(dark, 2) - dark)
         # Guided Filter
-        y_gf = self.gf(x, y)
+        enhanced = self.gf(image, guide)
         return {
-            "adjust"   : c1,
-            "attention": c2,
-            "guidance" : y,
-            "enhanced" : y_gf,
+            "adjust"  : adjust,
+            "bam"     : bam,
+            "bright"  : bright,
+            "dark"    : dark,
+            "guidance": guide,
+            "enhanced": enhanced,
         }
 
 
-@MODELS.register(name="gcenet_a2", arch="gcenet")
-class GCENetA2(GCENet):
-    """GCENet-A2 (Guided Curve Estimation Network) model with simple guided filter.
-    
-    See Also: :class:`GCENet`
-    """
-    
+@MODELS.register(name="gcenet_02_gf_newloss", arch="gcenet")
+class GCENet_02_GF_NewLoss(GCENet):
+
     def __init__(self, *args, **kwargs):
-        super().__init__(name="gcenet_a2", *args, **kwargs)
+        super().__init__(
+            name="gcenet_02_gf_newloss",
+            *args, **kwargs
+        )
     
     def forward(self, datapoint: dict, *args, **kwargs) -> dict:
         self.assert_datapoint(datapoint)
-        x  = datapoint.get("image")
+        image  = datapoint.get("image")
         # Enhancement
-        c1 = self.en(x)
+        adjust = self.en(image)
         # Enhancement loop
         if self.bam_gamma in [None, 0.0]:
-            y  = x
-            c2 = None
+            guide  = image
+            bam    = None
+            bright = None
+            dark   = None
             for i in range(self.num_iters):
-                y = y + c1 * (torch.pow(y, 2) - y)
+                guide = guide + adjust * (torch.pow(guide, 2) - guide)
         else:
-            y  = x
-            c2 = self.bam(x)
+            guide  = image
+            bam    = self.bam(image)
+            bright = None
+            dark   = None
             for i in range(0, self.num_iters):
-                b = y * (1 - c2)
-                d = y * c2
-                y = b + d + c1 * (torch.pow(d, 2) - d)
+                bright = guide * (1 - bam)
+                dark   = guide * bam
+                guide  = bright + dark + adjust * (torch.pow(dark, 2) - dark)
         # Guided Filter
-        y_gf = self.gf(x, y)
+        enhanced = self.gf(image, guide)
         return {
-            "adjust"   : c1,
-            "attention": c2,
-            "guidance" : y,
-            "enhanced" : y_gf,
+            "adjust"  : adjust,
+            "bam"     : bam,
+            "bright"  : bright,
+            "dark"    : dark,
+            "guidance": guide,
+            "enhanced": enhanced,
         }
 
 
-@MODELS.register(name="gcenet_b1", arch="gcenet")
-class GCENetB1(GCENet):
-    """GCENet-B1 (Guided Curve Estimation Network) model with simple guided filter.
-    
-    See Also: :class:`GCENet`
-    """
-    
+@MODELS.register(name="gcenet_03_filterinput_oldloss", arch="gcenet")
+class GCENet_03_FilterInput_OldLoss(GCENet):
+
     def __init__(self, *args, **kwargs):
-        super().__init__(name="gcenet_b1", *args, **kwargs)
+        super().__init__(
+            name="gcenet_03_filterinput_oldloss",
+            *args, **kwargs
+        )
     
     def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict:
         # Forward
-        outputs = self.forward(datapoint=datapoint, *args, **kwargs)
         self.assert_datapoint(datapoint)
+        outputs = self.forward(datapoint=datapoint, *args, **kwargs)
         self.assert_outputs(outputs)
         # Loss
-        i             = datapoint.get("image")
-        c1, c2, gf, o = outputs.values()
-        loss          = self.loss(i, c1, o)
+        image = datapoint.get("image")
+        denoised, adjust, bam, bright, dark, enhanced = outputs.values()
+        loss  = self.loss(image, adjust, enhanced)
         # Return
         outputs["loss"] = loss
         # Return
@@ -704,67 +553,78 @@ class GCENetB1(GCENet):
     
     def forward(self, datapoint: dict, *args, **kwargs) -> dict:
         self.assert_datapoint(datapoint)
-        x    = datapoint.get("image")
+        image    = datapoint.get("image")
         # Guided Filter
-        x_gf = self.gf(x, x)
+        denoised = self.gf(image, image)
         # Enhancement
-        c1   = self.en(x_gf)
+        adjust   = self.en(denoised)
         # Enhancement loop
         if not self.predicting:
-            y  = x
-            c2 = None
+            enhanced = image
+            bam      = None
+            bright   = None
+            dark     = None
             for i in range(self.num_iters):
-                y = y + c1 * (torch.pow(y, 2) - y)
+                enhanced = enhanced + adjust * (torch.pow(enhanced, 2) - enhanced)
         else:
-            y  = x
-            c2 = self.bam(x)
+            enhanced = image
+            bam      = self.bam(image)
+            bright   = None
+            dark     = None
             for i in range(0, self.num_iters):
-                b = y * (1 - c2)
-                d = y * c2
-                y = b + d + c1 * (torch.pow(d, 2) - d)
+                bright   = enhanced * (1 - bam)
+                dark     = enhanced * bam
+                enhanced = bright + dark + adjust * (torch.pow(dark, 2) - dark)
         return {
-            "adjust"   : c1,
-            "attention": c2,
-            "guidance" : x_gf,
-            "enhanced" : y,
+            "denoised": denoised,
+            "adjust"  : adjust,
+            "bam"     : bam,
+            "bright"  : bright,
+            "dark"    : dark,
+            "enhanced": enhanced,
         }
 
 
-@MODELS.register(name="gcenet_b2", arch="gcenet")
-class GCENetB2(GCENet):
-    """GCENet-B2 (Guided Curve Estimation Network) model with simple guided filter.
-    
-    See Also: :class:`GCENet`
-    """
+@MODELS.register(name="gcenet_04_filterinput_newloss", arch="gcenet")
+class GCENet_04_FilterInput_NewLoss(GCENet):
     
     def __init__(self, *args, **kwargs):
-        super().__init__(name="gcenet_b2", *args, **kwargs)
+        super().__init__(
+            name="gcenet_04_filterinput_newloss",
+            *args, **kwargs
+        )
     
     def forward(self, datapoint: dict, *args, **kwargs) -> dict:
         self.assert_datapoint(datapoint)
-        x    = datapoint.get("image")
+        image    = datapoint.get("image")
         # Guided Filter
-        x_gf = self.gf(x, x)
+        denoised = self.gf(image, image)
         # Enhancement
-        c1   = self.en(x_gf)
+        adjust   = self.en(denoised)
         # Enhancement loop
         if not self.predicting:
-            y  = x
-            c2 = None
+            enhanced = image
+            bam      = None
+            bright   = None
+            dark     = None
             for i in range(self.num_iters):
-                y = y + c1 * (torch.pow(y, 2) - y)
+                enhanced = enhanced + adjust * (torch.pow(enhanced, 2) - enhanced)
         else:
-            y  = x
-            c2 = self.bam(x)
+            enhanced = image
+            bam      = self.bam(image)
+            bright   = None
+            dark     = None
             for i in range(0, self.num_iters):
-                b = y * (1 - c2)
-                d = y * c2
-                y = b + d + c1 * (torch.pow(d, 2) - d)
+                bright   = enhanced * (1 - bam)
+                dark     = enhanced * bam
+                enhanced = bright + dark + adjust * (torch.pow(dark, 2) - dark)
         return {
-            "adjust"   : c1,
-            "attention": c2,
-            "guidance" : x_gf,
-            "enhanced" : y,
+            "denoised": denoised,
+            "adjust"  : adjust,
+            "bam"     : bam,
+            "bright"  : bright,
+            "dark"    : dark,
+            "enhanced": enhanced,
         }
     
 # endregion
@@ -772,21 +632,24 @@ class GCENetB2(GCENet):
 
 # region Old Model (CVPR 2024, ECCV 2024)
 
+'''
 # @MODELS.register(name="gcenet_old")
-class GCENetOld(base.LowLightImageEnhancementModel):
+class GCENetOld(base.ImageEnhancementModel):
     """GCENet (Guided Curve Estimation Network) model.
     
     Args:
-        in_channels: The first layer's input channel. Default: ``3`` for RGB image.
-        out_channels: The output channel of the network. Default: ``3`` for RGB image.
+        in_channels: The first layer's input channel. Default: ``3`` for RGB
+            image.
+        out_channels: The output channel of the network. Default: ``3`` for RGB
+            image.
         num_filters: Output channels for subsequent layers. Default: ``32``.
-        num_iters: The number of convolutional layers in the model. Default: ``8``.
+        num_iters: The number of convolutional layers in the model.
+            Default: ``8``.
         scale_factor: Downsampling/upsampling ratio. Defaults: ``1``.
         gamma: Gamma value for dark channel prior. Default: ``2.8``.
-        
-    See Also: :class:`base.LowLightImageEnhancementModel`
     """
     
+    tasks  : list[Task]   = [Task.LLIE]
     schemes: list[Scheme] = [Scheme.UNSUPERVISED, Scheme.ZERO_SHOT]
     zoo    : dict = {}
     
@@ -856,12 +719,12 @@ class GCENetOld(base.LowLightImageEnhancementModel):
                 m.weight.data.normal_(0.0, 0.02)  # 0.02
     
     def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict | None:
-        input  = datapoint.get("input",  None)
+        image  = datapoint.get("image",  None)
         target = datapoint.get("target", None)
         meta   = datapoint.get("meta",   None)
-        pred   = self.forward(input=input, *args, **kwargs)
+        pred   = self.forward(input=image, *args, **kwargs)
         adjust, enhance = pred
-        loss   = self.loss(input, adjust, enhance)
+        loss   = self.loss(image, adjust, enhance)
         return {
             "pred": enhance,
             "loss": loss,
@@ -906,5 +769,6 @@ class GCENetOld(base.LowLightImageEnhancementModel):
                 d = y * g
                 y = b + d + l * (torch.pow(d, 2) - d)
         return l, y
-    
+'''
+
 # endregion

@@ -130,7 +130,7 @@ class RRSDataLoader(Generic[T_co]):
     iterable-style datasets with single- or multi-process loading, customizing
     loading order and optional automatic batching (collation) and memory pinning.
 
-    See :py:mod:`torch.utils.data` documentation page for more details.
+    See :py:obj:`torch.utils.data` documentation page for more details.
 
     Args:
         dataset (Dataset): dataset from which to load the data.

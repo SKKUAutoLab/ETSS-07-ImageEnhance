@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements UNet (U-Net: Convolutional Networks for Biomedical
+"""UNet.
+
+This module implements UNet (U-Net: Convolutional Networks for Biomedical
 Image Segmentation) models.
 
 References:
-    `<https://github.com/milesial/Pytorch-UNet>`__
+    https://github.com/milesial/Pytorch-UNet
 """
 
 from __future__ import annotations
@@ -19,7 +21,6 @@ from typing import Any
 import torch
 
 from mon import core, nn
-from mon.core import _callable
 from mon.globals import MODELS, Scheme
 from mon.nn import functional as F
 from mon.vision.segment import base
@@ -111,17 +112,14 @@ class OutConv(nn.Module):
 
 @MODELS.register(name="unet")
 class UNet(base.SegmentationModel):
-    """UNet (U-Net: Convolutional Networks for Biomedical Image Segmentation)
-    model.
+    """U-Net: Convolutional Networks for Biomedical Image Segmentation.
     
     References:
-        `<https://github.com/milesial/Pytorch-UNet>`__
-    
-    See Also: :class:`base.SegmentationModel`
+        https://github.com/milesial/Pytorch-UNet
     """
     
     schemes: list[Scheme] = [Scheme.SUPERVISED]
-    zoo   : dict = {}
+    zoo    : dict = {}
     
     def __init__(
         self,
@@ -185,17 +183,11 @@ class UNet(base.SegmentationModel):
             "loss": loss,
         }
     
-    def forward(
-        self,
-        input    : torch.Tensor,
-        augment  : _callable = None,
-        profile  : bool      = False,
-        out_index: int       = -1,
-        *args, **kwargs
-    ) -> torch.Tensor:
-        x = input
+    def forward(self, datapoint: dict, *args, **kwargs) -> dict:
+        self.assert_datapoint(datapoint)
+        image = datapoint.get("image")
         # Encoder
-        x1 = self.inc(x)
+        x1 = self.inc(image)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
         x4 = self.down3(x3)

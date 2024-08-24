@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements efficiency score metrics."""
+"""Efficiency Metric Module.
+
+This module implements efficiency score metrics.
+"""
 
 from __future__ import annotations
 
@@ -10,14 +13,13 @@ __all__ = [
 ]
 
 from copy import deepcopy
+from typing import Sequence
 
-import thop
 import torch
 from fvcore.nn import FlopCountAnalysis, parameter_count
 from torch import nn
 
 from mon import core
-from mon.core import _size_2_t
 
 console = core.console
 
@@ -26,11 +28,11 @@ console = core.console
 
 def compute_efficiency_score(
 	model     : nn.Module,
-	image_size: _size_2_t = 512,
-	channels  : int       = 3,
-	runs      : int       = 100,
-	use_cuda  : bool      = True,
-	verbose   : bool      = False,
+	image_size: int | Sequence[int] = 512,
+	channels  : int  = 3,
+	runs      : int  = 100,
+	use_cuda  : bool = True,
+	verbose   : bool = False,
 ):
 	# Define input tensor
 	h, w  = core.parse_hw(image_size)
@@ -45,7 +47,7 @@ def compute_efficiency_score(
 		# model  = model.to(device)
 	
 	# Get FLOPs and Params
-	flops, params = thop.profile(deepcopy(model), inputs=(input, ), verbose=verbose)
+	flops, params = core.profile(deepcopy(model), inputs=(input, ), verbose=verbose)
 	flops         = FlopCountAnalysis(model, input).total() if flops == 0 else flops
 	params        = model.params               if hasattr(model, "params") and params == 0 else params
 	params        = parameter_count(model)     if hasattr(model, "params") else params

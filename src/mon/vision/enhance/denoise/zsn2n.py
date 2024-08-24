@@ -11,11 +11,11 @@ __all__ = [
 
 import cv2
 import torch
+from torch.nn.common_types import _size_2_t
 
 from mon import core, nn
-from mon.globals import MODELS, Scheme
-from mon.vision import geometry
-from mon.vision.enhance.denoise import base
+from mon.globals import MODELS, Scheme, Task
+from mon.vision.enhance import base
 
 console = core.console
 
@@ -23,20 +23,19 @@ console = core.console
 # region Model
 
 @MODELS.register(name="zsn2n", arch="zsn2n")
-class ZSN2N(base.DenoisingModel):
-    """ZS-N2N (Zero-Shot Noise2Noise).
+class ZSN2N(base.ImageEnhancementModel):
+    """Zero-Shot Noise2Noise.
     
     Args:
         in_channels: The first layer's input channel. Default: ``3`` for RGB image.
         num_channels: Output channels for subsequent layers. Default: ``48``.
     
     References:
-        `<https://colab.research.google.com/drive/1i82nyizTdszyHkaHBuKPbWnTzao8HF9b?usp=sharing#scrollTo=Srf0GQTYrkxA>`_
-    
-    See Also: :class:`base.DenoisingModel`.
+        https://colab.research.google.com/drive/1i82nyizTdszyHkaHBuKPbWnTzao8HF9b?usp=sharing#scrollTo=Srf0GQTYrkxA
     """
     
-    arch   : str  = "zsn2n"
+    arch   : str          = "zsn2n"
+    tasks  : list[Task]   = [Task.DENOISE]
     schemes: list[Scheme] = [Scheme.UNSUPERVISED, Scheme.ZERO_SHOT, Scheme.INSTANCE]
     zoo    : dict = {}
     
@@ -131,7 +130,7 @@ class ZSN2N(base.DenoisingModel):
         reset_weights: bool      = True,
     ) -> dict:
         """Infer the model on a single datapoint. This method is different from
-        :meth:`forward()` in term that you may want to perform additional
+        :obj:`forward()` in term that you may want to perform additional
         pre-processing or post-processing steps.
         
         Notes:
@@ -139,7 +138,7 @@ class ZSN2N(base.DenoisingModel):
             steps, you should override this method.
         
         Args:
-            datapoint: A :class:`dict` containing the attributes of a datapoint.
+            datapoint: A :obj:`dict` containing the attributes of a datapoint.
             imgsz: The input size. Default: ``512``.
             resize: Resize the input image to the model's input size. Default: ``False``.
             max_epochs: Maximum number of epochs. Default: ``3000``.
@@ -166,9 +165,9 @@ class ZSN2N(base.DenoisingModel):
         for k, v in datapoint.items():
             if core.is_image(v):
                 if resize:
-                    datapoint[k] = geometry.resize(v, imgsz)
+                    datapoint[k] = core.resize(v, imgsz)
                 else:
-                    datapoint[k] = geometry.resize_divisible(v, 32)
+                    datapoint[k] = core.resize_divisible(v, 32)
         for k, v in datapoint.items():
             if isinstance(v, torch.Tensor):
                 datapoint[k] = v.to(self.device)
@@ -211,7 +210,7 @@ class ZSN2N(base.DenoisingModel):
             if core.is_image(v):
                 h1, w1 = core.get_image_size(v)
                 if h1 != h0 or w1 != w0:
-                    outputs[k] = geometry.resize(v, (h0, w0))
+                    outputs[k] = core.resize(v, (h0, w0))
         
         # Return
         outputs["time"] = timer.avg_time

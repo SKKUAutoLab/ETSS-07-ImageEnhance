@@ -38,11 +38,10 @@ model = {
 	"out_channels": None,           # A number of classes, which is also the last layer's output channels.
 	"num_channels": 32,		        # The number of input and output channels for subsequent layers.
 	"num_iters"   : 15,             # The number of progressive loop.
-	"de_encoder"  : "vits",         # The encoder for DepthAnythingV2.
 	"dba_eps"     : 0.05,		    # The epsilon for DepthBoundaryAware.
 	"gf_radius"   : 3,              # The radius for GuidedFilter.
 	"gf_eps"	  : 1e-4,           # The epsilon for GuidedFilter.
-	"bam_gamma"	  : 2.6,            # The gamma for BrightnessAttentionMap.
+	"bam_gamma"	  : 2.6,            # The gamma for BrightnessAttentionMap. [2.6]
 	"bam_ksize"   : 9,			    # The kernel size for BrightnessAttentionMap.
 	"use_depth"   : True,           # If ``True``, use depth map.
 	"use_edge"    : True,           # If ``True``, use edge map.
@@ -84,6 +83,7 @@ data = {
 			resize_method     = "lower_bound",
 			interpolation     = cv2.INTER_AREA,
 		),
+		# A.Resize(height=image_size[0], width=image_size[1], interpolation=cv2.INTER_AREA),
 		# A.Flip(),
 		# A.Rotate(),
 	]),  # Transformations performing on both the input and target.

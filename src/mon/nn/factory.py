@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements multiple factory classes."""
+"""Factory.
+
+This module implements factory classes specialized in building optimizers and
+learning rate schedulers.
+"""
 
 from __future__ import annotations
 
@@ -27,20 +31,23 @@ class OptimizerFactory(factory.Factory):
     def build(
         self,
         network            : nn.Module,
-        name               : str  | None = None,
-        config             : dict | None = None,
-        network_params_only: bool        = False,
-        to_dict            : bool        = False,
+        name               : str  = None,
+        config             : dict = None,
+        network_params_only: bool = False,
+        to_dict            : bool = False,
         **kwargs
     ):
-        """Build an instance of the registered optimizer corresponding to the given name.
+        """Build an instance of the registered optimizer corresponding to the
+        given name.
         
         Args:
             network: A neural network.
             name: An optimizer's name.
             config: The optimizer's arguments.
-            network_params_only: If ``True``, only the network's parameters are used.
-            to_dict: If ``True``, return a :class:`dict` of ``{:param:`name`: attr:`instance`}``. Default: ``False``.
+            network_params_only: If ``True``, only the network's parameters are
+                used.
+            to_dict: If ``True``, return a :obj:`dict` of
+                ``{:obj:`name`: attr:`instance`}``. Default: ``False``.
             **kwargs: Additional arguments that may be needed for the optimizer.
         
         Returns:
@@ -84,9 +91,9 @@ class OptimizerFactory(factory.Factory):
     def build_instances(
         self,
         network            : nn.Module,
-        configs            : list | None,
-        network_params_only: bool        = True,
-        to_dict            : bool        = False,
+        configs            : list,
+        network_params_only: bool = True,
+        to_dict            : bool = False,
         *kwargs
     ):
         """Build multiple instances of different optimizers with the given
@@ -94,20 +101,22 @@ class OptimizerFactory(factory.Factory):
         
         Args:
             network: A neural network.
-            configs: A :class:`list` of optimizers' arguments. Each item can be:
-                - A name (:class:`str`).
-                - A :class:`dict` of arguments containing the ``'name'`` key.
-            network_params_only: If ``True``, only the network's parameters are used.
-            to_dict: If ``True``, return a :class:`dict` of ``{:param:`name`: attr:`instance`}``. Default: ``False``.
+            configs: A :obj:`list` of optimizers' arguments. Each item can be:
+                - A name (:obj:`str`).
+                - A :obj:`dict` of arguments containing the ``'name'`` key.
+            network_params_only: If ``True``, only the network's parameters are
+                used.
+            to_dict: If ``True``, return a :obj:`dict` of
+                ``{:obj:`name`: attr:`instance`}``. Default: ``False``.
                 
         Returns:
-            A :class:`list`, or :class:`dict` of optimizers.
+            A :obj:`list`, or :obj:`dict` of optimizers.
         """
         if configs is None:
             return None
         assert isinstance(configs, list)
         
-        configs_ = copy.deepcopy(configs)
+        configs_   = copy.deepcopy(configs)
         optimizers = {} if to_dict else []
         for config in configs_:
             if isinstance(config, str):
@@ -137,8 +146,8 @@ class LRSchedulerFactory(factory.Factory):
     def build(
         self,
         optimizer: optim.Optimizer,
-        name     : str  | None = None,
-        config   : dict | None = None,
+        name     : str  = None,
+        config   : dict = None,
         **kwargs
     ):
         """Build an instance of the registered scheduler corresponding to the
@@ -185,7 +194,7 @@ class LRSchedulerFactory(factory.Factory):
     def build_instances(
         self,
         optimizer: optim.Optimizer,
-        configs  : list | None,
+        configs  : list,
         **kwargs
     ):
         """Build multiple instances of different schedulers with the given
@@ -193,12 +202,12 @@ class LRSchedulerFactory(factory.Factory):
         
         Args:
             optimizer: An optimizer.
-            configs: A :class:`list` of schedulers' arguments. Each item can be:
-                - A name (:class:`str`)
-                - A :class:`dict` of arguments containing the ''`name`'' key.
+            configs: A :obj:`list` of schedulers' arguments. Each item can be:
+                - A name (:obj:`str`)
+                - A :obj:`dict` of arguments containing the ''`name`'' key.
         
         Returns:
-            A :class:`list` of learning rate schedulers
+            A :obj:`list` of learning rate schedulers
         """
         if configs is None:
             return None

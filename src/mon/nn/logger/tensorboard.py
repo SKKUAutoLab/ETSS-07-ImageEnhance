@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module extends the Tensorboard logger."""
+"""Tensorboard Logger.
+
+This module extends the Tensorboard logger.
+"""
 
 from __future__ import annotations
 
@@ -66,7 +69,7 @@ class FileWriter(tensorboard.FileWriter):
         filename_suffix: str = ""
     ):
         """Creates a `FileWriter` and an event file. On construction, the writer
-        creates a new event file in :param:`log_dir`. The other arguments to the
+        creates a new event file in :obj:`log_dir`. The other arguments to the
         constructor control the asynchronous writes to the event file.
 
         Args:
@@ -77,9 +80,9 @@ class FileWriter(tensorboard.FileWriter):
             flush_secs: How often, in seconds, to flush the pending events and
                 summaries to disk. Default is every two minutes.
             filename_suffix: Suffix added to all event filenames in the
-                :param:`log_dir` directory. More details on file_name
-                construction
-                in :class:`tensorboard.summary.writer.event_file_writer.EventFileWriter`.
+                :obj:`log_dir` directory. More details on file_name
+                construction in
+                :obj:`tensorboard.summary.writer.event_file_writer.EventFileWriter`.
         """
         # Sometimes PosixPath is passed in and we need to coerce it to
         # a string in all cases
@@ -158,7 +161,7 @@ class TensorBoardLogger(loggers.TensorBoardLogger):
     @rank_zero_experiment
     def experiment(self) -> SummaryWriter:
         """Actual tensorboard object. To use TensorBoard features in your
-        :class:`pytorch_lightning.core.lightning.LightningModule` do the
+        :obj:`pytorch_lightning.core.lightning.LightningModule` do the
         following.
 
         Example:
@@ -167,7 +170,8 @@ class TensorBoardLogger(loggers.TensorBoardLogger):
         if self._experiment:
             return self._experiment
         if not rank_zero_only.rank == 0:
-            raise ValueError(f"Tried to initialize log dirs in non 'global_rank=0'.")
+            raise ValueError(f"Tried to initialize log dirs in non "
+                             f"`global_rank=0`.")
         if self.root_dir:
             self._fs.makedirs(self.root_dir, exist_ok=True)
         self._experiment = SummaryWriter(log_dir=self.log_dir, **self._kwargs)

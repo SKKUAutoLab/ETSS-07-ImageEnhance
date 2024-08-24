@@ -8,7 +8,6 @@ from __future__ import annotations
 import socket
 
 import torch
-from platformdirs import user_data_dir
 
 import mon
 
@@ -67,12 +66,7 @@ def predict(args: dict) -> str:
         denormalize = True,
         verbose     = False,
     )
-    save_root = save_dir if save_dir not in [None, "None", ""] else model.root
-    save_dir  = mon.Path(save_root) / data_name
-    save_dir.mkdir(parents=True, exist_ok=True)
-    if save_debug:
-        debug_save_dir = mon.Path(save_root) / f"{data_name}_debug"
-        debug_save_dir.mkdir(parents=True, exist_ok=True)
+    save_dir = save_dir if save_dir not in [None, "None", "", "."] else model.root
     
     # Predicting
     run_time = []
@@ -106,10 +100,10 @@ def predict(args: dict) -> str:
                     output_dir = save_dir / data_name
                 output_path  = output_dir / f"{meta['stem']}.png"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
-                mon.write_image(output_path, output, denormalize=True)
+                mon.write_image(output_path, output)
                 # Save video
                 if data_writer:
-                    data_writer.write_batch(data=output)
+                    data_writer.write_batch(frames=output)
                 # Save Debug
                 if save_debug:
                     if use_fullpath:
@@ -121,7 +115,7 @@ def predict(args: dict) -> str:
                     for k, v in outputs.items():
                         if mon.is_image(v):
                             path = debug_output_dir / f"{meta['stem']}_{k}.png"
-                            mon.write_image(path, v, denormalize=True)
+                            mon.write_image(path, v)
     
     # Finish
     avg_time = float(sum(run_time) / len(run_time))
@@ -133,7 +127,7 @@ def predict(args: dict) -> str:
 
 # region Main
 
-def parse_predict_args(model_root: str | mon.Path | None = None) -> dict:
+def parse_predict_args(model_root: str | mon.Path = None) -> dict:
     hostname = socket.gethostname().lower()
     
     # Get input args
