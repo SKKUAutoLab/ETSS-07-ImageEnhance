@@ -12,7 +12,7 @@
 - It covers a wide range of research topics in computer vision and machine learning.
 - The development guidelines of the framework [can be found here](styleguide.md) (still work-in-progress).
 
-https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg
+![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg)
 
 ## Installation
 
