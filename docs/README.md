@@ -46,18 +46,5 @@ code
      |_ README.md            # Github Readme.
 ```
 
-## Cite
-If you find our work useful, please cite the following:
-```text
-@misc{Pham2022,  
-    author       = {Long Hoang Pham, Duong Nguyen-Ngoc Tran, Quoc Pham-Nam Ho},  
-    title        = {🐈 mon},  
-    publisher    = {GitHub},
-    journal      = {GitHub repository},
-    howpublished = {https://github.com/phlong3105/mon},
-    year         = {2024},
-}
-```
-
 ## Contact
 If you have any questions, feel free to contact `Long H. Pham` ([longpham3105@gmail.com](longpham3105@gmail.com) or [phlong@skku.edu](phlong@skku.edu))
