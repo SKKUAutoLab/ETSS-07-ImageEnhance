@@ -1,16 +1,4 @@
-<div align="center">
-	<h1 align="center">🐈 MON</h1>
-</div>
-
-<div align = center>
-	<a align="center" href="https://github.com/phlong3105/mon/docs">Documentation</a>
-	<br>
-	<p></p>
-</div>
-
-- `🐈 mon` is an all-in-one research framework built using [Python](https://www.python.org/) and [PyTorch](https://pytorch.org/). 
-- It covers a wide range of research topics in computer vision and machine learning.
-- The development guidelines of the framework [can be found here](styleguide.md) (still work-in-progress).
+# ETSS-07-ImageEnhance
 
 ![](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/ETSS-07-ImageEnhance/total.svg)
 
