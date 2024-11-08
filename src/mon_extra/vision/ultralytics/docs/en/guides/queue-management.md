@@ -1,14 +1,14 @@
 ---
 comments: true
-description: Learn how to manage and optimize queues using Ultralytics YOLOv8 to reduce wait times and increase efficiency in various real-world applications.
-keywords: queue management, YOLOv8, Ultralytics, reduce wait times, efficiency, customer satisfaction, retail, airports, healthcare, banks
+description: Learn how to manage and optimize queues using Ultralytics YOLO11 to reduce wait times and increase efficiency in various real-world applications.
+keywords: queue management, YOLO11, Ultralytics, reduce wait times, efficiency, customer satisfaction, retail, airports, healthcare, banks
 ---
 
-# Queue Management using Ultralytics YOLOv8 🚀
+# Queue Management using Ultralytics YOLO11 🚀
 
 ## What is Queue Management?
 
-Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics/) involves organizing and controlling lines of people or vehicles to reduce wait times and enhance efficiency. It's about optimizing queues to improve customer satisfaction and system performance in various settings like retail, banks, airports, and healthcare facilities.
+Queue management using [Ultralytics YOLO11](https://github.com/ultralytics/ultralytics/) involves organizing and controlling lines of people or vehicles to reduce wait times and enhance efficiency. It's about optimizing queues to improve customer satisfaction and system performance in various settings like retail, banks, airports, and healthcare facilities.
 
 <p align="center">
   <br>
@@ -18,7 +18,7 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
     allowfullscreen>
   </iframe>
   <br>
-  <strong>Watch:</strong> How to Implement Queue Management with Ultralytics YOLOv8 | Airport and Metro Station
+  <strong>Watch:</strong> How to Implement Queue Management with Ultralytics YOLO11 | Airport and Metro Station
 </p>
 
 ## Advantages of Queue Management?
@@ -28,12 +28,12 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
 
 ## Real World Applications
 
-|                                                                                  Logistics                                                                                  |                                                                           Retail                                                                           |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| ![Queue management at airport ticket counter using Ultralytics YOLOv8](https://github.com/RizwanMunawar/RizwanMunawar/assets/62513924/10487e76-bf60-4a9c-a0f3-5a75a05fa7a3) | ![Queue monitoring in crowd using Ultralytics YOLOv8](https://github.com/RizwanMunawar/RizwanMunawar/assets/62513924/dcc6d2ca-5576-434d-83c6-e57fe07bc693) |
-|                                                     Queue management at airport ticket counter Using Ultralytics YOLOv8                                                     |                                                        Queue monitoring in crowd Ultralytics YOLOv8                                                        |
+|                                                                                            Logistics                                                                                            |                                                                            Retail                                                                             |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| ![Queue management at airport ticket counter using Ultralytics YOLO11](https://github.com/ultralytics/docs/releases/download/0/queue-management-airport-ticket-counter-ultralytics-yolov8.avif) | ![Queue monitoring in crowd using Ultralytics YOLO11](https://github.com/ultralytics/docs/releases/download/0/queue-monitoring-crowd-ultralytics-yolov8.avif) |
+|                                                               Queue management at airport ticket counter Using Ultralytics YOLO11                                                               |                                                         Queue monitoring in crowd Ultralytics YOLO11                                                          |
 
-!!! Example "Queue Management using YOLOv8 Example"
+!!! example "Queue Management using YOLO11 Example"
 
     === "Queue Manager"
 
@@ -42,7 +42,7 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
 
         from ultralytics import YOLO, solutions
 
-        model = YOLO("yolov8n.pt")
+        model = YOLO("yolo11n.pt")
         cap = cv2.VideoCapture("path/to/video/file.mp4")
 
         assert cap.isOpened(), "Error reading video file"
@@ -56,15 +56,13 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
             names=model.names,
             reg_pts=queue_region,
             line_thickness=3,
-            fontsize=1.0,
-            region_color=(255, 144, 31),
         )
 
         while cap.isOpened():
             success, im0 = cap.read()
 
             if success:
-                tracks = model.track(im0, show=False, persist=True, verbose=False)
+                tracks = model.track(im0, persist=True)
                 out = queue.process_queue(im0, tracks)
 
                 video_writer.write(im0)
@@ -86,7 +84,7 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
 
         from ultralytics import YOLO, solutions
 
-        model = YOLO("yolov8n.pt")
+        model = YOLO("yolo11n.pt")
         cap = cv2.VideoCapture("path/to/video/file.mp4")
 
         assert cap.isOpened(), "Error reading video file"
@@ -100,15 +98,13 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
             names=model.names,
             reg_pts=queue_region,
             line_thickness=3,
-            fontsize=1.0,
-            region_color=(255, 144, 31),
         )
 
         while cap.isOpened():
             success, im0 = cap.read()
 
             if success:
-                tracks = model.track(im0, show=False, persist=True, verbose=False, classes=0)  # Only person class
+                tracks = model.track(im0, persist=True, classes=0)  # Only person class
                 out = queue.process_queue(im0, tracks)
 
                 video_writer.write(im0)
@@ -125,40 +121,25 @@ Queue management using [Ultralytics YOLOv8](https://github.com/ultralytics/ultra
 
 ### Arguments `QueueManager`
 
-| Name                | Type             | Default                    | Description                                                                         |
-| ------------------- | ---------------- | -------------------------- | ----------------------------------------------------------------------------------- |
-| `names`             | `dict`           | `model.names`              | A dictionary mapping class IDs to class names.                                      |
-| `reg_pts`           | `list of tuples` | `[(20, 400), (1260, 400)]` | Points defining the counting region polygon. Defaults to a predefined rectangle.    |
-| `line_thickness`    | `int`            | `2`                        | Thickness of the annotation lines.                                                  |
-| `track_thickness`   | `int`            | `2`                        | Thickness of the track lines.                                                       |
-| `view_img`          | `bool`           | `False`                    | Whether to display the image frames.                                                |
-| `region_color`      | `tuple`          | `(255, 0, 255)`            | Color of the counting region lines (BGR).                                           |
-| `view_queue_counts` | `bool`           | `True`                     | Whether to display the queue counts.                                                |
-| `draw_tracks`       | `bool`           | `False`                    | Whether to draw tracks of the objects.                                              |
-| `count_txt_color`   | `tuple`          | `(255, 255, 255)`          | Color of the count text (BGR).                                                      |
-| `track_color`       | `tuple`          | `None`                     | Color of the tracks. If `None`, different colors will be used for different tracks. |
-| `region_thickness`  | `int`            | `5`                        | Thickness of the counting region lines.                                             |
-| `fontsize`          | `float`          | `0.7`                      | Font size for the text annotations.                                                 |
+| Name             | Type             | Default                    | Description                                                                      |
+| ---------------- | ---------------- | -------------------------- | -------------------------------------------------------------------------------- |
+| `names`          | `dict`           | `model.names`              | A dictionary mapping class IDs to class names.                                   |
+| `reg_pts`        | `list of tuples` | `[(20, 400), (1260, 400)]` | Points defining the counting region polygon. Defaults to a predefined rectangle. |
+| `line_thickness` | `int`            | `2`                        | Thickness of the annotation lines.                                               |
+| `view_img`       | `bool`           | `False`                    | Whether to display the image frames.                                             |
+| `draw_tracks`    | `bool`           | `False`                    | Whether to draw tracks of the objects.                                           |
 
 ### Arguments `model.track`
 
-| Name      | Type    | Default        | Description                                                 |
-| --------- | ------- | -------------- | ----------------------------------------------------------- |
-| `source`  | `im0`   | `None`         | source directory for images or videos                       |
-| `persist` | `bool`  | `False`        | persisting tracks between frames                            |
-| `tracker` | `str`   | `botsort.yaml` | Tracking method 'bytetrack' or 'botsort'                    |
-| `conf`    | `float` | `0.3`          | Confidence Threshold                                        |
-| `iou`     | `float` | `0.5`          | IOU Threshold                                               |
-| `classes` | `list`  | `None`         | filter results by class, i.e. classes=0, or classes=[0,2,3] |
-| `verbose` | `bool`  | `True`         | Display the object tracking results                         |
+{% include "macros/track-args.md" %}
 
 ## FAQ
 
-### How can I use Ultralytics YOLOv8 for real-time queue management?
+### How can I use Ultralytics YOLO11 for real-time queue management?
 
-To use Ultralytics YOLOv8 for real-time queue management, you can follow these steps:
+To use Ultralytics YOLO11 for real-time queue management, you can follow these steps:
 
-1. Load the YOLOv8 model with `YOLO("yolov8n.pt")`.
+1. Load the YOLO11 model with `YOLO("yolo11n.pt")`.
 2. Capture the video feed using `cv2.VideoCapture`.
 3. Define the region of interest (ROI) for queue management.
 4. Process frames to detect objects and manage queues.
@@ -170,7 +151,7 @@ import cv2
 
 from ultralytics import YOLO, solutions
 
-model = YOLO("yolov8n.pt")
+model = YOLO("yolo11n.pt")
 cap = cv2.VideoCapture("path/to/video.mp4")
 queue_region = [(20, 400), (1080, 404), (1080, 360), (20, 360)]
 
@@ -178,8 +159,6 @@ queue = solutions.QueueManager(
     names=model.names,
     reg_pts=queue_region,
     line_thickness=3,
-    fontsize=1.0,
-    region_color=(255, 144, 31),
 )
 
 while cap.isOpened():
@@ -197,9 +176,9 @@ cv2.destroyAllWindows()
 
 Leveraging Ultralytics [HUB](https://docs.ultralytics.com/hub/) can streamline this process by providing a user-friendly platform for deploying and managing your queue management solution.
 
-### What are the key advantages of using Ultralytics YOLOv8 for queue management?
+### What are the key advantages of using Ultralytics YOLO11 for queue management?
 
-Using Ultralytics YOLOv8 for queue management offers several benefits:
+Using Ultralytics YOLO11 for queue management offers several benefits:
 
 - **Plummeting Waiting Times:** Efficiently organizes queues, reducing customer wait times and boosting satisfaction.
 - **Enhancing Efficiency:** Analyzes queue data to optimize staff deployment and operations, thereby reducing costs.
@@ -208,20 +187,20 @@ Using Ultralytics YOLOv8 for queue management offers several benefits:
 
 For more details, explore our [Queue Management](https://docs.ultralytics.com/reference/solutions/queue_management/) solutions.
 
-### Why should I choose Ultralytics YOLOv8 over competitors like TensorFlow or Detectron2 for queue management?
+### Why should I choose Ultralytics YOLO11 over competitors like [TensorFlow](https://www.ultralytics.com/glossary/tensorflow) or Detectron2 for queue management?
 
-Ultralytics YOLOv8 has several advantages over TensorFlow and Detectron2 for queue management:
+Ultralytics YOLO11 has several advantages over TensorFlow and Detectron2 for queue management:
 
-- **Real-time Performance:** YOLOv8 is known for its real-time detection capabilities, offering faster processing speeds.
+- **Real-time Performance:** YOLO11 is known for its real-time detection capabilities, offering faster processing speeds.
 - **Ease of Use:** Ultralytics provides a user-friendly experience, from training to deployment, via [Ultralytics HUB](https://docs.ultralytics.com/hub/).
 - **Pretrained Models:** Access to a range of pretrained models, minimizing the time needed for setup.
 - **Community Support:** Extensive documentation and active community support make problem-solving easier.
 
 Learn how to get started with [Ultralytics YOLO](https://docs.ultralytics.com/quickstart/).
 
-### Can Ultralytics YOLOv8 handle multiple types of queues, such as in airports and retail?
+### Can Ultralytics YOLO11 handle multiple types of queues, such as in airports and retail?
 
-Yes, Ultralytics YOLOv8 can manage various types of queues, including those in airports and retail environments. By configuring the QueueManager with specific regions and settings, YOLOv8 can adapt to different queue layouts and densities.
+Yes, Ultralytics YOLO11 can manage various types of queues, including those in airports and retail environments. By configuring the QueueManager with specific regions and settings, YOLO11 can adapt to different queue layouts and densities.
 
 Example for airports:
 
@@ -231,16 +210,14 @@ queue_airport = solutions.QueueManager(
     names=model.names,
     reg_pts=queue_region_airport,
     line_thickness=3,
-    fontsize=1.0,
-    region_color=(0, 255, 0),
 )
 ```
 
 For more information on diverse applications, check out our [Real World Applications](#real-world-applications) section.
 
-### What are some real-world applications of Ultralytics YOLOv8 in queue management?
+### What are some real-world applications of Ultralytics YOLO11 in queue management?
 
-Ultralytics YOLOv8 is used in various real-world applications for queue management:
+Ultralytics YOLO11 is used in various real-world applications for queue management:
 
 - **Retail:** Monitors checkout lines to reduce wait times and improve customer satisfaction.
 - **Airports:** Manages queues at ticket counters and security checkpoints for a smoother passenger experience.

@@ -38,9 +38,14 @@ def predict(args: argparse.Namespace):
     use_fullpath = args.use_fullpath
     
     # Model
-    color_net = mmodel.color_net().to(device)
+    color_net  = mmodel.color_net().to(device)
     # color_net = mon.DataParallel(color_net)
-    color_net.load_state_dict(torch.load(weights))
+    state_dict     = torch.load(weights, weights_only=True)
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        k = k.replace("module.", "")
+        new_state_dict[k] = v
+    color_net.load_state_dict(new_state_dict)
     color_net.eval()
     
     # Benchmark
@@ -49,13 +54,13 @@ def predict(args: argparse.Namespace):
             model      = copy.deepcopy(color_net),
             image_size = imgsz,
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -85,24 +90,23 @@ def predict(args: argparse.Namespace):
                 data_lowlight = data_lowlight.permute(2, 0, 1)
                 data_lowlight = data_lowlight.cuda().unsqueeze(0)
                 h, w          = mon.get_image_size(data_lowlight)
-                data_lowlight = mon.resize_divisible(data_lowlight, 32)
+                data_lowlight = mon.resize(data_lowlight, divisible_by=32)
                 
                 # Infer
                 timer.tick()
                 gray, color_hist, enhanced_image = color_net(data_lowlight)
                 timer.tock()
                 
-                # Post-process
+                # Post-processing
                 enhanced_image = mon.resize(enhanced_image, (h, w))
                 
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     torchvision.utils.save_image(enhanced_image, str(output_path))
         

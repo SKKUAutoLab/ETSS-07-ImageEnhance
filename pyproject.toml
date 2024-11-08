@@ -9,7 +9,7 @@
 #
 [tool.poetry]
 name          = "mon"
-version       = "1.4.9"
+version       = "1.5.1"
 description   = "MON covers a wide range of research topics in computer vision, machine learning, and deep learning."
 license       = "MIT"
 authors       = [
@@ -59,7 +59,8 @@ exclude       = []
 [tool.poetry.dependencies]
 python            = ">=3.11, <3.13"
 depth_anything_v2 = {path="src/mon_extra/vision/depth/depth_anything_v2", develop=true}
-mobile_sam        = {path="src/mon_extra/vision/segment/mobile_sam"     , develop=true}
+depth_pro         = {path="src/mon_extra/vision/depth/depth_pro"        , develop=true}
+# mobile_sam        = {path="src/mon_extra/vision/segment/mobile_sam"     , develop=true}
 sam               = {path="src/mon_extra/vision/segment/sam"            , develop=true}
 sam2              = {path="src/mon_extra/vision/segment/sam2"           , develop=true}
 ultralytics       = {path="src/mon_extra/vision/ultralytics"            , develop=true}
@@ -71,7 +72,8 @@ yolox             = {path="src/mon_extra/vision/detect/yolox"           , develo
 [tool.poetry.extras]
 dev = [
     "depth_anything_v2",
-    "mobile_sam",
+    "depth_pro",
+    # "mobile_sam",
     "sam",
     "sam2",
     "ultralytics",

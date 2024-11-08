@@ -17,7 +17,7 @@ current_file = mon.Path(__file__).absolute()
 model_name  = "hinet_re"
 data_name   = "rain13k"
 root       = current_file.parents[1] / "run"
-data_root  = mon.DATA_DIR / "enhance" / "derain"
+data_root  = mon.DATA_DIR / "enhance"
 project    = None
 variant    = None
 fullname   = f"{model_name}_{data_name}"
@@ -77,6 +77,7 @@ model = {
 			"network_params_only": True,
         }
     ],          # Optimizer(s) for training model.
+	"debug"       : False,          # If ``True``, run the model in debug mode (when predicting).
 	"verbose"     : verbose,        # Verbosity.
 }
 

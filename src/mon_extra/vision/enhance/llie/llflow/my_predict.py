@@ -83,7 +83,6 @@ def format_measurements(meas):
 
 def predict(args: argparse.Namespace):
     # General config
-    opt          = args.opt
     data         = args.data
     save_dir     = mon.Path(args.save_dir)
     weights      = args.weights
@@ -94,8 +93,10 @@ def predict(args: argparse.Namespace):
     save_image   = args.save_image
     save_debug   = args.save_debug
     use_fullpath = args.use_fullpath
+    opt_path     = str(current_dir / "model_config" / args.opt_path)
     
-    opt            = option.parse(opt, is_train=False)
+    # Override options with args
+    opt            = option.parse(opt_path, is_train=False)
     opt["gpu_ids"] = None
     opt            = option.dict_to_nonedict(opt)
     
@@ -110,7 +111,7 @@ def predict(args: argparse.Namespace):
         flops, params, avg_time = copy.deepcopy(model).measure_efficiency_score(image_size=imgsz)
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -167,11 +168,10 @@ def predict(args: argparse.Namespace):
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     imwrite(str(output_path), sr)
        

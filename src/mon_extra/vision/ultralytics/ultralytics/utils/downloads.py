@@ -18,6 +18,7 @@ from ultralytics.utils import LOGGER, TQDM, checks, clean_url, emojis, is_online
 GITHUB_ASSETS_REPO = "ultralytics/assets"
 GITHUB_ASSETS_NAMES = (
     [f"yolov8{k}{suffix}.pt" for k in "nsmlx" for suffix in ("", "-cls", "-seg", "-pose", "-obb", "-oiv7")]
+    + [f"yolo11{k}{suffix}.pt" for k in "nsmlx" for suffix in ("", "-cls", "-seg", "-pose", "-obb")]
     + [f"yolov5{k}{resolution}u.pt" for k in "nsmlx" for resolution in ("", "6")]
     + [f"yolov3{k}u.pt" for k in ("", "-spp", "-tiny")]
     + [f"yolov8{k}-world.pt" for k in "smlx"]
@@ -75,7 +76,7 @@ def delete_dsstore(path, files_to_delete=(".DS_Store", "__MACOSX")):
         ```python
         from ultralytics.utils.downloads import delete_dsstore
 
-        delete_dsstore('path/to/dir')
+        delete_dsstore("path/to/dir")
         ```
 
     Note:
@@ -107,7 +108,7 @@ def zip_directory(directory, compress=True, exclude=(".DS_Store", "__MACOSX"), p
         ```python
         from ultralytics.utils.downloads import zip_directory
 
-        file = zip_directory('path/to/dir')
+        file = zip_directory("path/to/dir")
         ```
     """
     from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
@@ -153,7 +154,7 @@ def unzip_file(file, path=None, exclude=(".DS_Store", "__MACOSX"), exist_ok=Fals
         ```python
         from ultralytics.utils.downloads import unzip_file
 
-        dir = unzip_file('path/to/file.zip')
+        dir = unzip_file("path/to/file.zip")
         ```
     """
     from zipfile import BadZipFile, ZipFile, is_zipfile
@@ -392,10 +393,9 @@ def get_github_assets(repo="ultralytics/assets", version="latest", retry=False):
 
     Example:
         ```python
-        tag, assets = get_github_assets(repo='ultralytics/assets', version='latest')
+        tag, assets = get_github_assets(repo="ultralytics/assets", version="latest")
         ```
     """
-
     if version != "latest":
         version = f"tags/{version}"  # i.e. tags/v6.2
     url = f"https://api.github.com/repos/{repo}/releases/{version}"
@@ -409,7 +409,7 @@ def get_github_assets(repo="ultralytics/assets", version="latest", retry=False):
     return data["tag_name"], [x["name"] for x in data["assets"]]  # tag, assets i.e. ['yolov8n.pt', 'yolov8s.pt', ...]
 
 
-def attempt_download_asset(file, repo="ultralytics/assets", release="v8.2.0", **kwargs):
+def attempt_download_asset(file, repo="ultralytics/assets", release="v8.3.0", **kwargs):
     """
     Attempt to download a file from GitHub release assets if it is not found locally. The function checks for the file
     locally first, then tries to download it from the specified GitHub repository release.
@@ -417,7 +417,7 @@ def attempt_download_asset(file, repo="ultralytics/assets", release="v8.2.0", **
     Args:
         file (str | Path): The filename or file path to be downloaded.
         repo (str, optional): The GitHub repository in the format 'owner/repo'. Defaults to 'ultralytics/assets'.
-        release (str, optional): The specific release version to be downloaded. Defaults to 'v8.2.0'.
+        release (str, optional): The specific release version to be downloaded. Defaults to 'v8.3.0'.
         **kwargs (any): Additional keyword arguments for the download process.
 
     Returns:
@@ -425,7 +425,7 @@ def attempt_download_asset(file, repo="ultralytics/assets", release="v8.2.0", **
 
     Example:
         ```python
-        file_path = attempt_download_asset('yolov8n.pt', repo='ultralytics/assets', release='latest')
+        file_path = attempt_download_asset("yolov8n.pt", repo="ultralytics/assets", release="latest")
         ```
     """
     from ultralytics.utils import SETTINGS  # scoped for circular import
@@ -480,7 +480,7 @@ def download(url, dir=Path.cwd(), unzip=True, delete=False, curl=False, threads=
 
     Example:
         ```python
-        download('https://ultralytics.com/assets/example.zip', dir='path/to/dir', unzip=True)
+        download("https://ultralytics.com/assets/example.zip", dir="path/to/dir", unzip=True)
         ```
     """
     dir = Path(dir)

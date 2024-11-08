@@ -256,7 +256,7 @@ class BasePredictor:
                         yield from [preds] if isinstance(preds, torch.Tensor) else preds  # yield embedding tensors
                         continue
 
-                # Postprocess
+                # Post-processing
                 with profilers[2]:
                     self.results = self.postprocess(preds, im, im0s)
                 self.run_callbacks("on_predict_postprocess_end")
@@ -328,7 +328,7 @@ class BasePredictor:
             frame = int(match[1]) if match else None  # 0 if frame undetermined
 
         self.txt_path = self.save_dir / "labels" / (p.stem + ("" if self.dataset.mode == "image" else f"_{frame}"))
-        string += "%gx%g " % im.shape[2:]
+        string += "{:g}x{:g} ".format(*im.shape[2:])
         result = self.results[i]
         result.save_dir = self.save_dir.__str__()  # used in other locations
         string += f"{result.verbose()}{result.speed['inference']:.1f}ms"
@@ -384,7 +384,7 @@ class BasePredictor:
             cv2.imwrite(save_path, im)
 
     def show(self, p=""):
-        """Display an image in a window using OpenCV imshow()."""
+        """Display an image in a window using the OpenCV imshow function."""
         im = self.plotted_img
         if platform.system() == "Linux" and p not in self.windows:
             self.windows.append(p)

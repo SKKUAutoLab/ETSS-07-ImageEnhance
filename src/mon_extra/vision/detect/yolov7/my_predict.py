@@ -3,11 +3,8 @@
 
 from __future__ import annotations
 
-import argparse
-import socket
 import time
 
-import click
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
@@ -22,7 +19,10 @@ from utils.general import (
     scale_coords, set_logging, strip_optimizer, xyxy2xywh,
 )
 from utils.plots import plot_one_box
-from utils.torch_utils import load_classifier, select_device, time_synchronized, TracedModel
+from utils.torch_utils import (
+    load_classifier, select_device, time_synchronized,
+    TracedModel,
+)
 
 console      = mon.console
 current_file = mon.Path(__file__).absolute()

@@ -159,7 +159,7 @@ def download_weights_from_url(
     
     path = core.Path(path)
     if not path.exists() or overwrite:
-        core.delete_files(regex=path.name, path=path.parent)
+        core.delete_files(path=path.parent, regex=path.name)
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.hub.download_url_to_file(url, path, None, progress=True)
     return path
@@ -250,10 +250,13 @@ class Model(lightning.LightningModule, ABC):
         metrics     : Any  = None,
         optimizers  : Any  = None,
         # Misc
+        debug       : bool = True,
         verbose     : bool = True,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
+        # Misc
+        self.debug         = debug
         self.verbose       = verbose
         # For saving/loading
         self.name          = name
@@ -344,8 +347,22 @@ class Model(lightning.LightningModule, ABC):
         True ``'predicting'`` mode happens when :obj:`_trainer` is ``None``,
         i.e., not being handled by :obj:`lightning.Trainer`.
         """
-        return True if (not self.training
-                        and getattr(self, "_trainer", None) is None) else False
+        return True \
+            if (not self.training and getattr(self, "_trainer", None) is None) \
+            else False
+    
+    @property
+    def debug(self) -> bool:
+        """Return ``True`` if the model is in debug mode."""
+        if self.predicting:
+            return self._debug
+        else:
+            return True
+    
+    @debug.setter
+    def debug(self, debug: bool):
+        """Set the debug mode."""
+        self._debug = debug
     
     # endregion
     
@@ -401,7 +418,7 @@ class Model(lightning.LightningModule, ABC):
         # Second, get the state_dict
         state_dict = None
         if self.weights:
-            state_dict = load_state_dict(self, self.weights, False)
+            state_dict = load_state_dict(self, self.weights, True)
         # Third, load the state_dict to the model
         if state_dict:
             self.load_state_dict(state_dict)
@@ -866,7 +883,6 @@ class Model(lightning.LightningModule, ABC):
     
     # region Predicting
     
-    # @torch.no_grad()
     def infer(self, datapoint: dict, *args, **kwargs) -> dict:
         """Infer the model on a single datapoint. This method is different from
         :obj:`forward()` in term that you may want to perform additional

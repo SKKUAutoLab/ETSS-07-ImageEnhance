@@ -6,8 +6,10 @@
 from __future__ import annotations
 
 import argparse
+from typing import Sequence
 
 import cv2
+import numpy as np
 
 import mon
 import pie
@@ -19,17 +21,56 @@ current_dir  = current_file.parents[0]
 
 # region Predict
 
+def compute_efficiency_score(
+    args,
+    image_size: int | Sequence[int] = 512,
+    channels  : int  = 3,
+    runs      : int  = 1000,
+    use_cuda  : bool = True,
+    verbose   : bool = False,
+):
+    # Define input tensor
+    h, w  = mon.get_image_size(image_size)
+    input = np.random.rand(h, w, channels).astype(np.uint8)
+    
+    # Get time
+    timer = mon.Timer()
+    for i in range(runs):
+        timer.tick()
+        _ = pie.PIE(input)
+        timer.tock()
+    avg_time = timer.avg_time
+    
+    # Print
+    if verbose:
+        # console.log(f"FLOPs (G) : {flops:.4f}")
+        # console.log(f"Params (M): {params:.4f}")
+        console.log(f"Time (s)  : {avg_time:.17f}")
+        
+        
 def predict(args: argparse.Namespace):
     # General config
     data         = args.data
     save_dir     = args.save_dir
     imgsz        = args.imgsz
+    imgsz        = imgsz[0] if isinstance(imgsz, (list, tuple)) else imgsz
     resize       = args.resize
     benchmark    = args.benchmark
     save_image   = args.save_image
     save_debug   = args.save_debug
     use_fullpath = args.use_fullpath
     
+    # Measure efficiency score
+    if benchmark:
+        compute_efficiency_score(
+            args       = args,
+            image_size = imgsz,
+            channels   = 3,
+            runs       = 100,
+            use_cuda   = True,
+            verbose    = True,
+        )
+        
     # Data I/O
     console.log(f"[bold red]{data}")
     data_name, data_loader, data_writer = mon.parse_io_worker(
@@ -58,14 +99,16 @@ def predict(args: argparse.Namespace):
             enhanced_image = pie.PIE(image)
             timer.tock()
             
+            # Post-processing
+            enhanced_image = cv2.cvtColor(enhanced_image, cv2.COLOR_RGB2BGR)
+            
             # Save
             if save_image:
                 if use_fullpath:
-                    rel_path = image_path.relative_path(data_name)
-                    save_dir = save_dir / rel_path.parent
+                    rel_path    = image_path.relative_path(data_name)
+                    output_path = save_dir / rel_path.parent / image_path.name
                 else:
-                    save_dir = save_dir / data_name
-                output_path  = save_dir / image_path.name
+                    output_path = save_dir / data_name / image_path.name
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(str(output_path), enhanced_image)
     

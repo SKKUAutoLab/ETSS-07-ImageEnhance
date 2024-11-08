@@ -16,6 +16,7 @@ __all__ = [
     "CTCLoss",
     "CharbonnierLoss",
     "CosineEmbeddingLoss",
+    "CosineSimilarityLoss",
     "CrossEntropyLoss",
     "ExtendedL1Loss",
     "ExtendedMAELoss",
@@ -137,6 +138,28 @@ class CharbonnierLoss(Loss):
         loss = self.loss_weight * loss
         return loss
 
+
+@LOSSES.register(name="cosine_similarity_loss")
+class CosineSimilarityLoss(Loss):
+    
+    def __init__(
+        self,
+        dim        : int = 1,
+        eps        : float = 1e-6,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean",
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+        self.cos = nn.CosineSimilarity(dim=dim, eps=eps)
+    
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        b, c, h, w = input.size()
+        x    = input.permute(0, 2, 3, 1).view(-1, c)
+        y    = target.permute(0, 2, 3, 1).view(-1, c)
+        loss = 1.0 - self.cos(x, y).sum() / (1.0 * b * h * w)
+        loss = self.loss_weight * loss
+        return loss
+    
 
 @LOSSES.register(name="l1_loss")
 class L1Loss(Loss):

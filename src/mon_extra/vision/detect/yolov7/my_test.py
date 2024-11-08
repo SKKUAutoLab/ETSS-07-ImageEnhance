@@ -3,13 +3,10 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import os
-import socket
 from threading import Thread
 
-import click
 import numpy as np
 import torch
 import yaml
@@ -20,7 +17,8 @@ from models.experimental import attempt_load
 from mon import DATA_DIR
 from utils.datasets import create_dataloader
 from utils.general import (
-    box_iou, check_dataset, check_file, check_img_size, coco80_to_coco91_class, colorstr,
+    box_iou, check_dataset, check_file, check_img_size, coco80_to_coco91_class,
+    colorstr,
     non_max_suppression, scale_coords, set_logging, xywh2xyxy, xyxy2xywh,
 )
 from utils.metrics import ap_per_class, ConfusionMatrix

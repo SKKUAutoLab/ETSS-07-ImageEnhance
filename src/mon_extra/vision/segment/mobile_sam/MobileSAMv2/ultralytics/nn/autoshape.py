@@ -108,7 +108,7 @@ class AutoShape(nn.Module):
             with dt[1]:
                 y = self.model(x, augment=augment)  # forward
 
-            # Postprocess
+            # Post-processing
             with dt[2]:
                 y = non_max_suppression(y if self.dmb else y[0],
                                         self.conf,

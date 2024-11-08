@@ -1,0 +1,29 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "neurop"
+data        : "fivek_init"
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "neurop_init"
+save_dir    : ~
+weights     : ~
+device      : 0
+local_rank  : ~
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : False
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+opt_path: "neurop_init.yaml"

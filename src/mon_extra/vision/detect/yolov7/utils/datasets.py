@@ -11,24 +11,21 @@ from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from threading import Thread
-
+import mon
 import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-from PIL import Image, ExifTags
+from PIL import ExifTags, Image
 from torch.utils.data import Dataset
 from tqdm import tqdm
-
-import pickle
-from copy import deepcopy
-#from pycocotools import mask as maskUtils
-from torchvision.utils import save_image
-from torchvision.ops import roi_pool, roi_align, ps_roi_pool, ps_roi_align
-
-from utils.general import check_requirements, xyxy2xywh, xywh2xyxy, xywhn2xyxy, xyn2xy, segment2box, segments2boxes, \
-    resample_segments, clean_str
+from utils.general import (
+    check_requirements, clean_str, resample_segments,
+    segment2box, segments2boxes, xyn2xy, xywh2xyxy, xywhn2xyxy, xyxy2xywh,
+)
 from utils.torch_utils import torch_distributed_zero_first
+
+# from pycocotools import mask as maskUtils
 
 # Parameters
 help_url = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'
@@ -350,7 +347,40 @@ def img2label_paths(img_paths):
     return ['txt'.join(x.replace(sa, sb, 1).rsplit(x.split('.')[-1], 1)) for x in img_paths]
 
 
+def my_img2label_paths(img_paths):
+    # Define label paths as a function of image paths
+    label_files = []
+    for path in img_paths:
+        path = mon.Path(path)
+        #
+        sa = os.sep + 'image' + os.sep  # /images/
+        sb = os.sep + 'label' + os.sep  # /labels/ substrings
+        label_path = path.replace(sa, sb, 1)
+        label_path = label_path.parent / (label_path.stem + ".txt")
+        if label_path.is_txt_file():
+            label_files.append(label_path)
+            continue
+        #
+        sa = os.sep + 'images'   # /images/
+        sb = os.sep + 'labels' + os.sep  # /labels/ substrings
+        label_path = path.replace(sa, sb, 1)
+        label_path = label_path.parent / (label_path.stem + ".txt")
+        if label_path.is_txt_file():
+            label_files.append(label_path)
+            continue
+        #
+        sa = os.sep + path.parent.name           + os.sep
+        sb = os.sep + path.parent.name + "_bbox" + os.sep
+        label_path = path.replace(sa, sb, 1)
+        label_path = label_path.parent / (label_path.stem + ".txt")
+        if label_path.is_txt_file():
+            label_files.append(label_path)
+            continue
+    return label_files
+
+
 class LoadImagesAndLabels(Dataset):  # for training/testing
+    
     def __init__(self, path, img_size=640, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
                  cache_images=False, single_cls=False, stride=32, pad=0.0, prefix=''):
         self.img_size = img_size
@@ -386,7 +416,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             raise Exception(f'{prefix}Error loading data from {path}: {e}\nSee {help_url}')
 
         # Check cache
-        self.label_files = img2label_paths(self.img_files)  # labels
+        self.label_files = my_img2label_paths(self.img_files)  # labels
         cache_path = (p if p.is_file() else Path(self.label_files[0]).parent).with_suffix('.cache')  # cached labels
         if cache_path.is_file():
             cache, exists = torch.load(cache_path), True  # load
@@ -409,7 +439,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.labels = list(labels)
         self.shapes = np.array(shapes, dtype=np.float64)
         self.img_files = list(cache.keys())  # update
-        self.label_files = img2label_paths(cache.keys())  # update
+        self.label_files = my_img2label_paths(cache.keys())  # update
         if single_cls:
             for x in self.labels:
                 x[:, 0] = 0
@@ -1215,6 +1245,7 @@ def pastein(image, labels, sample_labels, sample_images, sample_masks):
 
     return labels
 
+
 class Albumentations:
     # YOLOv5 Albumentations class (optional, only used if package is installed)
     def __init__(self):
@@ -1269,7 +1300,7 @@ def extract_boxes(path='../coco/'):  # from utils.datasets import *; extract_box
             h, w = im.shape[:2]
 
             # labels
-            lb_file = Path(img2label_paths([str(im_file)])[0])
+            lb_file = Path(my_img2label_paths([str(im_file)])[0])
             if Path(lb_file).exists():
                 with open(lb_file, 'r') as f:
                     lb = np.array([x.split() for x in f.read().strip().splitlines()], dtype=np.float32)  # labels
@@ -1308,7 +1339,7 @@ def autosplit(path='../coco', weights=(0.9, 0.1, 0.0), annotated_only=False):
 
     print(f'Autosplitting images from {path}' + ', using *.txt labeled images only' * annotated_only)
     for i, img in tqdm(zip(indices, files), total=n):
-        if not annotated_only or Path(img2label_paths([str(img)])[0]).exists():  # check label
+        if not annotated_only or Path(my_img2label_paths([str(img)])[0]).exists():  # check label
             with open(path / txt[i], 'a') as f:
                 f.write(str(img) + '\n')  # add image to txt file
     

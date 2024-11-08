@@ -1,0 +1,23 @@
+#### general settings
+name    : neurop_test_ppr10k_c
+is_init : false
+is_train: false
+device  : cuda
+weights : zoo/vision/enhance/retouch/neurop/neurop/ppr10k_b/neurop_ppr10k_c.pth
+
+#### datasets
+datasets:
+  name      : ppr10k_c
+  mode      : finetune
+  dataroot  : dataset-ppr
+  n_cpus    : 1
+  batch_size: 1
+
+#### network structures
+network_G:
+  init_model : ~
+  in_nc      : 3
+  out_nc     : 3
+  base_nf    : 64
+  cond_nf    : 32
+  strict_load: true

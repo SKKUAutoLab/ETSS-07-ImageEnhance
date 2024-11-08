@@ -12,6 +12,7 @@ __all__ = [
     "CustomMSSSIM",
     "CustomSSIM",
     "ErrorRelativeGlobalDimensionlessSynthesis",
+    "GoodLookingImageMetric",
     "LearnedPerceptualImagePatchSimilarity",
     "MemorizationInformedFrechetInceptionDistance",
     "MultiScaleStructuralSimilarityIndexMeasure",
@@ -35,6 +36,7 @@ __all__ = [
 import torch
 import torch.nn.functional as F
 import torchmetrics
+from torch import nn
 
 from mon.globals import METRICS
 
@@ -215,7 +217,7 @@ def custom_ssim(
     # if not X.type() == Y.type():
     #    raise ValueError(f"Input images should have the same dtype, but got {X.type()} and {Y.type()}.")
     
-    if window:  # set win_size
+    if window is not None:  # set win_size
         window_size = window.shape[-1]
 
     if not (window_size % 2 == 1):
@@ -270,7 +272,7 @@ def custom_ms_ssim(
         raise ValueError(f"`image1` and `image2` must be 4D or 5D tensors, "
                          f"but got {image1.shape}")
 
-    if window:  # set win_size
+    if window is not None:  # set win_size
         window_size = window.shape[-1]
 
     if not (window_size % 2 == 1):
@@ -311,7 +313,7 @@ def custom_ms_ssim(
         return ms_ssim_val.mean(1)
 
 
-class CustomSSIM(torch.nn.Module):
+class CustomSSIM(nn.Module):
 
     def __init__(
         self,
@@ -375,5 +377,34 @@ class CustomMSSSIM(torch.nn.Module):
             weights      = self.weights,
             k            = self.k,
         )
+    
+# endregion
+
+
+# region Good-Looking Image Metric
+
+class GoodLookingImageMetric(nn.Module):
+    """A good-looking image is one with a low well-exposedness, but high
+    contrast and saturation.
+    
+    References:
+        https://github.com/VinAIResearch/PSENet-Image-Enhancement/blob/main/source/iqa.py
+    """
+    
+    def __init__(self, exposed_level: float = 0.5, pool_size: int = 25):
+        super().__init__()
+        self.exposed_level = exposed_level
+        self.pool_size     = pool_size
+        self.mean_pool     = nn.Sequential(nn.ReflectionPad2d(self.pool_size // 2), nn.AvgPool2d(self.pool_size, stride=1))
+    
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        eps         = 1 / 255.0
+        max_rgb     = torch.max(images, dim=1, keepdim=True)[0]
+        min_rgb     = torch.min(images, dim=1, keepdim=True)[0]
+        saturation  = (max_rgb - min_rgb + eps) / (max_rgb + eps)
+        mean_rgb    = self.mean_pool(images).mean(dim=1, keepdim=True)
+        exposedness = torch.abs(mean_rgb - self.exposed_level) + eps
+        contrast    = self.mean_pool(images * images).mean(dim=1, keepdim=True) - mean_rgb ** 2
+        return torch.mean((saturation * contrast) / exposedness, dim=[1], keepdim=True)
     
 # endregion

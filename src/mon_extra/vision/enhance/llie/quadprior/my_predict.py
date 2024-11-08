@@ -183,17 +183,17 @@ def predict(args: argparse.Namespace):
                 )[0]
                 timer.tock()
                 
-                # Post-process
-                output = mon.resize(output, (h0, w0))
+                # Post-processing
+                output = mon.resize(output, (h0, w0), interpolation=cv2.INTER_LINEAR)
+                output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
                 
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     cv2.imwrite(str(output_path), output)
         

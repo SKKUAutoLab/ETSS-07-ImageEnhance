@@ -1,12 +1,12 @@
 ---
 comments: true
-description: Optimize your fitness routine with real-time workouts monitoring using Ultralytics YOLOv8. Track and improve your exercise form and performance.
-keywords: workouts monitoring, Ultralytics YOLOv8, pose estimation, fitness tracking, exercise assessment, real-time feedback, exercise form, performance metrics
+description: Optimize your fitness routine with real-time workouts monitoring using Ultralytics YOLO11. Track and improve your exercise form and performance.
+keywords: workouts monitoring, Ultralytics YOLO11, pose estimation, fitness tracking, exercise assessment, real-time feedback, exercise form, performance metrics
 ---
 
-# Workouts Monitoring using Ultralytics YOLOv8
+# Workouts Monitoring using Ultralytics YOLO11
 
-Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics/) enhances exercise assessment by accurately tracking key body landmarks and joints in real-time. This technology provides instant feedback on exercise form, tracks workout routines, and measures performance metrics, optimizing training sessions for users and trainers alike.
+Monitoring workouts through pose estimation with [Ultralytics YOLO11](https://github.com/ultralytics/ultralytics/) enhances exercise assessment by accurately tracking key body landmarks and joints in real-time. This technology provides instant feedback on exercise form, tracks workout routines, and measures performance metrics, optimizing training sessions for users and trainers alike.
 
 <p align="center">
   <br>
@@ -16,7 +16,7 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
     allowfullscreen>
   </iframe>
   <br>
-  <strong>Watch:</strong> Workouts Monitoring using Ultralytics YOLOv8 | Pushups, Pullups, Ab Workouts
+  <strong>Watch:</strong> Workouts Monitoring using Ultralytics YOLO11 | Pushups, Pullups, Ab Workouts
 </p>
 
 ## Advantages of Workouts Monitoring?
@@ -29,12 +29,12 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
 
 ## Real World Applications
 
-|                                                  Workouts Monitoring                                                   |                                                  Workouts Monitoring                                                   |
-| :--------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: |
-| ![PushUps Counting](https://github.com/RizwanMunawar/ultralytics/assets/62513924/cf016a41-589f-420f-8a8c-2cc8174a16de) | ![PullUps Counting](https://github.com/RizwanMunawar/ultralytics/assets/62513924/cb20f316-fac2-4330-8445-dcf5ffebe329) |
-|                                                    PushUps Counting                                                    |                                                    PullUps Counting                                                    |
+|                                        Workouts Monitoring                                         |                                        Workouts Monitoring                                         |
+| :------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------: |
+| ![PushUps Counting](https://github.com/ultralytics/docs/releases/download/0/pushups-counting.avif) | ![PullUps Counting](https://github.com/ultralytics/docs/releases/download/0/pullups-counting.avif) |
+|                                          PushUps Counting                                          |                                          PullUps Counting                                          |
 
-!!! Example "Workouts Monitoring Example"
+!!! example "Workouts Monitoring Example"
 
     === "Workouts Monitoring"
 
@@ -43,7 +43,7 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
 
         from ultralytics import YOLO, solutions
 
-        model = YOLO("yolov8n-pose.pt")
+        model = YOLO("yolo11n-pose.pt")
         cap = cv2.VideoCapture("path/to/video/file.mp4")
         assert cap.isOpened(), "Error reading video file"
         w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
@@ -74,7 +74,7 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
 
         from ultralytics import YOLO, solutions
 
-        model = YOLO("yolov8n-pose.pt")
+        model = YOLO("yolo11n-pose.pt")
         cap = cv2.VideoCapture("path/to/video/file.mp4")
         assert cap.isOpened(), "Error reading video file"
         w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
@@ -108,7 +108,7 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
 
 ### KeyPoints Map
 
-![keyPoints Order Ultralytics YOLOv8 Pose](https://github.com/ultralytics/ultralytics/assets/62513924/f45d8315-b59f-47b7-b9c8-c61af1ce865b)
+![keyPoints Order Ultralytics YOLO11 Pose](https://github.com/ultralytics/docs/releases/download/0/keypoints-order-ultralytics-yolov8-pose.avif)
 
 ### Arguments `AIGym`
 
@@ -123,48 +123,24 @@ Monitoring workouts through pose estimation with [Ultralytics YOLOv8](https://gi
 
 ### Arguments `model.predict`
 
-| Name            | Type           | Default                | Description                                                                |
-| --------------- | -------------- | ---------------------- | -------------------------------------------------------------------------- |
-| `source`        | `str`          | `'ultralytics/assets'` | source directory for images or videos                                      |
-| `conf`          | `float`        | `0.25`                 | object confidence threshold for detection                                  |
-| `iou`           | `float`        | `0.7`                  | intersection over union (IoU) threshold for NMS                            |
-| `imgsz`         | `int or tuple` | `640`                  | image size as scalar or (h, w) list, i.e. (640, 480)                       |
-| `half`          | `bool`         | `False`                | use half precision (FP16)                                                  |
-| `device`        | `None or str`  | `None`                 | device to run on, i.e. cuda device=0/1/2/3 or device=cpu                   |
-| `max_det`       | `int`          | `300`                  | maximum number of detections per image                                     |
-| `vid_stride`    | `bool`         | `False`                | video frame-rate stride                                                    |
-| `stream_buffer` | `bool`         | `False`                | buffer all streaming frames (True) or return the most recent frame (False) |
-| `visualize`     | `bool`         | `False`                | visualize model features                                                   |
-| `augment`       | `bool`         | `False`                | apply image augmentation to prediction sources                             |
-| `agnostic_nms`  | `bool`         | `False`                | class-agnostic NMS                                                         |
-| `classes`       | `list[int]`    | `None`                 | filter results by class, i.e. classes=0, or classes=[0,2,3]                |
-| `retina_masks`  | `bool`         | `False`                | use high-resolution segmentation masks                                     |
-| `embed`         | `list[int]`    | `None`                 | return feature vectors/embeddings from given layers                        |
+{% include "macros/predict-args.md" %}
 
 ### Arguments `model.track`
 
-| Name      | Type    | Default        | Description                                                 |
-| --------- | ------- | -------------- | ----------------------------------------------------------- |
-| `source`  | `im0`   | `None`         | source directory for images or videos                       |
-| `persist` | `bool`  | `False`        | persisting tracks between frames                            |
-| `tracker` | `str`   | `botsort.yaml` | Tracking method 'bytetrack' or 'botsort'                    |
-| `conf`    | `float` | `0.3`          | Confidence Threshold                                        |
-| `iou`     | `float` | `0.5`          | IOU Threshold                                               |
-| `classes` | `list`  | `None`         | filter results by class, i.e. classes=0, or classes=[0,2,3] |
-| `verbose` | `bool`  | `True`         | Display the object tracking results                         |
+{% include "macros/track-args.md" %}
 
 ## FAQ
 
-### How do I monitor my workouts using Ultralytics YOLOv8?
+### How do I monitor my workouts using Ultralytics YOLO11?
 
-To monitor your workouts using Ultralytics YOLOv8, you can utilize the pose estimation capabilities to track and analyze key body landmarks and joints in real-time. This allows you to receive instant feedback on your exercise form, count repetitions, and measure performance metrics. You can start by using the provided example code for pushups, pullups, or ab workouts as shown:
+To monitor your workouts using Ultralytics YOLO11, you can utilize the pose estimation capabilities to track and analyze key body landmarks and joints in real-time. This allows you to receive instant feedback on your exercise form, count repetitions, and measure performance metrics. You can start by using the provided example code for pushups, pullups, or ab workouts as shown:
 
 ```python
 import cv2
 
 from ultralytics import YOLO, solutions
 
-model = YOLO("yolov8n-pose.pt")
+model = YOLO("yolo11n-pose.pt")
 cap = cv2.VideoCapture("path/to/video/file.mp4")
 assert cap.isOpened(), "Error reading video file"
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
@@ -189,9 +165,9 @@ cv2.destroyAllWindows()
 
 For further customization and settings, you can refer to the [AIGym](#arguments-aigym) section in the documentation.
 
-### What are the benefits of using Ultralytics YOLOv8 for workout monitoring?
+### What are the benefits of using Ultralytics YOLO11 for workout monitoring?
 
-Using Ultralytics YOLOv8 for workout monitoring provides several key benefits:
+Using Ultralytics YOLO11 for workout monitoring provides several key benefits:
 
 - **Optimized Performance:** By tailoring workouts based on monitoring data, you can achieve better results.
 - **Goal Achievement:** Easily track and adjust fitness goals for measurable progress.
@@ -201,13 +177,13 @@ Using Ultralytics YOLOv8 for workout monitoring provides several key benefits:
 
 You can watch a [YouTube video demonstration](https://www.youtube.com/watch?v=LGGxqLZtvuw) to see these benefits in action.
 
-### How accurate is Ultralytics YOLOv8 in detecting and tracking exercises?
+### How accurate is Ultralytics YOLO11 in detecting and tracking exercises?
 
-Ultralytics YOLOv8 is highly accurate in detecting and tracking exercises due to its state-of-the-art pose estimation capabilities. It can accurately track key body landmarks and joints, providing real-time feedback on exercise form and performance metrics. The model's pretrained weights and robust architecture ensure high precision and reliability. For real-world examples, check out the [real-world applications](#real-world-applications) section in the documentation, which showcases pushups and pullups counting.
+Ultralytics YOLO11 is highly accurate in detecting and tracking exercises due to its state-of-the-art pose estimation capabilities. It can accurately track key body landmarks and joints, providing real-time feedback on exercise form and performance metrics. The model's pretrained weights and robust architecture ensure high [precision](https://www.ultralytics.com/glossary/precision) and reliability. For real-world examples, check out the [real-world applications](#real-world-applications) section in the documentation, which showcases pushups and pullups counting.
 
-### Can I use Ultralytics YOLOv8 for custom workout routines?
+### Can I use Ultralytics YOLO11 for custom workout routines?
 
-Yes, Ultralytics YOLOv8 can be adapted for custom workout routines. The `AIGym` class supports different pose types such as "pushup", "pullup", and "abworkout." You can specify keypoints and angles to detect specific exercises. Here is an example setup:
+Yes, Ultralytics YOLO11 can be adapted for custom workout routines. The `AIGym` class supports different pose types such as "pushup", "pullup", and "abworkout." You can specify keypoints and angles to detect specific exercises. Here is an example setup:
 
 ```python
 from ultralytics import solutions
@@ -222,7 +198,7 @@ gym_object = solutions.AIGym(
 
 For more details on setting arguments, refer to the [Arguments `AIGym`](#arguments-aigym) section. This flexibility allows you to monitor various exercises and customize routines based on your needs.
 
-### How can I save the workout monitoring output using Ultralytics YOLOv8?
+### How can I save the workout monitoring output using Ultralytics YOLO11?
 
 To save the workout monitoring output, you can modify the code to include a video writer that saves the processed frames. Here's an example:
 
@@ -231,7 +207,7 @@ import cv2
 
 from ultralytics import YOLO, solutions
 
-model = YOLO("yolov8n-pose.pt")
+model = YOLO("yolo11n-pose.pt")
 cap = cv2.VideoCapture("path/to/video/file.mp4")
 assert cap.isOpened(), "Error reading video file"
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
@@ -258,4 +234,4 @@ cv2.destroyAllWindows()
 video_writer.release()
 ```
 
-This setup writes the monitored video to an output file. For more details, refer to the [Workouts Monitoring with Save Output](#workouts-monitoring-using-ultralytics-yolov8) section.
+This setup writes the monitored video to an output file. For more details, refer to the [Workouts Monitoring with Save Output](#workouts-monitoring-using-ultralytics-yolo11) section.

@@ -1,0 +1,30 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "fourllie"
+model       : "fourllie"
+data        : "lol_v2_real"
+data_dir    : "enhance/llie/lol_v2_real"
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "fourllie_lol_v2_real"
+save_dir    : ~
+weights     : "zoo/vision/enhance/llie/fourllie/fourllie/lol_v2_real/fourllie_lol_v2_real.pth"
+device      : 0
+local_rank  : ~
+launcher    : ~
+epochs      : 1000
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+opt_path: "lol_v2_real.yaml"

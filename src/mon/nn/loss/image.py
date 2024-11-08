@@ -13,7 +13,11 @@ __all__ = [
     "ChannelConsistencyLoss",
     "ChannelRatioConsistencyLoss",
     "ColorConstancyLoss",
+    "ColorLoss",
     "ContradictChannelLoss",
+    "DepthWeightedSmoothnessLoss",
+    "EdgeAwareDepthConsistencyLoss",
+    "EdgeAwareLoss",
     "EdgeCharbonnierLoss",
     "EdgeConstancyLoss",
     "EdgeLoss",
@@ -23,11 +27,11 @@ __all__ = [
     "GradientLoss",
     "HistogramLoss",
     "MSSSIMLoss",
+    "NIQELoss",
     "PSNRLoss",
     "PerceptualL1Loss",
     "PerceptualLoss",
     "SSIMLoss",
-    "SmoothLoss",
     "SpatialConsistencyLoss",
     "StdLoss",
     "TVLoss",
@@ -35,20 +39,44 @@ __all__ = [
     "TotalVariationLoss",
     "VGGCharbonnierLoss",
     "VGGLoss",
+    "VGGPerceptualLoss",
 ]
 
 from typing import Literal
 
 import numpy as np
+import pyiqa
 import torch
 import torchvision
-from mon.globals import LOSSES
-from mon.nn.loss import base
-from mon.nn.modules import prior
 from torch import nn
 from torch.nn import functional as F
 from torch.nn.common_types import _size_2_t
 from torchvision import models, transforms
+
+from mon import core
+from mon.globals import LOSSES
+from mon.nn.loss import base
+from mon.nn.modules import prior
+
+
+# region Utils
+
+def apply_sobel_filter_to_rgb(image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    sobel_kernel_x = torch.tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    sobel_kernel_y = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    sobel_kernel_x = sobel_kernel_x.to(image.device)
+    sobel_kernel_y = sobel_kernel_y.to(image.device)
+    # Split the image into R, G, B channels
+    channels = torch.chunk(image, chunks=3, dim=1)  # image shape [B, 3, H, W]
+    # Apply Sobel filter to each channel
+    grad_x_channels = [F.conv2d(channel, sobel_kernel_x, padding=1) for channel in channels]
+    grad_y_channels = [F.conv2d(channel, sobel_kernel_y, padding=1) for channel in channels]
+    # Stack the gradients back along the channel dimension
+    grad_x = torch.cat(grad_x_channels, dim=1)
+    grad_y = torch.cat(grad_y_channels, dim=1)
+    return grad_x, grad_y
+
+# endregion
 
 
 # region Loss
@@ -177,11 +205,7 @@ class ColorConstancyLoss(base.Loss):
     ):
         super().__init__(loss_weight=loss_weight, reduction=reduction)
     
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor = None
-    ) -> torch.Tensor:
+    def forward(self, input : torch.Tensor) -> torch.Tensor:
         mean_rgb   = torch.mean(input, [2, 3], keepdim=True)
         mr, mg, mb = torch.split(mean_rgb, 1, dim=1)
         d_rg       = torch.pow(mr - mg, 2)
@@ -192,6 +216,27 @@ class ColorConstancyLoss(base.Loss):
         loss       = self.loss_weight * loss
         return loss
 
+
+@LOSSES.register(name="color_loss")
+class ColorLoss(base.Loss):
+    """Color Loss.
+    
+    References:
+        https://github.com/albrateanu/LYT-Net/blob/main/PyTorch/losses.py
+    """
+    
+    def __init__(
+        self,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+    
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        loss = torch.mean(torch.abs(torch.mean(input, dim=[1, 2, 3]) - torch.mean(target, dim=[1, 2, 3])))
+        loss = self.loss_weight * loss
+        return loss
+    
 
 @LOSSES.register(name="contradict_channel_loss")
 class ContradictChannelLoss(base.Loss):
@@ -240,6 +285,118 @@ class ContradictChannelLoss(base.Loss):
         loss   = self.sigmoid(loss)
         loss   = self.loss_weight * loss
         return loss
+
+
+@LOSSES.register(name="depth_weighted_smoothness_loss")
+class DepthWeightedSmoothnessLoss(base.Loss):
+    """
+    Calculate the depth-weighted smoothness loss for 4D tensors.
+    
+    Args:
+        input: Predicted illumination map.
+        depth: Depth map.
+        alpha: Weighting factor for depth influence.
+    """
+    
+    def __init__(
+        self,
+        alpha      : float = 1.0,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+        self.alpha = alpha
+    
+    def forward(self, input: torch.Tensor, depth: torch.Tensor) -> torch.Tensor:
+        # Calculate gradients of illumination map (L) in x and y directions
+        L_dx = input[:, :, :, 1:] - input[:, :, :, :-1]
+        L_dy = input[:, :, 1:, :] - input[:, :, :-1, :]
+        
+        # Calculate gradients of depth map (D) in x and y directions
+        D_dx = depth[:, :, :, 1:] - depth[:, :, :, :-1]
+        D_dy = depth[:, :, 1:, :] - depth[:, :, :-1, :]
+        
+        # Compute depth-weighted terms for x and y directions
+        weight_dx = torch.exp(-self.alpha * torch.abs(D_dx))
+        weight_dy = torch.exp(-self.alpha * torch.abs(D_dy))
+        
+        # Apply depth weights to illumination gradients and take the mean
+        loss_dx = torch.mean(weight_dx * torch.abs(L_dx))
+        loss_dy = torch.mean(weight_dy * torch.abs(L_dy))
+        
+        # Sum the losses from both directions
+        loss = loss_dx + loss_dy
+        loss = self.loss_weight * loss
+        return loss
+
+
+@LOSSES.register(name="edge_aware_loss")
+class EdgeAwareLoss(base.Loss):
+    
+    def __init__(
+        self,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+    
+    def forward(self, input: torch.Tensor, edge: torch.Tensor) -> torch.Tensor:
+        # Calculate gradients of illumination map (L) in x and y directions
+        L_dx = input[:, :, :, 1:] - input[:, :, :, :-1]
+        L_dy = input[:, :, 1:, :] - input[:, :, :-1, :]
+        
+        # Calculate gradients of edge map (E) in x and y directions
+        E_dx = edge[:, :, :, 1:] - edge[:, :, :, :-1]
+        E_dy = edge[:, :, 1:, :] - edge[:, :, :-1, :]
+        
+        # Apply edge weights to illumination gradients; areas with stronger edges have lower weight
+        weight_dx = torch.exp(-torch.abs(E_dx))
+        weight_dy = torch.exp(-torch.abs(E_dy))
+        
+        # Calculate edge-aware losses by penalizing illumination changes along strong edges
+        loss_dx = torch.mean(weight_dx * torch.abs(L_dx))
+        loss_dy = torch.mean(weight_dy * torch.abs(L_dy))
+        
+        # Sum the losses from both directions
+        loss = loss_dx + loss_dy
+        loss = self.loss_weight * loss
+        return loss
+      
+    
+@LOSSES.register(name="edge_aware_depth_consistency_loss")
+class EdgeAwareDepthConsistencyLoss(base.Loss):
+    
+    def __init__(
+        self,
+        tau        : float = 0.1,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+        self.tau = tau
+    
+    def forward(self, input: torch.Tensor, depth: torch.Tensor) -> torch.Tensor:
+        # Compute depth edges
+        depth_edges = self.compute_depth_edges(depth)
+        # Apply a threshold to get edge-aware mask
+        edge_mask   = (depth_edges > self.tau).float()  # Binary mask where edges are significant
+        # Compute image gradients
+        grad_pred_x, grad_pred_y = apply_sobel_filter_to_rgb(input)
+        # Depth consistency loss between neighboring pixels
+        loss = (edge_mask * (grad_pred_x ** 2 + grad_pred_y ** 2)).mean()
+        loss = self.loss_weight * loss
+        return loss
+    
+    def compute_depth_edges(self, depth_map):
+        sobel_kernel_x = torch.tensor([[1, 0, -1], [2, 0, -2], [ 1,  0, -1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+        sobel_kernel_y = torch.tensor([[1, 2,  1], [0, 0,  0], [-1, -2, -1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+        sobel_kernel_x = sobel_kernel_x.to(depth_map.device)
+        sobel_kernel_y = sobel_kernel_y.to(depth_map.device)
+        grad_x         = F.conv2d(depth_map, sobel_kernel_x, padding=1)
+        grad_y         = F.conv2d(depth_map, sobel_kernel_y, padding=1)
+        # Compute magnitude of gradients
+        grad_magnitude = torch.sqrt(grad_x ** 2 + grad_y ** 2)
+        return grad_magnitude
 
 
 @LOSSES.register(name="edge_loss")
@@ -310,11 +467,7 @@ class EdgeConstancyLoss(base.Loss):
         laplacian  = image - filtered
         return laplacian
     
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor = None
-    ) -> torch.Tensor:
+    def forward(self, input: torch.Tensor, target: torch.Tensor = None) -> torch.Tensor:
         if input.shape != target.shape:
             raise ValueError(f"`input` and `target` must have the same shape, "
                              f"but got: {input.shape} and {target.shape}")
@@ -405,11 +558,7 @@ class ExposureControlLoss(base.Loss):
         self.mean_val   = mean_val
         self.pool       = nn.AvgPool2d(self.patch_size)
     
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor = None
-    ) -> torch.Tensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         x    = input
         x    = torch.mean(x, 1, keepdim=True)
         mean = self.pool(x)
@@ -446,11 +595,7 @@ class ExposureValueControlLoss(base.Loss):
         self.mean_val   = mean_val
         self.pool       = nn.AvgPool2d(self.patch_size)
     
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor = None
-    ) -> torch.Tensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         x    = input
         x    = torch.mean(x, 1, keepdim=True)
         mean = self.pool(x) ** 0.5
@@ -505,32 +650,60 @@ class GrayscaleLoss(base.Loss):
         return loss
 
 
+# noinspection PyMethodMayBeStatic
 @LOSSES.register(name="histogram_loss")
 class HistogramLoss(base.Loss):
+    """Histogram Loss.
+    
+    References:
+        https://github.com/albrateanu/LYT-Net/blob/main/PyTorch/losses.py
+    """
     
     def __init__(
         self,
         bins       : int   = 256,
+        sigma      : float = 0.01,
         loss_weight: float = 1.0,
         reduction  : Literal["none", "mean", "sum"] = "mean"
     ):
         super().__init__(loss_weight=loss_weight, reduction=reduction)
         self.bins    = bins
+        self.sigma   = sigma
         self.l1_loss = base.L1Loss(reduction=reduction)
     
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        # Compute histograms for y_true and y_pred
-        input_hist  = torch.histc(input.view(-1),  bins=self.bins, min=0, max=1)
-        target_hist = torch.histc(target.view(-1), bins=self.bins, min=0, max=1)
-        # Normalize histograms
-        input_hist  = input_hist.float()  / input_hist.sum()
-        target_hist = target_hist.float() / target_hist.sum()
-        # Compute histogram distance
-        loss = self.l1_loss(input_hist, target_hist)
+        bin_edges     = torch.linspace(0.0, 1.0, self.bins, device=target.device)
+        y_true_hist   = torch.sum(self.gaussian_kernel(target.unsqueeze(-1), bin_edges, self.sigma), dim=0)
+        y_pred_hist   = torch.sum(self.gaussian_kernel(input.unsqueeze(-1),  bin_edges, self.sigma), dim=0)
+        y_true_hist  /= y_true_hist.sum()
+        y_pred_hist  /= y_pred_hist.sum()
+        hist_distance = torch.mean(torch.abs(y_true_hist - y_pred_hist))
+        return hist_distance
+    
+    def gaussian_kernel(self, x: torch.Tensor, mu: int, sigma: float) -> torch.Tensor:
+        return torch.exp(-0.5 * ((x - mu) / sigma) ** 2)
+  
+
+@LOSSES.register(name="niqe_loss")
+class NIQELoss(base.Loss):
+    """NIQE Loss.
+    """
+    
+    def __init__(
+        self,
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+        self.niqe = pyiqa.InferenceModel("niqe", True)
+    
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        loss = self.niqe(input)
+        loss = torch.mean(loss)
         loss = self.loss_weight * loss
         return loss
-        
     
+
 @LOSSES.register(name="perceptual_loss")
 class PerceptualLoss(base.Loss):
     """Perceptual Loss."""
@@ -727,115 +900,6 @@ class MSSSIMLoss(base.Loss):
         loss = base.reduce_loss(loss=loss, reduction=self.reduction)
         return loss
 
-
-@LOSSES.register(name="smooth_loss")
-class SmoothLoss(base.Loss):
-    """Smooth Loss
-    
-    References:
-        https://github.com/Doyle59217/ZeroIG/blob/main/loss.py
-    """
-    
-    def __init__(
-        self,
-        sigma      : float = 10.0,
-        loss_weight: float = 1.0,
-        reduction  : Literal["none", "mean", "sum"] = "mean",
-    ):
-        super().__init__(loss_weight=loss_weight, reduction=reduction)
-        self.sigma = sigma
-    
-    def rgb2yCbCr(self, image: torch.Tensor) -> torch.Tensor:
-        im_flat = image.contiguous().view(-1, 3).float()  # [w,h,3] => [w*h,3]
-        mat     = torch.Tensor([[0.257, -0.148, 0.439], [0.564, -0.291, -0.368], [0.098, 0.439, -0.071]]).cuda()  # [3,3]
-        bias    = torch.Tensor([16.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0]).cuda()  # [1,3]
-        temp    = im_flat.mm(mat) + bias  # [w*h,3]*[3,3]+[1,3] => [w*h,3]
-        out     = temp.view(image.shape[0], 3, image.shape[2], image.shape[3])
-        return out
-
-    # output: output      input:input
-    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        input       = self.rgb2yCbCr(input)
-        sigma_color = -1.0 / (2 * self.sigma * self.sigma)
-        w1  = torch.exp(torch.sum(torch.pow(input[:, :, 1:, :]    - input[:, :, :-1, :], 2),   dim=1, keepdim=True) * sigma_color)
-        w2  = torch.exp(torch.sum(torch.pow(input[:, :, :-1, :]   - input[:, :, 1:, :],  2),   dim=1, keepdim=True) * sigma_color)
-        w3  = torch.exp(torch.sum(torch.pow(input[:, :, :, 1:]    - input[:, :, :, :-1], 2),   dim=1, keepdim=True) * sigma_color)
-        w4  = torch.exp(torch.sum(torch.pow(input[:, :, :, :-1]   - input[:, :, :, 1:],  2),   dim=1, keepdim=True) * sigma_color)
-        w5  = torch.exp(torch.sum(torch.pow(input[:, :, :-1, :-1] - input[:, :, 1:, 1:], 2),   dim=1, keepdim=True) * sigma_color)
-        w6  = torch.exp(torch.sum(torch.pow(input[:, :, 1:, 1:]   - input[:, :, :-1, :-1], 2), dim=1, keepdim=True) * sigma_color)
-        w7  = torch.exp(torch.sum(torch.pow(input[:, :, 1:, :-1]  - input[:, :, :-1, 1:], 2),  dim=1, keepdim=True) * sigma_color)
-        w8  = torch.exp(torch.sum(torch.pow(input[:, :, :-1, 1:]  - input[:, :, 1:, :-1], 2),  dim=1, keepdim=True) * sigma_color)
-        w9  = torch.exp(torch.sum(torch.pow(input[:, :, 2:, :]    - input[:, :, :-2, :], 2),   dim=1, keepdim=True) * sigma_color)
-        w10 = torch.exp(torch.sum(torch.pow(input[:, :, :-2, :]   - input[:, :, 2:, :], 2),    dim=1, keepdim=True) * sigma_color)
-        w11 = torch.exp(torch.sum(torch.pow(input[:, :, :, 2:]    - input[:, :, :, :-2], 2),   dim=1, keepdim=True) * sigma_color)
-        w12 = torch.exp(torch.sum(torch.pow(input[:, :, :, :-2]   - input[:, :, :, 2:], 2),    dim=1, keepdim=True) * sigma_color)
-        w13 = torch.exp(torch.sum(torch.pow(input[:, :, :-2, :-1] - input[:, :, 2:, 1:], 2),   dim=1, keepdim=True) * sigma_color)
-        w14 = torch.exp(torch.sum(torch.pow(input[:, :, 2:, 1:]   - input[:, :, :-2, :-1], 2), dim=1, keepdim=True) * sigma_color)
-        w15 = torch.exp(torch.sum(torch.pow(input[:, :, 2:, :-1]  - input[:, :, :-2, 1:], 2),  dim=1, keepdim=True) * sigma_color)
-        w16 = torch.exp(torch.sum(torch.pow(input[:, :, :-2, 1:]  - input[:, :, 2:, :-1], 2),  dim=1, keepdim=True) * sigma_color)
-        w17 = torch.exp(torch.sum(torch.pow(input[:, :, :-1, :-2] - input[:, :, 1:, 2:], 2),   dim=1, keepdim=True) * sigma_color)
-        w18 = torch.exp(torch.sum(torch.pow(input[:, :, 1:, 2:]   - input[:, :, :-1, :-2], 2), dim=1, keepdim=True) * sigma_color)
-        w19 = torch.exp(torch.sum(torch.pow(input[:, :, 1:, :-2]  - input[:, :, :-1, 2:], 2),  dim=1, keepdim=True) * sigma_color)
-        w20 = torch.exp(torch.sum(torch.pow(input[:, :, :-1, 2:]  - input[:, :, 1:, :-2], 2),  dim=1, keepdim=True) * sigma_color)
-        w21 = torch.exp(torch.sum(torch.pow(input[:, :, :-2, :-2] - input[:, :, 2:, 2:], 2),   dim=1, keepdim=True) * sigma_color)
-        w22 = torch.exp(torch.sum(torch.pow(input[:, :, 2:, 2:]   - input[:, :, :-2, :-2], 2), dim=1, keepdim=True) * sigma_color)
-        w23 = torch.exp(torch.sum(torch.pow(input[:, :, 2:, :-2]  - input[:, :, :-2, 2:], 2),  dim=1, keepdim=True) * sigma_color)
-        w24 = torch.exp(torch.sum(torch.pow(input[:, :, :-2, 2:]  - input[:, :, 2:, :-2], 2),  dim=1, keepdim=True) * sigma_color)
-        p   = 1.0
-
-        pixel_grad1  = w1  * torch.norm((target[:, :, 1:, :]    - target[:, :, :-1, :]),   p, dim=1, keepdim=True)
-        pixel_grad2  = w2  * torch.norm((target[:, :, :-1, :]   - target[:, :, 1:, :]),    p, dim=1, keepdim=True)
-        pixel_grad3  = w3  * torch.norm((target[:, :, :, 1:]    - target[:, :, :, :-1]),   p, dim=1, keepdim=True)
-        pixel_grad4  = w4  * torch.norm((target[:, :, :, :-1]   - target[:, :, :, 1:]),    p, dim=1, keepdim=True)
-        pixel_grad5  = w5  * torch.norm((target[:, :, :-1, :-1] - target[:, :, 1:, 1:]),   p, dim=1, keepdim=True)
-        pixel_grad6  = w6  * torch.norm((target[:, :, 1:, 1:]   - target[:, :, :-1, :-1]), p, dim=1, keepdim=True)
-        pixel_grad7  = w7  * torch.norm((target[:, :, 1:, :-1]  - target[:, :, :-1, 1:]),  p, dim=1, keepdim=True)
-        pixel_grad8  = w8  * torch.norm((target[:, :, :-1, 1:]  - target[:, :, 1:, :-1]),  p, dim=1, keepdim=True)
-        pixel_grad9  = w9  * torch.norm((target[:, :, 2:, :]    - target[:, :, :-2, :]),   p, dim=1, keepdim=True)
-        pixel_grad10 = w10 * torch.norm((target[:, :, :-2, :]   - target[:, :, 2:, :]),    p, dim=1, keepdim=True)
-        pixel_grad11 = w11 * torch.norm((target[:, :, :, 2:]    - target[:, :, :, :-2]),   p, dim=1, keepdim=True)
-        pixel_grad12 = w12 * torch.norm((target[:, :, :, :-2]   - target[:, :, :, 2:]),    p, dim=1, keepdim=True)
-        pixel_grad13 = w13 * torch.norm((target[:, :, :-2, :-1] - target[:, :, 2:, 1:]),   p, dim=1, keepdim=True)
-        pixel_grad14 = w14 * torch.norm((target[:, :, 2:, 1:]   - target[:, :, :-2, :-1]), p, dim=1, keepdim=True)
-        pixel_grad15 = w15 * torch.norm((target[:, :, 2:, :-1]  - target[:, :, :-2, 1:]),  p, dim=1, keepdim=True)
-        pixel_grad16 = w16 * torch.norm((target[:, :, :-2, 1:]  - target[:, :, 2:, :-1]),  p, dim=1, keepdim=True)
-        pixel_grad17 = w17 * torch.norm((target[:, :, :-1, :-2] - target[:, :, 1:, 2:]),   p, dim=1, keepdim=True)
-        pixel_grad18 = w18 * torch.norm((target[:, :, 1:, 2:]   - target[:, :, :-1, :-2]), p, dim=1, keepdim=True)
-        pixel_grad19 = w19 * torch.norm((target[:, :, 1:, :-2]  - target[:, :, :-1, 2:]),  p, dim=1, keepdim=True)
-        pixel_grad20 = w20 * torch.norm((target[:, :, :-1, 2:]  - target[:, :, 1:, :-2]),  p, dim=1, keepdim=True)
-        pixel_grad21 = w21 * torch.norm((target[:, :, :-2, :-2] - target[:, :, 2:, 2:]),   p, dim=1, keepdim=True)
-        pixel_grad22 = w22 * torch.norm((target[:, :, 2:, 2:]   - target[:, :, :-2, :-2]), p, dim=1, keepdim=True)
-        pixel_grad23 = w23 * torch.norm((target[:, :, 2:, :-2]  - target[:, :, :-2, 2:]),  p, dim=1, keepdim=True)
-        pixel_grad24 = w24 * torch.norm((target[:, :, :-2, 2:]  - target[:, :, 2:, :-2]),  p, dim=1, keepdim=True)
-        
-        total_term = (
-            torch.mean(pixel_grad1)
-            + torch.mean(pixel_grad2)
-            + torch.mean(pixel_grad3)
-            + torch.mean(pixel_grad4)
-            + torch.mean(pixel_grad5)
-            + torch.mean(pixel_grad6)
-            + torch.mean(pixel_grad7)
-            + torch.mean(pixel_grad8)
-            + torch.mean(pixel_grad9)
-            + torch.mean(pixel_grad10)
-            + torch.mean(pixel_grad11)
-            + torch.mean(pixel_grad12)
-            + torch.mean(pixel_grad13)
-            + torch.mean(pixel_grad14)
-            + torch.mean(pixel_grad15)
-            + torch.mean(pixel_grad16)
-            + torch.mean(pixel_grad17)
-            + torch.mean(pixel_grad18)
-            + torch.mean(pixel_grad19)
-            + torch.mean(pixel_grad20)
-            + torch.mean(pixel_grad21)
-            + torch.mean(pixel_grad22)
-            + torch.mean(pixel_grad23)
-            + torch.mean(pixel_grad24)
-        )
-        return total_term
-    
 
 @LOSSES.register(name="spatial_consistency_loss")
 class SpatialConsistencyLoss(base.Loss):
@@ -1264,16 +1328,6 @@ class TextureDifferenceLoss(base.Loss):
         self.constant_c = constant_c
         self.threshold  = threshold
     
-    def local_stddev(self, image: torch.Tensor) -> torch.Tensor:
-        padding        = self.patch_size // 2
-        image          = F.pad(image, (padding, padding, padding, padding), mode="reflect")
-        patches        = image.unfold(2, self.patch_size, 1).unfold(3, self.patch_size, 1)
-        mean           = patches.mean(dim=(4, 5), keepdim=True)
-        squared_diff   = (patches - mean) ** 2
-        local_variance = squared_diff.mean(dim=(4, 5))
-        local_stddev   = torch.sqrt(local_variance + 1e-9)
-        return local_stddev
-    
     def rgb_to_gray(self, image: torch.Tensor) -> torch.Tensor:
         # Convert RGB image to grayscale using the luminance formula
         gray_image =  0.144 * image[:, 0, :, :] + 0.5870 * image[:, 1, :, :] + 0.299 * image[:, 2, :, :]
@@ -1284,8 +1338,8 @@ class TextureDifferenceLoss(base.Loss):
         input       = self.rgb_to_gray(input)
         target      = self.rgb_to_gray(target)
         # Calculate local standard deviation for input and target images
-        stddev1     = self.local_stddev(input)
-        stddev2     = self.local_stddev(target)
+        stddev1     = core.image_local_stddev(input)
+        stddev2     = core.image_local_stddev(target)
         numerator   = 2 * stddev1 * stddev2
         denominator = stddev1 ** 2 + stddev2 ** 2 + self.constant_c
         diff        = numerator / denominator
@@ -1317,11 +1371,7 @@ class TotalVariationLoss(base.Loss):
     ):
         super().__init__(loss_weight=loss_weight, reduction=reduction)
     
-    def forward(
-        self,
-        input : torch.Tensor,
-        target: torch.Tensor = None
-    ) -> torch.Tensor:
+    def forward(self, input : torch.Tensor) -> torch.Tensor:
         x       = input
         b       = x.size()[0]
         h_x     = x.size()[2]
@@ -1340,8 +1390,38 @@ class TotalVariationLoss(base.Loss):
     @staticmethod
     def _tensor_size(t: torch.Tensor) -> int:
         return t.size()[1] * t.size()[2] * t.size()[3]
+
+
+@LOSSES.register(name="vgg_charbonnier_loss")
+class VGGCharbonnierLoss(base.Loss):
+    """VGG Charbonnier Loss.
     
+        :obj:`torchmetrics.image.LearnedPerceptualImagePatchSimilarity`.
+    """
     
+    def __init__(
+        self,
+        vgg_loss_weight : float = 1.0,
+        char_loss_weight: float = 1.0,
+        loss_weight     : float = 1.0,
+        reduction       : Literal["none", "mean", "sum"] = "mean",
+    ):
+        super().__init__(loss_weight=loss_weight, reduction=reduction)
+        self.vgg_loss_weight  = vgg_loss_weight
+        self.char_loss_weight = char_loss_weight
+        self.vgg_loss         = VGGLoss(reduction=reduction)
+        self.char_loss        = base.CharbonnierLoss(reduction=reduction)
+    
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        vgg_loss  =  self.vgg_loss(input=input, target=target)
+        char_loss = self.char_loss(input=input, target=target)
+        # vgg_loss  = base.reduce_loss(loss=vgg_loss,  reduction=self.reduction)
+        # char_loss = base.reduce_loss(loss=char_loss, reduction=self.reduction)
+        loss      = vgg_loss * self.vgg_loss_weight + char_loss * self.char_loss_weight
+        # loss = base.reduce_loss(loss=loss, reduction=self.reduction)
+        return loss
+
+
 @LOSSES.register(name="vgg_loss")
 class VGGLoss(base.Loss):
     
@@ -1401,35 +1481,28 @@ class VGGLoss(base.Loss):
         return loss
 
 
-@LOSSES.register(name="vgg_charbonnier_loss")
-class VGGCharbonnierLoss(base.Loss):
-    """VGG Charbonnier Loss.
-    
-        :obj:`torchmetrics.image.LearnedPerceptualImagePatchSimilarity`.
-    """
+@LOSSES.register(name="vgg_perceptual_loss")
+class VGGPerceptualLoss(base.Loss):
+    """VGG19 Perceptual Loss."""
     
     def __init__(
         self,
-        vgg_loss_weight : float = 1.0,
-        char_loss_weight: float = 1.0,
-        loss_weight     : float = 1.0,
-        reduction       : Literal["none", "mean", "sum"] = "mean",
+        loss_weight: float = 1.0,
+        reduction  : Literal["none", "mean", "sum"] = "mean"
     ):
         super().__init__(loss_weight=loss_weight, reduction=reduction)
-        self.vgg_loss_weight  = vgg_loss_weight
-        self.char_loss_weight = char_loss_weight
-        self.vgg_loss         = VGGLoss(reduction=reduction)
-        self.char_loss        = base.CharbonnierLoss(reduction=reduction)
+        vgg = models.vgg19(weights=True).features[:16]  # Until block3_conv3
+        self.loss_model = vgg.eval()
+        for param in self.loss_model.parameters():
+            param.requires_grad = False
     
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        vgg_loss  =  self.vgg_loss(input=input, target=target)
-        char_loss = self.char_loss(input=input, target=target)
-        # vgg_loss  = base.reduce_loss(loss=vgg_loss,  reduction=self.reduction)
-        # char_loss = base.reduce_loss(loss=char_loss, reduction=self.reduction)
-        loss      = vgg_loss * self.vgg_loss_weight + char_loss * self.char_loss_weight
-        # loss = base.reduce_loss(loss=loss, reduction=self.reduction)
+        y_true = target.to(next(self.loss_model.parameters()))
+        y_pred = input.to(next(self.loss_model.parameters()))
+        loss   = F.mse_loss(self.loss_model(y_true), self.loss_model(y_pred))
+        loss   = self.loss_weight * loss
         return loss
-
+    
 
 TVLoss = TotalVariationLoss
 

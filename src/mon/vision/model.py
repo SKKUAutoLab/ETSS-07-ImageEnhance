@@ -44,7 +44,7 @@ class VisionModel(nn.Model, ABC):
         of parameters, and runtime.
         """
         # Define input tensor
-        h, w      = core.parse_hw(image_size)
+        h, w      = core.get_image_size(image_size)
         datapoint = {"image": torch.rand(1, channels, h, w).to(self.device)}
         
         # Get FLOPs and Params
@@ -65,7 +65,7 @@ class VisionModel(nn.Model, ABC):
         if verbose:
             console.log(f"FLOPs (G) : {flops:.4f}")
             console.log(f"Params (M): {params:.4f}")
-            console.log(f"Time (s)  : {avg_time:.4f}")
+            console.log(f"Time (s)  : {avg_time:.17f}")
         
         return flops, params, avg_time
         
@@ -73,7 +73,6 @@ class VisionModel(nn.Model, ABC):
     
     # region Predicting
     
-    # @torch.no_grad()
     def infer(
         self,
         datapoint : dict,
@@ -104,13 +103,13 @@ class VisionModel(nn.Model, ABC):
                 if resize:
                     datapoint[k] = core.resize(v, image_size)
                 else:
-                    datapoint[k] = core.resize_divisible(v, 32)
+                    datapoint[k] = core.resize(v, divisible_by=32)
         for k, v in datapoint.items():
             if isinstance(v, torch.Tensor):
                 datapoint[k] = v.to(self.device)
                 
         # Forward
-        timer   = core.Timer()
+        timer = core.Timer()
         timer.tick()
         outputs = self.forward(datapoint, *args, **kwargs)
         timer.tock()

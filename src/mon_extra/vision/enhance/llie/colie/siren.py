@@ -4,6 +4,7 @@ import numpy as np
 
 
 class SirenLayer(nn.Module):
+    
     def __init__(self, in_f, out_f, w0=30, is_first=False, is_last=False):
         super().__init__()
         self.in_f = in_f
@@ -25,6 +26,7 @@ class SirenLayer(nn.Module):
 
 
 class INF(nn.Module):
+    
     def __init__(self, patch_dim, num_layers, hidden_dim, add_layer, weight_decay=None):
         super().__init__()
         '''

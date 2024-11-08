@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Predict.
+"""Predict Pipeline.
 
-This module implements prediction pipeline.
+This script predicts the output of a model on a given dataset.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ current_dir  = current_file.parents[0]
 def predict(args: dict) -> str:
     # Get arguments
     fullname     = args["fullname"]
-    imgsz        = mon.parse_hw(args["image_size"])
+    imgsz        = mon.get_image_size(args["image_size"])
     seed         = args["seed"]
     save_dir     = args["predictor"]["default_root_dir"]
     source       = args["predictor"]["source"]
@@ -57,7 +57,7 @@ def predict(args: dict) -> str:
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red] {source}")
@@ -94,7 +94,7 @@ def predict(args: dict) -> str:
             
             # Save
             if save_image:
-                _,   output = outputs.popitem()
+                _, output = outputs.popitem()
                 if use_fullpath:
                     rel_path   = image_path.relative_path(data_name)
                     output_dir = save_dir / rel_path.parent
@@ -103,21 +103,21 @@ def predict(args: dict) -> str:
                 output_path  = output_dir / f"{meta['stem']}.png"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 mon.write_image(output_path, output)
-                # Save video
-                if data_writer:
-                    data_writer.write_batch(frames=output)
-                # Save Debug
-                if save_debug:
-                    if use_fullpath:
-                        rel_path         = image_path.relative_path(data_name)
-                        debug_output_dir = save_dir / rel_path.parents[1] / f"{rel_path.parent.name}_debug"
-                    else:
-                        debug_output_dir = save_dir / f"{data_name}_debug"
-                    output_path.parent.mkdir(parents=True, exist_ok=True)
-                    for k, v in outputs.items():
-                        if mon.is_image(v):
-                            path = debug_output_dir / f"{meta['stem']}_{k}.png"
-                            mon.write_image(path, v)
+            # Save video
+            if data_writer:
+                data_writer.write_batch(frames=output)
+            # Save Debug
+            if save_debug:
+                if use_fullpath:
+                    rel_path         = image_path.relative_path(data_name)
+                    debug_output_dir = save_dir / rel_path.parents[1] / f"{rel_path.parent.name}_debug"
+                else:
+                    debug_output_dir = save_dir / f"{data_name}_debug"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                for k, v in outputs.items():
+                    if mon.is_image(v):
+                        path = debug_output_dir / f"{meta['stem']}_{k}.png"
+                        mon.write_image(path, v)
     
     # Finish
     avg_time = float(sum(run_time) / len(run_time)) if run_time else 0
@@ -190,6 +190,7 @@ def parse_predict_args(model_root: str | mon.Path = None) -> dict:
         "loss"      : None,
         "metrics"   : None,
         "optimizers": None,
+        "debug"     : save_debug,
         "verbose"   : verbose,
     }
     args["predictor"]  |= {

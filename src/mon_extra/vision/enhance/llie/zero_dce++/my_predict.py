@@ -29,6 +29,7 @@ def predict(args: argparse.Namespace):
     weights      = args.weights
     device       = mon.set_device(args.device)
     imgsz        = args.imgsz
+    imgsz        = imgsz[0] if isinstance(imgsz, (list, tuple)) else imgsz
     resize       = args.resize
     benchmark    = args.benchmark
     save_image   = args.save_image
@@ -36,9 +37,9 @@ def predict(args: argparse.Namespace):
     use_fullpath = args.use_fullpath
     
     # Model
-    scale_factor = 12
+    scale_factor = args.scale_factor
     DCE_net      = model.enhance_net_nopool(scale_factor).to(device)
-    DCE_net.load_state_dict(torch.load(weights))
+    DCE_net.load_state_dict(torch.load(weights, weights_only=True))
     DCE_net.eval()
     
     # Benchmark
@@ -49,13 +50,13 @@ def predict(args: argparse.Namespace):
             model      = copy.deepcopy(DCE_net),
             image_size = [h, w],
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -100,11 +101,10 @@ def predict(args: argparse.Namespace):
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     torchvision.utils.save_image(enhanced_image, str(output_path))
                 

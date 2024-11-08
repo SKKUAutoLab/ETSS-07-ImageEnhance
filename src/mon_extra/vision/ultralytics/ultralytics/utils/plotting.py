@@ -13,14 +13,14 @@ import torch
 from PIL import Image, ImageDraw, ImageFont
 from PIL import __version__ as pil_version
 
-from ultralytics.utils import LOGGER, TryExcept, ops, plt_settings, threaded
-from ultralytics.utils.checks import check_font, check_version, is_ascii
+from ultralytics.utils import IS_JUPYTER, LOGGER, TryExcept, ops, plt_settings, threaded
+from ultralytics.utils.checks import check_font, check_requirements, check_version, is_ascii
 from ultralytics.utils.files import increment_path
 
 
 class Colors:
     """
-    Ultralytics default color palette https://ultralytics.com/.
+    Ultralytics color palette https://docs.ultralytics.com/reference/utils/plotting/#ultralytics.utils.plotting.Colors.
 
     This class provides methods to work with the Ultralytics color palette, including converting hex color codes to
     RGB values.
@@ -29,6 +29,60 @@ class Colors:
         palette (list of tuple): List of RGB color values.
         n (int): The number of colors in the palette.
         pose_palette (np.ndarray): A specific color palette array with dtype np.uint8.
+
+    ## Ultralytics Color Palette
+
+    | Index | Color                                                             | HEX       | RGB               |
+    |-------|-------------------------------------------------------------------|-----------|-------------------|
+    | 0     | <i class="fa-solid fa-square fa-2xl" style="color: #042aff;"></i> | `#042aff` | (4, 42, 255)      |
+    | 1     | <i class="fa-solid fa-square fa-2xl" style="color: #0bdbeb;"></i> | `#0bdbeb` | (11, 219, 235)    |
+    | 2     | <i class="fa-solid fa-square fa-2xl" style="color: #f3f3f3;"></i> | `#f3f3f3` | (243, 243, 243)   |
+    | 3     | <i class="fa-solid fa-square fa-2xl" style="color: #00dfb7;"></i> | `#00dfb7` | (0, 223, 183)     |
+    | 4     | <i class="fa-solid fa-square fa-2xl" style="color: #111f68;"></i> | `#111f68` | (17, 31, 104)     |
+    | 5     | <i class="fa-solid fa-square fa-2xl" style="color: #ff6fdd;"></i> | `#ff6fdd` | (255, 111, 221)   |
+    | 6     | <i class="fa-solid fa-square fa-2xl" style="color: #ff444f;"></i> | `#ff444f` | (255, 68, 79)     |
+    | 7     | <i class="fa-solid fa-square fa-2xl" style="color: #cced00;"></i> | `#cced00` | (204, 237, 0)     |
+    | 8     | <i class="fa-solid fa-square fa-2xl" style="color: #00f344;"></i> | `#00f344` | (0, 243, 68)      |
+    | 9     | <i class="fa-solid fa-square fa-2xl" style="color: #bd00ff;"></i> | `#bd00ff` | (189, 0, 255)     |
+    | 10    | <i class="fa-solid fa-square fa-2xl" style="color: #00b4ff;"></i> | `#00b4ff` | (0, 180, 255)     |
+    | 11    | <i class="fa-solid fa-square fa-2xl" style="color: #dd00ba;"></i> | `#dd00ba` | (221, 0, 186)     |
+    | 12    | <i class="fa-solid fa-square fa-2xl" style="color: #00ffff;"></i> | `#00ffff` | (0, 255, 255)     |
+    | 13    | <i class="fa-solid fa-square fa-2xl" style="color: #26c000;"></i> | `#26c000` | (38, 192, 0)      |
+    | 14    | <i class="fa-solid fa-square fa-2xl" style="color: #01ffb3;"></i> | `#01ffb3` | (1, 255, 179)     |
+    | 15    | <i class="fa-solid fa-square fa-2xl" style="color: #7d24ff;"></i> | `#7d24ff` | (125, 36, 255)    |
+    | 16    | <i class="fa-solid fa-square fa-2xl" style="color: #7b0068;"></i> | `#7b0068` | (123, 0, 104)     |
+    | 17    | <i class="fa-solid fa-square fa-2xl" style="color: #ff1b6c;"></i> | `#ff1b6c` | (255, 27, 108)    |
+    | 18    | <i class="fa-solid fa-square fa-2xl" style="color: #fc6d2f;"></i> | `#fc6d2f` | (252, 109, 47)    |
+    | 19    | <i class="fa-solid fa-square fa-2xl" style="color: #a2ff0b;"></i> | `#a2ff0b` | (162, 255, 11)    |
+
+    ## Pose Color Palette
+
+    | Index | Color                                                             | HEX       | RGB               |
+    |-------|-------------------------------------------------------------------|-----------|-------------------|
+    | 0     | <i class="fa-solid fa-square fa-2xl" style="color: #ff8000;"></i> | `#ff8000` | (255, 128, 0)     |
+    | 1     | <i class="fa-solid fa-square fa-2xl" style="color: #ff9933;"></i> | `#ff9933` | (255, 153, 51)    |
+    | 2     | <i class="fa-solid fa-square fa-2xl" style="color: #ffb266;"></i> | `#ffb266` | (255, 178, 102)   |
+    | 3     | <i class="fa-solid fa-square fa-2xl" style="color: #e6e600;"></i> | `#e6e600` | (230, 230, 0)     |
+    | 4     | <i class="fa-solid fa-square fa-2xl" style="color: #ff99ff;"></i> | `#ff99ff` | (255, 153, 255)   |
+    | 5     | <i class="fa-solid fa-square fa-2xl" style="color: #99ccff;"></i> | `#99ccff` | (153, 204, 255)   |
+    | 6     | <i class="fa-solid fa-square fa-2xl" style="color: #ff66ff;"></i> | `#ff66ff` | (255, 102, 255)   |
+    | 7     | <i class="fa-solid fa-square fa-2xl" style="color: #ff33ff;"></i> | `#ff33ff` | (255, 51, 255)    |
+    | 8     | <i class="fa-solid fa-square fa-2xl" style="color: #66b2ff;"></i> | `#66b2ff` | (102, 178, 255)   |
+    | 9     | <i class="fa-solid fa-square fa-2xl" style="color: #3399ff;"></i> | `#3399ff` | (51, 153, 255)    |
+    | 10    | <i class="fa-solid fa-square fa-2xl" style="color: #ff9999;"></i> | `#ff9999` | (255, 153, 153)   |
+    | 11    | <i class="fa-solid fa-square fa-2xl" style="color: #ff6666;"></i> | `#ff6666` | (255, 102, 102)   |
+    | 12    | <i class="fa-solid fa-square fa-2xl" style="color: #ff3333;"></i> | `#ff3333` | (255, 51, 51)     |
+    | 13    | <i class="fa-solid fa-square fa-2xl" style="color: #99ff99;"></i> | `#99ff99` | (153, 255, 153)   |
+    | 14    | <i class="fa-solid fa-square fa-2xl" style="color: #66ff66;"></i> | `#66ff66` | (102, 255, 102)   |
+    | 15    | <i class="fa-solid fa-square fa-2xl" style="color: #33ff33;"></i> | `#33ff33` | (51, 255, 51)     |
+    | 16    | <i class="fa-solid fa-square fa-2xl" style="color: #00ff00;"></i> | `#00ff00` | (0, 255, 0)       |
+    | 17    | <i class="fa-solid fa-square fa-2xl" style="color: #0000ff;"></i> | `#0000ff` | (0, 0, 255)       |
+    | 18    | <i class="fa-solid fa-square fa-2xl" style="color: #ff0000;"></i> | `#ff0000` | (255, 0, 0)       |
+    | 19    | <i class="fa-solid fa-square fa-2xl" style="color: #ffffff;"></i> | `#ffffff` | (255, 255, 255)   |
+
+    !!! note "Ultralytics Brand Colors"
+
+        For Ultralytics brand colors see [https://www.ultralytics.com/brand](https://www.ultralytics.com/brand). Please use the official Ultralytics colors for all marketing materials.
     """
 
     def __init__(self):
@@ -204,7 +258,6 @@ class Annotator:
             txt_color (tuple, optional): The color of the text (R, G, B).
             margin (int, optional): The margin between the text and the rectangle border.
         """
-
         # If label have more than 3 characters, skip other characters, due to circle size
         if len(label) > 3:
             print(
@@ -246,7 +299,6 @@ class Annotator:
             txt_color (tuple, optional): The color of the text (R, G, B).
             margin (int, optional): The margin between the text and the rectangle border.
         """
-
         # Calculate the center of the bounding box
         x_center, y_center = int((box[0] + box[2]) / 2), int((box[1] + box[3]) / 2)
         # Get the size of the text
@@ -284,7 +336,6 @@ class Annotator:
             txt_color (tuple, optional): The color of the text (R, G, B).
             rotated (bool, optional): Variable used to check if task is OBB
         """
-
         txt_color = self.get_txt_color(color, txt_color)
         if isinstance(box, torch.Tensor):
             box = box.tolist()
@@ -343,7 +394,6 @@ class Annotator:
             alpha (float): Mask transparency: 0.0 fully transparent, 1.0 opaque
             retina_masks (bool): Whether to use high resolution masks or not. Defaults to False.
         """
-
         if self.pil:
             # Convert to numpy first
             self.im = np.asarray(self.im).copy()
@@ -369,22 +419,24 @@ class Annotator:
             # Convert im back to PIL and update draw
             self.fromarray(self.im)
 
-    def kpts(self, kpts, shape=(640, 640), radius=5, kpt_line=True, conf_thres=0.25, kpt_color=None):
+    def kpts(self, kpts, shape=(640, 640), radius=None, kpt_line=True, conf_thres=0.25, kpt_color=None):
         """
         Plot keypoints on the image.
 
         Args:
-            kpts (tensor): Predicted keypoints with shape [17, 3]. Each keypoint has (x, y, confidence).
-            shape (tuple): Image shape as a tuple (h, w), where h is the height and w is the width.
-            radius (int, optional): Radius of the drawn keypoints. Default is 5.
-            kpt_line (bool, optional): If True, the function will draw lines connecting keypoints
-                                       for human pose. Default is True.
-            kpt_color (tuple, optional): The color of the keypoints (B, G, R).
+            kpts (torch.Tensor): Keypoints, shape [17, 3] (x, y, confidence).
+            shape (tuple, optional): Image shape (h, w). Defaults to (640, 640).
+            radius (int, optional): Keypoint radius. Defaults to 5.
+            kpt_line (bool, optional): Draw lines between keypoints. Defaults to True.
+            conf_thres (float, optional): Confidence threshold. Defaults to 0.25.
+            kpt_color (tuple, optional): Keypoint color (B, G, R). Defaults to None.
 
         Note:
-            `kpt_line=True` currently only supports human pose plotting.
+            - `kpt_line=True` currently only supports human pose plotting.
+            - Modifies self.im in-place.
+            - If self.pil is True, converts image to numpy array and back to PIL.
         """
-
+        radius = radius if radius is not None else self.lw
         if self.pil:
             # Convert to numpy first
             self.im = np.asarray(self.im).copy()
@@ -420,7 +472,7 @@ class Annotator:
                     pos1,
                     pos2,
                     kpt_color or self.limb_color[i].tolist(),
-                    thickness=2,
+                    thickness=int(np.ceil(self.lw / 2)),
                     lineType=cv2.LINE_AA,
                 )
         if self.pil:
@@ -472,7 +524,18 @@ class Annotator:
 
     def show(self, title=None):
         """Show the annotated image."""
-        Image.fromarray(np.asarray(self.im)[..., ::-1]).show(title)
+        im = Image.fromarray(np.asarray(self.im)[..., ::-1])  # Convert numpy array to PIL Image with RGB to BGR
+        if IS_JUPYTER:
+            check_requirements("ipython")
+            try:
+                from IPython.display import display
+
+                display(im)
+            except ImportError as e:
+                LOGGER.warning(f"Unable to display image in Jupyter notebooks: {e}")
+        else:
+            # Convert numpy array to PIL Image and show
+            im.show(title=title)
 
     def save(self, filename="image.jpg"):
         """Save the annotated image to 'filename'."""
@@ -488,7 +551,6 @@ class Annotator:
         Returns:
             angle (degree): Degree value of angle between three points
         """
-
         x_min, y_min, x_max, y_max = bbox
         width = x_max - x_min
         height = y_max - y_min
@@ -503,8 +565,11 @@ class Annotator:
             color (tuple): Region Color value
             thickness (int): Region area thickness value
         """
-
         cv2.polylines(self.im, [np.array(reg_pts, dtype=np.int32)], isClosed=True, color=color, thickness=thickness)
+
+        # Draw small circles at the corner points
+        for point in reg_pts:
+            cv2.circle(self.im, (point[0], point[1]), thickness * 2, color, -1)  # -1 fills the circle
 
     def draw_centroid_and_tracks(self, track, color=(255, 0, 255), track_thickness=2):
         """
@@ -515,7 +580,6 @@ class Annotator:
             color (tuple): tracks line color
             track_thickness (int): track line thickness value
         """
-
         points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
         cv2.polylines(self.im, [points], isClosed=False, color=color, thickness=track_thickness)
         cv2.circle(self.im, (int(track[-1][0]), int(track[-1][1])), track_thickness * 2, color, -1)
@@ -527,10 +591,9 @@ class Annotator:
         Args:
             label (str): queue counts label
             points (tuple): region points for center point calculation to display text
-            region_color (RGB): queue region color
-            txt_color (RGB): text display color
+            region_color (tuple): RGB queue region color.
+            txt_color (tuple): RGB text display color.
         """
-
         x_values = [point[0] for point in points]
         y_values = [point[1] for point in points]
         center_x = sum(x_values) // len(points)
@@ -568,13 +631,12 @@ class Annotator:
         Args:
             im0 (ndarray): inference image
             text (str): object/class name
-            txt_color (bgr color): display color for text foreground
-            bg_color (bgr color): display color for text background
+            txt_color (tuple): display color for text foreground
+            bg_color (tuple): display color for text background
             x_center (float): x position center point for bounding box
             y_center (float): y position center point for bounding box
             margin (int): gap between text and rectangle for better display
         """
-
         text_size = cv2.getTextSize(text, 0, fontScale=self.sf, thickness=self.tf)[0]
         text_x = x_center - text_size[0] // 2
         text_y = y_center + text_size[1] // 2
@@ -593,11 +655,10 @@ class Annotator:
         Args:
             im0 (ndarray): inference image
             text (dict): labels dictionary
-            txt_color (bgr color): display color for text foreground
-            bg_color (bgr color): display color for text background
+            txt_color (tuple): display color for text foreground
+            bg_color (tuple): display color for text background
             margin (int): gap between text and rectangle for better display
         """
-
         horizontal_gap = int(im0.shape[1] * 0.02)
         vertical_gap = int(im0.shape[0] * 0.01)
         text_y_offset = 0
@@ -629,7 +690,6 @@ class Annotator:
         Returns:
             angle (degree): Degree value of angle between three points
         """
-
         a, b, c = np.array(a), np.array(b), np.array(c)
         radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
         angle = np.abs(radians * 180.0 / np.pi)
@@ -642,12 +702,19 @@ class Annotator:
         Draw specific keypoints for gym steps counting.
 
         Args:
-            keypoints (list): list of keypoints data to be plotted
-            indices (list): keypoints ids list to be plotted
-            shape (tuple): imgsz for model inference
-            radius (int): Keypoint radius value
-        """
+            keypoints (list): Keypoints data to be plotted.
+            indices (list, optional): Keypoint indices to be plotted. Defaults to [2, 5, 7].
+            shape (tuple, optional): Image size for model inference. Defaults to (640, 640).
+            radius (int, optional): Keypoint radius. Defaults to 2.
+            conf_thres (float, optional): Confidence threshold for keypoints. Defaults to 0.25.
 
+        Returns:
+            (numpy.ndarray): Image with drawn keypoints.
+
+        Note:
+            Keypoint format: [x, y] or [x, y, confidence].
+            Modifies self.im in-place.
+        """
         if indices is None:
             indices = [2, 5, 7]
         for i, k in enumerate(keypoints):
@@ -675,7 +742,6 @@ class Annotator:
             color (tuple): text background color for workout monitoring
             txt_color (tuple): text foreground color for workout monitoring
         """
-
         angle_text, count_text, stage_text = (f" {angle_text:.2f}", f"Steps : {count_text}", f" {stage_text}")
 
         # Draw angle
@@ -739,11 +805,13 @@ class Annotator:
         Function for drawing segmented object in bounding box shape.
 
         Args:
-            mask (list): masks data list for instance segmentation area plotting
-            mask_color (RGB): mask foreground color
-            label (str): Detection label text
-            txt_color (RGB): text color
+            mask (np.ndarray): A 2D array of shape (N, 2) containing the contour points of the segmented object.
+            mask_color (tuple): RGB color for the contour and label background.
+            label (str, optional): Text label for the object. If None, no label is drawn.
+            txt_color (tuple): RGB color for the label text.
         """
+        if mask.size == 0:  # no masks to plot
+            return
 
         cv2.polylines(self.im, [np.int32([mask])], isClosed=True, color=mask_color, thickness=2)
         text_size, _ = cv2.getTextSize(label, 0, self.sf, self.tf)
@@ -761,40 +829,35 @@ class Annotator:
                 self.im, label, (int(mask[0][0]) - text_size[0] // 2, int(mask[0][1])), 0, self.sf, txt_color, self.tf
             )
 
-    def plot_distance_and_line(self, distance_m, distance_mm, centroids, line_color, centroid_color):
+    def plot_distance_and_line(self, pixels_distance, centroids, line_color, centroid_color):
         """
         Plot the distance and line on frame.
 
         Args:
-            distance_m (float): Distance between two bbox centroids in meters.
-            distance_mm (float): Distance between two bbox centroids in millimeters.
+            pixels_distance (float): Pixels distance between two bbox centroids.
             centroids (list): Bounding box centroids data.
-            line_color (RGB): Distance line color.
-            centroid_color (RGB): Bounding box centroid color.
+            line_color (tuple): RGB distance line color.
+            centroid_color (tuple): RGB bounding box centroid color.
         """
-
-        (text_width_m, text_height_m), _ = cv2.getTextSize(f"Distance M: {distance_m:.2f}m", 0, self.sf, self.tf)
-        cv2.rectangle(self.im, (15, 25), (15 + text_width_m + 10, 25 + text_height_m + 20), line_color, -1)
-        cv2.putText(
-            self.im,
-            f"Distance M: {distance_m:.2f}m",
-            (20, 50),
-            0,
-            self.sf,
-            centroid_color,
-            self.tf,
-            cv2.LINE_AA,
+        # Get the text size
+        (text_width_m, text_height_m), _ = cv2.getTextSize(
+            f"Pixels Distance: {pixels_distance:.2f}", 0, self.sf, self.tf
         )
 
-        (text_width_mm, text_height_mm), _ = cv2.getTextSize(f"Distance MM: {distance_mm:.2f}mm", 0, self.sf, self.tf)
-        cv2.rectangle(self.im, (15, 75), (15 + text_width_mm + 10, 75 + text_height_mm + 20), line_color, -1)
+        # Define corners with 10-pixel margin and draw rectangle
+        top_left = (15, 25)
+        bottom_right = (15 + text_width_m + 20, 25 + text_height_m + 20)
+        cv2.rectangle(self.im, top_left, bottom_right, centroid_color, -1)
+
+        # Calculate the position for the text with a 10-pixel margin and draw text
+        text_position = (top_left[0] + 10, top_left[1] + text_height_m + 10)
         cv2.putText(
             self.im,
-            f"Distance MM: {distance_mm:.2f}mm",
-            (20, 100),
+            f"Pixels Distance: {pixels_distance:.2f}",
+            text_position,
             0,
             self.sf,
-            centroid_color,
+            (255, 255, 255),
             self.tf,
             cv2.LINE_AA,
         )
@@ -813,7 +876,6 @@ class Annotator:
             color (tuple): object centroid and line color value
             pin_color (tuple): visioneye point color value
         """
-
         center_bbox = int((box[0] + box[2]) / 2), int((box[1] + box[3]) / 2)
         cv2.circle(self.im, center_point, self.tf * 2, pin_color, -1)
         cv2.circle(self.im, center_bbox, self.tf * 2, color, -1)
@@ -902,11 +964,10 @@ def save_one_box(xyxy, im, file=Path("im.jpg"), gain=1.02, pad=10, square=False,
         from ultralytics.utils.plotting import save_one_box
 
         xyxy = [50, 50, 150, 150]
-        im = cv2.imread('image.jpg')
-        cropped_im = save_one_box(xyxy, im, file='cropped.jpg', square=True)
+        im = cv2.imread("image.jpg")
+        cropped_im = save_one_box(xyxy, im, file="cropped.jpg", square=True)
         ```
     """
-
     if not isinstance(xyxy, torch.Tensor):  # may be list
         xyxy = torch.stack(xyxy)
     b = ops.xyxy2xywh(xyxy.view(-1, 4))  # boxes
@@ -1109,7 +1170,7 @@ def plot_results(file="path/to/results.csv", dir="", segment=False, pose=False, 
         ```python
         from ultralytics.utils.plotting import plot_results
 
-        plot_results('path/to/results.csv', segment=True)
+        plot_results("path/to/results.csv", segment=True)
         ```
     """
     import pandas as pd  # scope for faster 'import ultralytics'
@@ -1171,7 +1232,6 @@ def plt_color_scatter(v, f, bins=20, cmap="viridis", alpha=0.8, edgecolors="none
         >>> f = np.random.rand(100)
         >>> plt_color_scatter(v, f)
     """
-
     # Calculate 2D histogram and corresponding colors
     hist, xedges, yedges = np.histogram2d(v, f, bins=bins)
     colors = [
@@ -1195,9 +1255,8 @@ def plot_tune_results(csv_file="tune_results.csv"):
         csv_file (str, optional): Path to the CSV file containing the tuning results. Defaults to 'tune_results.csv'.
 
     Examples:
-        >>> plot_tune_results('path/to/tune_results.csv')
+        >>> plot_tune_results("path/to/tune_results.csv")
     """
-
     import pandas as pd  # scope for faster 'import ultralytics'
     from scipy.ndimage import gaussian_filter1d
 

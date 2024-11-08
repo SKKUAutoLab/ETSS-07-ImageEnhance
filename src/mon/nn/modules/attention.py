@@ -19,6 +19,7 @@ __all__ = [
     "ECA1d",
     "EfficientChannelAttention",
     "EfficientChannelAttention1d",
+    "GalerkinSimpleAttention",
     "LocationAwareAttention",
     "MultiHeadAttention",
     "MultiHeadLocationAwareAttention",
@@ -328,7 +329,7 @@ class CBAM(nn.Module):
     Block Attention Module".
     
     References:
-        - https://github.com/Jongchan/attention-module/blob/master/MODELS/cbam.py>
+        https://github.com/Jongchan/attention-module/blob/master/MODELS/cbam.py
     
     Args:
         channels:
@@ -517,6 +518,53 @@ class ChannelAttentionModule(nn.Module):
         y = self.excitation(y)
         y = x * y
         return y
+
+# endregion
+
+
+# region Galerkin-type Attention
+
+class GalerkinSimpleAttention(nn.Module):
+    """Galerkin-type attention.
+    
+    References:
+        https://github.com/2y7c3/Super-Resolution-Neural-Operator/blob/main/models/galerkin.py
+    """
+    
+    def __init__(self, mid_channels: int, heads: int):
+        super().__init__()
+        self.headc = mid_channels // heads
+        self.heads = heads
+        self.midc  = mid_channels
+
+        self.qkv_proj = nn.Conv2d(mid_channels, 3 * mid_channels, 1)
+        self.o_proj1  = nn.Conv2d(mid_channels,     mid_channels, 1)
+        self.o_proj2  = nn.Conv2d(mid_channels,     mid_channels, 1)
+
+        self.kln = norm.LayerNormCustom2d(normalized_shape=(self.heads, 1, self.headc))
+        self.vln = norm.LayerNormCustom2d(normalized_shape=(self.heads, 1, self.headc))
+
+        self.act = nn.GELU()
+    
+    def forward(self, input: torch.Tensor, name="0") -> torch.Tensor:
+        x          = input
+        b, c, h, w = x.shape
+        bias       = x
+        
+        qkv     = self.qkv_proj(x).permute(0, 2, 3, 1).reshape(b, h * w, self.heads, 3 * self.headc)
+        qkv     = qkv.permute(0, 2, 1, 3)
+        q, k, v = qkv.chunk(3, dim=-1)
+        
+        k = self.kln(k)
+        v = self.vln(v)
+        
+        v = torch.matmul(k.transpose(-2,-1), v) / (h * w)
+        v = torch.matmul(q, v)
+        v = v.permute(0, 2, 1, 3).reshape(b, h, w, c)
+        
+        ret  = v.permute(0, 3, 1, 2) + bias
+        bias = self.o_proj2(self.act(self.o_proj1(ret))) + bias
+        return bias
 
 # endregion
 

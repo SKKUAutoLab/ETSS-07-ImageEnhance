@@ -69,8 +69,8 @@ class Predictor(BasePredictor):
 
     Examples:
         >>> predictor = Predictor()
-        >>> predictor.setup_model(model_path='sam_model.pt')
-        >>> predictor.set_image('image.jpg')
+        >>> predictor.setup_model(model_path="sam_model.pt")
+        >>> predictor.set_image("image.jpg")
         >>> masks, scores, boxes = predictor.generate()
         >>> results = predictor.postprocess((masks, scores, boxes), im, orig_img)
     """
@@ -90,12 +90,12 @@ class Predictor(BasePredictor):
 
         Examples:
             >>> predictor = Predictor(cfg=DEFAULT_CFG)
-            >>> predictor = Predictor(overrides={'imgsz': 640})
-            >>> predictor = Predictor(_callbacks={'on_predict_start': custom_callback})
+            >>> predictor = Predictor(overrides={"imgsz": 640})
+            >>> predictor = Predictor(_callbacks={"on_predict_start": custom_callback})
         """
         if overrides is None:
             overrides = {}
-        overrides.update(dict(task="segment", mode="predict", imgsz=1024))
+        overrides.update(dict(task="segment", mode="predict"))
         super().__init__(cfg, overrides, _callbacks)
         self.args.retina_masks = True
         self.im = None
@@ -188,14 +188,15 @@ class Predictor(BasePredictor):
 
         Examples:
             >>> predictor = Predictor()
-            >>> predictor.setup_model(model_path='sam_model.pt')
-            >>> predictor.set_image('image.jpg')
+            >>> predictor.setup_model(model_path="sam_model.pt")
+            >>> predictor.set_image("image.jpg")
             >>> masks, scores, logits = predictor.inference(im, bboxes=[[0, 0, 100, 100]])
         """
         # Override prompts if any stored in self.prompts
         bboxes = self.prompts.pop("bboxes", bboxes)
         points = self.prompts.pop("points", points)
         masks = self.prompts.pop("masks", masks)
+        labels = self.prompts.pop("labels", labels)
 
         if all(i is None for i in [bboxes, points, masks]):
             return self.generate(im, *args, **kwargs)
@@ -450,13 +451,18 @@ class Predictor(BasePredictor):
 
         results = []
         for masks, orig_img, img_path in zip([pred_masks], orig_imgs, self.batch[0]):
-            if pred_bboxes is not None:
-                pred_bboxes = ops.scale_boxes(img.shape[2:], pred_bboxes.float(), orig_img.shape, padding=False)
+            if len(masks) == 0:
+                masks = None
+            else:
+                masks = ops.scale_masks(masks[None].float(), orig_img.shape[:2], padding=False)[0]
+                masks = masks > self.model.mask_threshold  # to bool
+                if pred_bboxes is not None:
+                    pred_bboxes = ops.scale_boxes(img.shape[2:], pred_bboxes.float(), orig_img.shape, padding=False)
+                else:
+                    pred_bboxes = batched_mask_to_box(masks)
+                # NOTE: SAM models do not return cls info. This `cls` here is just a placeholder for consistency.
                 cls = torch.arange(len(pred_masks), dtype=torch.int32, device=pred_masks.device)
                 pred_bboxes = torch.cat([pred_bboxes, pred_scores[:, None], cls[:, None]], dim=-1)
-
-            masks = ops.scale_masks(masks[None].float(), orig_img.shape[:2], padding=False)[0]
-            masks = masks > self.model.mask_threshold  # to bool
             results.append(Results(orig_img, path=img_path, names=names, masks=masks, boxes=pred_bboxes))
         # Reset segment-all mode.
         self.segment_all = False
@@ -475,8 +481,8 @@ class Predictor(BasePredictor):
 
         Examples:
             >>> predictor = Predictor()
-            >>> predictor.setup_source('path/to/images')
-            >>> predictor.setup_source('video.mp4')
+            >>> predictor.setup_source("path/to/images")
+            >>> predictor.setup_source("video.mp4")
             >>> predictor.setup_source(None)  # Uses default source if available
 
         Notes:
@@ -504,8 +510,8 @@ class Predictor(BasePredictor):
 
         Examples:
             >>> predictor = Predictor()
-            >>> predictor.set_image('path/to/image.jpg')
-            >>> predictor.set_image(cv2.imread('path/to/image.jpg'))
+            >>> predictor.set_image("path/to/image.jpg")
+            >>> predictor.set_image(cv2.imread("path/to/image.jpg"))
 
         Notes:
             - This method should be called before performing inference on a new image.
@@ -522,6 +528,10 @@ class Predictor(BasePredictor):
 
     def get_im_features(self, im):
         """Extracts image features using the SAM model's image encoder for subsequent mask prediction."""
+        assert (
+            isinstance(self.imgsz, (tuple, list)) and self.imgsz[0] == self.imgsz[1]
+        ), f"SAM models only support square image size, but got {self.imgsz}."
+        self.model.set_imgsz(self.imgsz)
         return self.model.image_encoder(im)
 
     def set_prompts(self, prompts):
@@ -761,6 +771,12 @@ class SAM2Predictor(Predictor):
 
     def get_im_features(self, im):
         """Extracts image features from the SAM image encoder for subsequent processing."""
+        assert (
+            isinstance(self.imgsz, (tuple, list)) and self.imgsz[0] == self.imgsz[1]
+        ), f"SAM 2 models only support square image size, but got {self.imgsz}."
+        self.model.set_imgsz(self.imgsz)
+        self._bb_feat_sizes = [[x // (4 * i) for x in self.imgsz] for i in [1, 2, 4]]
+
         backbone_out = self.model.forward_image(im)
         _, vision_feats, _, _ = self.model._prepare_backbone_features(backbone_out)
         if self.model.directly_add_no_mem_embed:

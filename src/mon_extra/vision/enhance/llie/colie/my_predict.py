@@ -27,7 +27,8 @@ def predict(args: argparse.Namespace):
     weights      = args.weights
     device       = mon.set_device(args.device)
     epochs       = args.epochs
-    imgsz        = args.imgsz[0]
+    imgsz        = args.imgsz
+    imgsz        = imgsz[0] if isinstance(imgsz, list | tuple) else imgsz
     resize       = args.resize
     benchmark    = args.benchmark
     save_image   = args.save_image
@@ -47,13 +48,13 @@ def predict(args: argparse.Namespace):
             model      = model,
             image_size = imgsz,
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -87,7 +88,7 @@ def predict(args: argparse.Namespace):
             # Model
             img_siren  = INF(patch_dim=window ** 2, num_layers=4, hidden_dim=256, add_layer=2)
             img_siren  = img_siren.to(device)
-           
+            
             # Optimizer
             optimizer  = torch.optim.Adam(img_siren.parameters(), lr=1e-5, betas=(0.9, 0.999), weight_decay=3e-4)
             
@@ -123,15 +124,12 @@ def predict(args: argparse.Namespace):
             # Save
             if save_image:
                 if use_fullpath:
-                    rel_path = image_path.relative_path(data_name)
-                    save_dir = save_dir / rel_path.parent
+                    rel_path    = image_path.relative_path(data_name)
+                    output_path = save_dir / rel_path.parent / image_path.name
                 else:
-                    save_dir = save_dir / data_name
-                output_path  = save_dir / image_path.name
+                    output_path = save_dir / data_name / image_path.name
                 output_path.parent.mkdir(parents=True, exist_ok=True)
-                Image.fromarray(
-                    (torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)
-                ).save(str(output_path))
+                Image.fromarray((torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)).save(str(output_path))
     
     avg_time = float(timer.avg_time)
     console.log(f"Average time: {avg_time}")

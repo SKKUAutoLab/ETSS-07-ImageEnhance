@@ -25,14 +25,15 @@ console             = core.console
 default_root_dir    = DATA_DIR / "mipi"
 DataModule          = core.DataModule
 DatapointAttributes = core.DatapointAttributes
+DepthMapAnnotation  = core.DepthMapAnnotation
 ImageAnnotation     = core.ImageAnnotation
-ImageDataset        = core.ImageDataset
+MultimodalDataset   = core.MultimodalDataset
 
 
 # region Dataset
 
 @DATASETS.register(name="mipi24_flare")
-class MIPI24Flare(ImageDataset):
+class MIPI24Flare(MultimodalDataset):
 	"""Nighttime Flare Removal dataset used in MIPI 2024 Challenge.
 	
 	References:
@@ -42,8 +43,8 @@ class MIPI24Flare(ImageDataset):
 	tasks : list[Task]  = [Task.LES]
 	splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST]
 	datapoint_attrs     = DatapointAttributes({
-		"image"   : ImageAnnotation,
-		"hq_image": ImageAnnotation,
+		"image"    : ImageAnnotation,
+		"ref_image": ImageAnnotation,
 	})
 	has_test_annotations: bool = False
 	
@@ -53,44 +54,31 @@ class MIPI24Flare(ImageDataset):
 	def get_data(self):
 		if self.split in [Split.TRAIN]:
 			patterns = [
-				self.root / "train" / "mipi24_flare" / "lq",
+				self.root / "mipi24_flare" / "train" / "image",
 			]
 		elif self.split in [Split.VAL]:
 			patterns = [
-				self.root / "val" / "mipi24_flare" / "lq",
+				self.root / "mipi24_flare" / "val" / "image",
 			]
 		elif self.split in [Split.TEST]:
 			patterns = [
-				self.root / "test" / "mipi24_flare" / "lq",
+				self.root / "mipi24_flare" / "test" / "image",
 			]
 		else:
 			raise ValueError
 		
-		# LQ images
-		lq_images: list[ImageAnnotation] = []
+		# Images
+		images: list[ImageAnnotation] = []
 		with core.get_progress_bar(disable=self.disable_pbar) as pbar:
 			for pattern in patterns:
 				for path in pbar.track(
-					sorted(list(pattern.rglob("*"))),
-					description=f"Listing {self.__class__.__name__} "
-					            f"{self.split_str} lq images"
+					sequence    = sorted(list(pattern.rglob("*"))),
+					description = f"Listing {self.__class__.__name__} {self.split_str} images"
 				):
 					if path.is_image_file():
-						lq_images.append(ImageAnnotation(path=path))
+						images.append(ImageAnnotation(path=path, root=pattern))
 		
-		# HQ images
-		hq_images: list[ImageAnnotation] = []
-		with core.get_progress_bar(disable=self.disable_pbar) as pbar:
-			for img in pbar.track(
-				lq_images,
-				description=f"Listing {self.__class__.__name__} "
-				            f"{self.split_str} hq images"
-			):
-				path = img.path.replace("/lq/", "/hq/")
-				hq_images.append(ImageAnnotation(path=path.image_file()))
-		
-		self.datapoints["image"]    = lq_images
-		self.datapoints["hq_image"] = hq_images
+		self.datapoints["image"] = images
 		
 		
 # region DataModule
@@ -106,8 +94,7 @@ class MIPI24FlareDataModule(DataModule):
 	tasks: list[Task] = [Task.LES]
 	
 	def prepare_data(self, *args, **kwargs):
-		if self.classlabels is None:
-			self.get_classlabels()
+		pass
 	
 	def setup(self, stage: Literal["train", "test", "predict", None] = None):
 		if self.can_log:
@@ -119,13 +106,8 @@ class MIPI24FlareDataModule(DataModule):
 		if stage in [None, "test"]:
 			self.test  = MIPI24Flare(split=Split.VAL, **self.dataset_kwargs)
 		
-		if self.classlabels is None:
-			self.get_classlabels()
-		
+		self.get_classlabels()
 		if self.can_log:
 			self.summarize()
-	
-	def get_classlabels(self):
-		pass
 	
 # endregion

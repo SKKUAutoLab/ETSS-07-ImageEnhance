@@ -243,7 +243,7 @@ class BasePredictor:
             with profilers[1]:
                 preds = self.model(im, augment=self.args.augment, visualize=visualize)
 
-            # Postprocess
+            # Post-processing
             with profilers[2]:
                 self.results = self.postprocess(preds, im, im0s)
             self.run_callbacks('on_predict_postprocess_end')

@@ -1,0 +1,35 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "depth_pro"
+model       : "depth_pro"
+data        : ~
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "depth_pro"
+save_dir    : ~
+weights     : "zoo/vision/depth/depth_pro/depth_pro/pretrained/depth_pro.pt"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+patch_encoder_preset: "dinov2l16_384"
+image_encoder_preset: "dinov2l16_384"
+decoder_features    : 256
+use_fov_head        : True
+fov_encoder_preset  : "dinov2l16_384"
+format              : 2  # 0: grayscale, 1: color, 2: both

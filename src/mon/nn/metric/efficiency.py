@@ -30,12 +30,12 @@ def compute_efficiency_score(
 	model     : nn.Module,
 	image_size: int | Sequence[int] = 512,
 	channels  : int  = 3,
-	runs      : int  = 100,
+	runs      : int  = 1000,
 	use_cuda  : bool = True,
 	verbose   : bool = False,
 ):
 	# Define input tensor
-	h, w  = core.parse_hw(image_size)
+	h, w  = core.get_image_size(image_size)
 	input = torch.rand(1, channels, h, w)
 	
 	# Deploy to cuda
@@ -67,7 +67,7 @@ def compute_efficiency_score(
 	if verbose:
 		console.log(f"FLOPs (G) : {flops:.4f}")
 		console.log(f"Params (M): {params:.4f}")
-		console.log(f"Time (s)  : {avg_time:.4f}")
+		console.log(f"Time (s)  : {avg_time:.17f}")
 	
 	return flops, params, avg_time
 

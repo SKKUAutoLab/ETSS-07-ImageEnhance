@@ -165,9 +165,9 @@ class ModelCheckpoint(callbacks.ModelCheckpoint):
         self._last_global_step_saved = int(state_dict.get("last_global_step_saved", self._last_global_step_saved))
     
     def _save_checkpoint(self, trainer: "pl.Trainer", filepath: str):
-        filepath_pt = str(filepath).replace(self.FILE_EXTENSION, ".pt")
-        trainer.save_checkpoint(filepath_pt, True)
-        trainer.save_checkpoint(filepath, self.save_weights_only)
+        filepath_pt = filepath.replace(self.FILE_EXTENSION, ".pt")
+        trainer.save_checkpoint(str(filepath_pt), True)
+        trainer.save_checkpoint(str(filepath), self.save_weights_only)
         
         self._last_epoch_saved       = int(trainer.current_epoch)
         self._last_global_step_saved = int(trainer.global_step)

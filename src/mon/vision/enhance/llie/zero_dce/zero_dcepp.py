@@ -105,7 +105,7 @@ class ZeroDCEpp_RE(base.ImageEnhancementModel):
     model_dir: core.Path    = current_dir
     arch     : str          = "zero_dce"
     tasks    : list[Task]   = [Task.LLIE]
-    schemes  : list[Scheme] = [Scheme.ZERO_REFERENCE]
+    schemes  : list[Scheme] = [Scheme.UNSUPERVISED, Scheme.ZERO_REFERENCE]
     zoo      : dict         = {}
 
     def __init__(
@@ -123,8 +123,6 @@ class ZeroDCEpp_RE(base.ImageEnhancementModel):
             weights     = weights,
             *args, **kwargs
         )
-        assert num_iters <= 8
-       
         # Populate hyperparameter values from pretrained weights
         if isinstance(self.weights, dict):
             in_channels  = self.weights.get("in_channels" , in_channels)

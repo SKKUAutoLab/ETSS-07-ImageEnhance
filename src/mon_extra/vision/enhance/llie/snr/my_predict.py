@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import argparse
-import time
 
 import cv2
 import numpy as np
@@ -37,9 +36,10 @@ def predict(args: argparse.Namespace):
     save_image   = args.save_image
     save_debug   = args.save_debug
     use_fullpath = args.use_fullpath
+    opt_path     = str(current_dir / "model_config" / args.opt_path)
     
     # Override options with args
-    opt           = option.parse(args.opt, is_train=False)
+    opt           = option.parse(opt_path, is_train=False)
     opt           = option.dict_to_nonedict(opt)
     opt["device"] = device
     
@@ -52,7 +52,7 @@ def predict(args: argparse.Namespace):
         flops, params, avg_time = model.measure_efficiency_score(image_size=imgsz)
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -80,7 +80,7 @@ def predict(args: argparse.Namespace):
                 image      = image[:, :, ::-1]
                 h, w       = mon.get_image_size(image)
                 # image      = cv2.resize(image, (600, 400))
-                image      = mon.resize_divisible(image, 32)
+                image      = mon.resize(image, divisible_by=32)
                 image_nf   = cv2.blur(image, (5, 5))
                 image_nf   = image_nf * 1.0 / 255.0
                 image_nf   = torch.from_numpy(np.ascontiguousarray(np.transpose(image_nf, (2, 0, 1)))).float()
@@ -92,7 +92,7 @@ def predict(args: argparse.Namespace):
                 timer.tick()
                 model.feed_data(
                     data = {
-                        "idx": meta["id"],
+                        "idx": i,
                         "LQs": image,
                         "nf" : image_nf,
                     },
@@ -101,7 +101,7 @@ def predict(args: argparse.Namespace):
                 model.test()
                 timer.tock()
                 
-                # Post-process
+                # Post-processing
                 visuals        = model.get_current_visuals(need_GT=False)
                 enhanced_image = util.tensor2img(visuals["rlt"])  # uint8
                 enhanced_image = cv2.resize(enhanced_image, (w, h))
@@ -109,11 +109,10 @@ def predict(args: argparse.Namespace):
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     cv2.imwrite(str(output_path), enhanced_image)
                     # torchvision.utils.save_image(enhanced_image, str(output_path))

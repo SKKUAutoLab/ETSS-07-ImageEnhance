@@ -34,7 +34,7 @@ def predict(args: argparse.Namespace):
     weights      = args.weights
     device       = mon.set_device(args.device)
     imgsz        = args.imgsz
-    imgsz        = mon.parse_hw(imgsz)
+    imgsz        = mon.get_image_size(imgsz)
     resize       = args.resize
     benchmark    = args.benchmark
     save_image   = args.save_image
@@ -61,13 +61,13 @@ def predict(args: argparse.Namespace):
             model      = copy.deepcopy(model),
             image_size = imgsz,
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -100,25 +100,24 @@ def predict(args: argparse.Namespace):
                 if resize:
                     image = mon.resize(image, imgsz)
                 else:
-                    image = mon.resize_divisible(image, 32)
+                    image = mon.resize(image, divisible_by=32)
                 
                 # Infer
                 timer.tick()
                 enhanced_image = model(image)
                 timer.tock()
                 
-                # Post-process
+                # Post-processing
                 enhanced_image = torch.clamp(enhanced_image, 0, 1)
                 enhanced_image = mon.resize(enhanced_image, (h0, w0))
                 
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     torchvision.utils.save_image(enhanced_image, str(output_path))
         

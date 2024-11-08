@@ -21,12 +21,12 @@ __all__ = [
     "DATAMODULES",
     "DATASETS",
     "DATA_DIR",
+    "DEPTH_DATA_SOURCES",
     "DETECTORS",
     "DISTANCES",
     "EMBEDDERS",
     "EXTRA_DATASETS",
     "EXTRA_DATASET_STR",
-    "EXTRA_METRICS",
     "EXTRA_MODELS",
     "EXTRA_MODEL_STR",
     "FILE_HANDLERS",
@@ -661,8 +661,11 @@ class Task(DT.Enum):
     LES      = "les"       # light effect suppression
     LLIE     = "llie"      # low-light image enhancement
     POSE     = "pose"      # pose estimation
+    RETOUCH  = "retouch"   # image retouching
     SEGMENT  = "segment"   # semantic segmentation
+    SR       = "sr"        # super-resolution
     TRACK    = "track"     # object tracking
+    UIE      = "uie"       # underwater image enhancement
 
 
 class RunMode(DT.Enum):
@@ -672,18 +675,19 @@ class RunMode(DT.Enum):
     PREDICT = "predict"
     METRIC  = "metric"
     PLOT    = "plot"
-    
+
 
 class Scheme(DT.Enum):
     """Learning schemes."""
     
-    INFERENCE      = "inference"       # inference only
-    INSTANCE       = "instance"        # one-instance learning
-    SUPERVISED     = "supervised"      # supervised learning
-    TRADITIONAL    = "traditional"     # traditional method (no learning)
-    UNSUPERVISED   = "unsupervised"    # unsupervised learning
-    ZERO_REFERENCE = "zero_reference"  # zero-reference learning
-    
+    INFERENCE      = "inference"       # Inference Only: we don't have training code.
+    INSTANCE       = "instance"        # One-Instance Learning: learn from a single image without external data.
+    SUPERVISED     = "supervised"      # Supervised Learning:
+    TRADITIONAL    = "traditional"     # Traditional Method (no learning)
+    UNSUPERVISED   = "unsupervised"    # Unsupervised Learning: find hidden patterns or groupings in data without labels.
+    ZERO_REFERENCE = "zero_reference"  # Zero-Reference (for image enhancement): improve image quality without a reference.
+    ZERO_SHOT      = "zero_shot"       # Zero-Shot Learning (for classification): classify unseen classes or tasks using auxiliary info.
+
 
 class Split(DT.Enum):
     """Dataset split types."""
@@ -703,90 +707,19 @@ IMAGE_FILE_FORMATS   = [".arw", ".bmp", ".dng", ".jpg", ".jpeg", ".png", ".ppm",
 VIDEO_FILE_FORMATS   = [".avi", ".m4v", ".mkv", ".mov", ".mp4", ".mpeg", ".mpg", ".wmv"]
 TORCH_FILE_FORMATS   = [".pt", ".pth", ".weights", ".ckpt", ".tar", ".onnx"]
 WEIGHTS_FILE_FORMATS = [".pt", ".pth", ".onnx"]
+DEPTH_DATA_SOURCES   = [None, "dav2_vitb_c", "dav2_vitb_g", "dav2_vitl_c", "dav2_vitl_g", "dp_c", "dp_c_i", "dp_g", "dp_g_i"]
 
 # List 3rd party modules
 EXTRA_DATASET_STR = "[extra]"
 EXTRA_MODEL_STR   = "[extra]"
 EXTRA_DATASETS    = {
     # region detect
-        "aicity_2024_fisheye8k": {
+    "aicity_2024_fisheye8k": {
         "tasks"         : [Task.DETECT],
         "splits"        : [Split.TRAIN, Split.VAL, Split.TEST],
         "has_test_label": False,
     },
     # endregion
-}
-EXTRA_METRICS     = {
-    # FR
-    "ahiq"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "ckdn"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "cw-ssim"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "cw_ssim"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "dists"              : {"metric_mode": "FR", "lower_is_better": True , },
-    "fsim"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "gmsd"               : {"metric_mode": "FR", "lower_is_better": True , },
-    "haarpsi"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "lpips"              : {"metric_mode": "FR", "lower_is_better": True , },
-    "lpips-vgg"          : {"metric_mode": "FR", "lower_is_better": True , },
-    "lpips_vgg"          : {"metric_mode": "FR", "lower_is_better": True , },
-    "mad"                : {"metric_mode": "FR", "lower_is_better": False, },
-    "mdsi"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "ms-gmsd"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "ms-ssim"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "ms_gmsd"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "ms_ssim"            : {"metric_mode": "FR", "lower_is_better": False, },
-    "nlpd"               : {"metric_mode": "FR", "lower_is_better": True , },
-    "psnr"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "psnry"              : {"metric_mode": "FR", "lower_is_better": False, },
-    "ssim"               : {"metric_mode": "FR", "lower_is_better": False, },
-    "ssimc"              : {"metric_mode": "FR", "lower_is_better": False, },
-    "stlpips"            : {"metric_mode": "FR", "lower_is_better": True , },
-    "stlpips-vgg"        : {"metric_mode": "FR", "lower_is_better": True , },
-    "stlpips_vgg"        : {"metric_mode": "FR", "lower_is_better": True , },
-    "vif"                : {"metric_mode": "FR", "lower_is_better": False, },
-    "vsi"                : {"metric_mode": "FR", "lower_is_better": False, },
-    # NR
-    "brisque"            : {"metric_mode": "NR", "lower_is_better": True , },
-    "clipiqa"            : {"metric_mode": "NR", "lower_is_better": False, },
-    "clipiqa+"           : {"metric_mode": "NR", "lower_is_better": False, },
-    "clipiqa+_rn50_512"  : {"metric_mode": "NR", "lower_is_better": False, },
-    "clipiqa+_vitL14_512": {"metric_mode": "NR", "lower_is_better": False, },
-    "clipscore"          : {"metric_mode": "NR", "lower_is_better": False, },
-    "cnniqa"             : {"metric_mode": "NR", "lower_is_better": False, },
-    "dbcnn"              : {"metric_mode": "NR", "lower_is_better": False, },
-    "entropy"            : {"metric_mode": "NR", "lower_is_better": False, },
-    "fid"                : {"metric_mode": "NR", "lower_is_better": True , },
-    "hyperiqa"           : {"metric_mode": "NR", "lower_is_better": False, },
-    "laion_aes"          : {"metric_mode": "NR", "lower_is_better": False, },
-    "maniqa"             : {"metric_mode": "NR", "lower_is_better": False, },
-    "maniqa-kadid"       : {"metric_mode": "NR", "lower_is_better": False, },
-    "maniqa-koniq"       : {"metric_mode": "NR", "lower_is_better": False, },
-    "maniqa-pipal"       : {"metric_mode": "NR", "lower_is_better": False, },
-    "musiq"              : {"metric_mode": "NR", "lower_is_better": False, },
-    "musiq-ava"          : {"metric_mode": "NR", "lower_is_better": False, },
-    "musiq-koniq"        : {"metric_mode": "NR", "lower_is_better": False, },
-    "musiq-paq2piq"      : {"metric_mode": "NR", "lower_is_better": False, },
-    "musiq-spaq"         : {"metric_mode": "NR", "lower_is_better": False, },
-    "nima"               : {"metric_mode": "NR", "lower_is_better": False, },
-    "nima-vgg16-ava"     : {"metric_mode": "NR", "lower_is_better": False, },
-    "niqe"               : {"metric_mode": "NR", "lower_is_better": True , },
-    "nrqm"               : {"metric_mode": "NR", "lower_is_better": False, },
-    "paq2piq"            : {"metric_mode": "NR", "lower_is_better": False, },
-    "pi"                 : {"metric_mode": "NR", "lower_is_better": True , },
-    "pieapp"             : {"metric_mode": "NR", "lower_is_better": True , },
-    "topiq_fr"           : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_fr-pipal"     : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_iaa"          : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_iaa_res50"    : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_nr"           : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_nr-face"      : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_nr-flive"     : {"metric_mode": "NR", "lower_is_better": False, },
-    "topiq_nr-spaq"      : {"metric_mode": "NR", "lower_is_better": False, },
-    "tres"               : {"metric_mode": "NR", "lower_is_better": False, },
-    "tres-flive"         : {"metric_mode": "NR", "lower_is_better": False, },
-    "tres-koniq"         : {"metric_mode": "NR", "lower_is_better": False, },
-    "tv"                 : {"metric_mode": "NR", "lower_is_better": False, },
-    "uranker"            : {"metric_mode": "NR", "lower_is_better": False, },
 }
 EXTRA_MODELS      = {  # architecture/model (+ variant)
     # region depth
@@ -814,6 +747,14 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "schemes"  : [Scheme.SUPERVISED],
             "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_anything_v2",
             "torch_distributed_launch": True,
+        },
+    },
+    "depth_pro"        : {
+        "depth_pro": {
+            "tasks"    : [Task.DEPTH],
+            "schemes"  : [Scheme.ZERO_SHOT],
+            "model_dir": MON_EXTRA_DIR / "vision" / "depth" / "depth_pro",
+            "torch_distributed_launch": False,
         },
     },
     # endregion
@@ -944,7 +885,7 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
     "zid"          : {
         "zid": {
             "tasks"    : [Task.DEHAZE],
-            "schemes"  : [Scheme.ZERO_REFERENCE],
+            "schemes"  : [Scheme.ZERO_REFERENCE, Scheme.INSTANCE],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "dehaze" / "zid",
             "torch_distributed_launch": False,
         },
@@ -954,7 +895,7 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
     "colie"        : {
         "colie": {
             "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.ZERO_REFERENCE],
+            "schemes"  : [Scheme.ZERO_REFERENCE, Scheme.INSTANCE],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "colie",
             "torch_distributed_launch": False,
         },
@@ -970,17 +911,17 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
     "enlightengan" : {
         "enlightengan": {
             "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.UNSUPERVISED],
+            "schemes"  : [Scheme.ZERO_REFERENCE],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "enlightengan",
             "torch_distributed_launch": True,
         },
     },
-    "gsad"         : {
-        "gsad": {
+    "fourllie"     : {
+        "fourllie": {
             "tasks"    : [Task.LLIE],
             "schemes"  : [Scheme.SUPERVISED],
-            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "gsad",
-            "torch_distributed_launch": True,
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "fourllie",
+            "torch_distributed_launch": False,
         },
     },
     "hvi_cidnet"   : {
@@ -988,14 +929,6 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "tasks"    : [Task.LLIE],
             "schemes"  : [Scheme.SUPERVISED],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "hvi_cidnet",
-            "torch_distributed_launch": True,
-        },
-    },
-    "kind"         : {
-        "kind": {
-            "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.SUPERVISED],
-            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "kind",
             "torch_distributed_launch": True,
         },
     },
@@ -1023,12 +956,36 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "torch_distributed_launch": True,
         },
     },
+    "lyt_net"      : {
+        "lyt_net": {
+            "tasks"    : [Task.LLIE],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "lyt_net",
+            "torch_distributed_launch": True,
+        },
+    },
     "mtfe"         : {
         "mtfe": {
             "tasks"    : [Task.LLIE],
             "schemes"  : [Scheme.SUPERVISED],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "mtfe",
             "torch_distributed_launch": True,
+        },
+    },
+    "nerco"        : {
+        "nerco": {
+            "tasks"    : [Task.LLIE],
+            "schemes"  : [Scheme.UNSUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "nerco",
+            "torch_distributed_launch": False,
+        },
+    },
+    "pairlie"      : {
+        "pairlie": {
+            "tasks"    : [Task.LLIE],
+            "schemes"  : [Scheme.ZERO_REFERENCE],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "pairlie",
+            "torch_distributed_launch": False,
         },
     },
     "pie"          : {
@@ -1038,14 +995,6 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "pie",
             "torch_distributed_launch": True,
         },
-    },
-    "psenet"       : {
-        "psenet": {
-            "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.ZERO_REFERENCE],
-            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "psenet",
-            "torch_distributed_launch": False,
-        }
     },
     "quadprior"    : {
         "quadprior": {
@@ -1071,6 +1020,14 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "torch_distributed_launch": True,
         },
     },
+    "rrdnet"       : {
+        "rrdnet": {
+            "tasks"    : [Task.LLIE],
+            "schemes"  : [Scheme.ZERO_REFERENCE, Scheme.INSTANCE],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "rrdnet",
+            "torch_distributed_launch": True,
+        },
+    },
     "ruas"         : {
         "ruas": {
             "tasks"    : [Task.LLIE],
@@ -1082,7 +1039,7 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
     "sci"          : {
         "sci": {
             "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.SUPERVISED],
+            "schemes"  : [Scheme.ZERO_REFERENCE],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "sci",
             "torch_distributed_launch": True,
         },
@@ -1100,14 +1057,6 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "tasks"    : [Task.LLIE],
             "schemes"  : [Scheme.SUPERVISED],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "snr",
-            "torch_distributed_launch": True,
-        },
-    },
-    "stablellve"   : {
-        "stablellve": {
-            "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.SUPERVISED],
-            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "stablellve",
             "torch_distributed_launch": True,
         },
     },
@@ -1149,11 +1098,11 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "torch_distributed_launch": True,
         },
     },
-    "zeroig"       : {
-        "zeroig": {
+    "zero_ig"      : {
+        "zero_ig": {
             "tasks"    : [Task.LLIE],
-            "schemes"  : [Scheme.ZERO_REFERENCE],
-            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "zeroig",
+            "schemes"  : [ Scheme.ZERO_REFERENCE],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "llie" / "zero_ig",
             "torch_distributed_launch": True,
         },
     },
@@ -1167,12 +1116,33 @@ EXTRA_MODELS      = {  # architecture/model (+ variant)
             "torch_distributed_launch": True,
         },
     },
+    "neurop"       : {
+        "neurop": {
+            "tasks"    : [Task.LLIE, Task.RETOUCH],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "retouch" / "neurop",
+            "torch_distributed_launch": False,
+        },
+    },
     "restormer"    : {
         "restormer": {
             "tasks"    : [Task.DEBLUR, Task.DENOISE, Task.DERAIN, Task.DESNOW, Task.LLIE],
             "schemes"  : [Scheme.SUPERVISED],
             "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "multitask" / "restormer",
             "torch_distributed_launch": True,
+        },
+    },
+    # endregion
+    # region enhance/retouch
+    
+    # endregion
+    # region enhance/sr
+    "srno"         : {
+        "srno": {
+            "tasks"    : [Task.SR],
+            "schemes"  : [Scheme.SUPERVISED],
+            "model_dir": MON_EXTRA_DIR / "vision" / "enhance" / "sr" / "srno",
+            "torch_distributed_launch": False,
         },
     },
     # endregion

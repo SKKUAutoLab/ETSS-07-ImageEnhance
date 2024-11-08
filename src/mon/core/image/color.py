@@ -116,7 +116,7 @@ def bgr_to_grayscale(
     """
     rgb = bgr_to_rgb(image)
     return rgb_to_grayscale(rgb)
-    
+
 # endregion
 
 
@@ -263,9 +263,9 @@ def bgr_to_v(
     """
     hsv = bgr_to_hsv(image, eps)
     if isinstance(image, torch.Tensor):
-        return hsv[:, 2, :, :]
+        return hsv[:, 2:3, :, :]
     elif isinstance(image, np.ndarray):
-        return hsv[:, :, 2]
+        return hsv[:, :, 2:3]
     else:
         raise TypeError(f"`image` must be a `torch.Tensor` or `numpy.ndarray`, "
                         f"but got {type(image)}.")
@@ -352,8 +352,8 @@ class RGBToHVI(nn.Module):
         
         self.this_k     = self.density_k.item()
         color_sensitive = ((value * 0.5 * pi).sin() + self.eps).pow(self.density_k)
-        cx   = (2.0 * pi * hue).cos()
-        cy   = (2.0 * pi * hue).sin()
+        cx  = (2.0 * pi * hue).cos()
+        cy  = (2.0 * pi * hue).sin()
         X   = color_sensitive * saturation * cx
         Y   = color_sensitive * saturation * cy
         Z   = value
@@ -364,7 +364,7 @@ class RGBToHVI(nn.Module):
         pi      = 3.141592653589793
         H, V, I = image[:, 0, :, :], image[:, 1, :, :], image[:, 2, :, :]
         
-        # clip
+        # Clip
         H = torch.clamp(H, -1, 1)
         V = torch.clamp(V, -1, 1)
         I = torch.clamp(I, 0, 1)
@@ -837,10 +837,10 @@ def rgb_to_y(image: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
     """
     if isinstance(image, torch.Tensor):
         ycbcr = kornia.color.rgb_to_ycbcr(image)
-        return ycbcr[:, 0, :, :]
+        return ycbcr[:, 0:1, :, :]
     elif isinstance(image, np.ndarray):
         ycbcr = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
-        return ycbcr[:, :, 0]
+        return ycbcr[:, :, 0:1]
     else:
         raise TypeError(f"`image` must be a `torch.Tensor` or `numpy.ndarray`, "
                         f"but got {type(image)}.")

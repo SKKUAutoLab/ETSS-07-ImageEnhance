@@ -138,6 +138,15 @@ class Path(type(pathlib.Path())):
             and self.suffix.lower() in [".py"]
         )
     
+    def is_raw_image_file(self, exist: bool = True) -> bool:
+        """Return ``True`` if the current path is a raw image file. Otherwise,
+        return ``False``.
+        """
+        return (
+            (self.is_file() if exist else True)
+            and self.suffix.lower() in [".dng", ".arw"]
+        )
+    
     def is_stem(self) -> bool:
         """Return ``True`` if the current path isn't ``None``, and the parent of
         the path is the current :obj:`dict`, and the path has no extension.
@@ -308,9 +317,9 @@ class Path(type(pathlib.Path())):
             dst.unlink(missing_ok=True)
         shutil.copyfile(src=str(self), dst=str(dst))
     
-    def replace(self, old: str, new: str) -> Path:
+    def replace(self, old: str, new: str, count: int = 1) -> Path:
         """Return a new path with the old string replaced by the new string."""
-        return Path(str(self).replace(old, new))
+        return Path(str(self).replace(old, new, count))
     
 # endregion
 
@@ -466,7 +475,7 @@ def delete_cache(path: Path | str, recursive: bool = True):
         recursive: If ``True``, recursively look for cache files in
             subdirectories. Default: ``True``.
     """
-    delete_files(regex=".cache", path=path, recursive=recursive)
+    delete_files(path=path, regex=".cache", recursive=recursive)
 
 
 def delete_dir(paths: Path | str | list[Path | str]):
@@ -475,29 +484,33 @@ def delete_dir(paths: Path | str | list[Path | str]):
     for p in paths:
         p = Path(p)
         if p.exists():
-            delete_files(regex="*", path=p, recursive=True)
+            delete_files(path=p, regex="*", recursive=True)
             shutil.rmtree(p)
 
 
 def delete_files(
-    regex    : str,
-    path     : Path | str = "",
-    recursive: bool       = False
+    path     : Path | str,
+    regex    : str  = None,
+    recursive: bool = False
 ):
     """Delete all files matching the given regular expression.
     
     Args:
-        regex: A file path patterns.
         path: A path to a directory to search for the files to delete.
+        regex: A file path patterns. Default: ``None``.
         recursive: If ``True``, look for file in subdirectories.
             Default: ``False``.
     """
-    path  = Path(path)
-    files = []
-    if recursive:
-        files += list(path.rglob(*{regex}))
+    path = Path(path)
+    if regex:
+        if not path.is_dir():
+            path = path.parent
+        if recursive:
+            files = list(path.rglob(*{regex}))
+        else:
+            files = list(path.glob(regex))
     else:
-        files += list(path.glob(regex))
+        files = [path]
     try:
         for f in files:
             f.unlink()
@@ -544,7 +557,7 @@ def mkdirs(
                 continue
             p = p.parent if p.is_file_like() else p
             if replace:
-                delete_files(regex="*", path=p)
+                delete_files(path=p, regex="*")
                 p.rmdir()
             p.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
     except Exception as err:
@@ -565,7 +578,7 @@ def rmdirs(paths: Path | str | list[pathlib.Path | str]):
             if p.is_url():
                 continue
             p = p.parent if p.is_file_like() else p
-            delete_files(regex="*", path=p)
+            delete_files(path=p, regex="*")
             p.rmdir()
     except Exception as err:
         print(f"Cannot delete directory: {err}.")

@@ -24,11 +24,13 @@ current_dir  = current_file.parents[0]
 
 def predict(args: argparse.Namespace):
     # General config
+    opt_path     = str(current_dir / "model_config" / args.opt_path)
     data         = args.data
     save_dir     = mon.Path(args.save_dir)
     weights      = args.weights
     device       = mon.set_device(args.device)
     imgsz        = args.imgsz
+    imgsz        = imgsz[0] if isinstance(imgsz, list | tuple) else imgsz
     resize       = args.resize
     benchmark    = args.benchmark
     save_image   = args.save_image
@@ -39,7 +41,7 @@ def predict(args: argparse.Namespace):
     # gpu_list = ",".join(str(x) for x in args.gpus)
     # os.environ["CUDA_VISIBLE_DEVICES"] = gpu_list
     # print("export CUDA_VISIBLE_DEVICES=" + gpu_list)
-    opt           = parse(args.opt, is_train=False)
+    opt           = parse(opt_path, is_train=False)
     opt["dist"]   = False
     opt["device"] = device
     
@@ -60,18 +62,18 @@ def predict(args: argparse.Namespace):
     model.eval()
     
     # Benchmark
-    if benchmark:
-        flops, params, avg_time = copy.deepcopy(model).measure_efficiency_score(image_size=imgsz)
-        console.log(f"FLOPs  = {flops:.4f}")
-        console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+    # if benchmark:
+    #     flops, params, avg_time = copy.deepcopy(model).measure_efficiency_score(image_size=imgsz)
+    #     console.log(f"FLOPs  = {flops:.4f}")
+    #     console.log(f"Params = {params:.4f}")
+    #     console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
     data_name, data_loader, data_writer = mon.parse_io_worker(
         src         = data,
         dst         = save_dir,
-        to_tensor   = False,
+        to_tensor   = True,
         denormalize = True,
         verbose     = False,
     )
@@ -100,7 +102,7 @@ def predict(args: argparse.Namespace):
                     console.log("Resizing images to: ", image.shape[2], image.shape[3])
                     # images = proc.resize(input=images, size=[1000, 666])
                 # Padding in case images are not multiples of 4
-                h, w  = image.shape[2], image.shape[3]
+                h, w  = mon.get_image_size(image)
                 H, W  = ((h + factor) // factor) * factor, ((w + factor) // factor) * factor
                 padh  = H - h if h % factor != 0 else 0
                 padw  = W - w if w % factor != 0 else 0
@@ -112,7 +114,7 @@ def predict(args: argparse.Namespace):
                 restored = model(input)
                 timer.tock()
                 
-                # Post-process
+                # Post-processing
                 # Unpad images to original dimensions
                 restored = restored[:, :, :h, :w]
                 if resize:
@@ -122,17 +124,16 @@ def predict(args: argparse.Namespace):
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     utils.save_img(str(output_path), img_as_ubyte(restored))
         
         avg_time = float(timer.avg_time)
         console.log(f"Average time: {avg_time}")
-       
+        
 # endregion
 
 

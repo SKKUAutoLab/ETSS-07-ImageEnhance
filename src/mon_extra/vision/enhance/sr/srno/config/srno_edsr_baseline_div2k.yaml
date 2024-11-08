@@ -1,0 +1,31 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "srno"
+model       : "srno_edsr_baseline"
+data        : "div2k"
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "srno_edsr_baseline_div2k"
+save_dir    : ~
+weights     : "zoo/vision/enhance/sr/srno/srno_edsr_baseline/div2k/srno_edsr_baseline_div2k.pth"
+device      : 0
+local_rank  : -1
+launcher    : ~
+epochs      : 1000
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : False
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+scale       : 3
+scale_max   : 4

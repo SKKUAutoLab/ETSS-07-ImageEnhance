@@ -8,47 +8,106 @@ current_dir=$(dirname "$current_file")
 project_dir=$(dirname "$current_dir")
 mon_dir=$(dirname "$project_dir")
 runml_dir="${project_dir}/runml"
-data_dir="${mon_dir}/data"
+data_dir="${mon_dir}/data/enhance"
 
 # Input
-task="llie"
-arch="colie"
-model="colie_re"
+arch="zero_mie"
+model="zero_mie_ms"
 data=(
-    "dicm"
-    "lime"
-    "mef"
-    "npe"
-    "vv"
-    "lol_v1"
-    "lol_v2_real"
-    "lol_v2_synthetic"
+    ### Unpaired Set
+    # "dicm"
+    # "lime"
+    # "mef"
+    # "npe"
+    # "vv"
+    ### LOLs Set
+    # "lol_v1"
+    # "lol_v2_real"
+    # "lol_v2_synthetic"
+    ### Multiple Exposure Set
+    "fivek_e"
+    # "sice"
+    # "sice_grad"
+    # "sice_mix_v2"
+    ### Camera-Specific Set
+    # "sid_sony"
+    ### Real-World Set
+    # "darkcityscapes"
+    # "darkface"
+    # "exdark"
+    # "loli_street_val"
+    # "loli_street_test"
+    # "nightcity"
 )
+device="cuda:0"
 
 # Run
 cd "${runml_dir}" || exit
 for (( i=0; i<${#data[@]}; i++ )); do
-    input_dir="${data_dir}/${task}/#predict/${arch}/${model}/${data[i]}"
+    # Input
+    input_dir="${data_dir}/#predict/${arch}/${model}/${data[i]}"
     if ! [ -d "${input_dir}" ]; then
         input_dir="${current_dir}/run/predict/${arch}/${model}/${data[i]}"
     fi
+    # Target
+    if [ "${data[i]}" == "loli_street_val" ]; then
+        target_dir="${data_dir}/loli_street/val/ref"
+    elif [ "${data[i]}" == "loli_street_test" ]; then
+        target_dir="${data_dir}/loli_street/test/ref"
+    else
+        target_dir="${data_dir}/${data[i]}/test/ref"
+        if ! [ -d "${target_dir}" ]; then
+            target_dir="${data_dir}/${data[i]}/val/ref"
+        fi
+    fi
 
-    python -W ignore metric.py \
-        --input-dir "${input_dir}" \
-        --target-dir "${data_dir}/enhance/${task}/${data[i]}/test/hq" \
-        --result-file "${current_dir}" \
-        --arch "${arch}" \
-        --model "${model}" \
-        --device "cuda:0" \
-        --metric "psnr" \
-        --metric "ssimc" \
-        --metric "psnry" \
-        --metric "ssim" \
-        --metric "lpips" \
-        --metric "niqe" \
-        --metric "pi" \
-        --backend "pyiqa" \
-        --show-results
+    # Measure FR-IQA
+    if [ -d "${target_dir}" ]; then
+        python -W ignore metric.py \
+          --input-dir "${input_dir}" \
+          --target-dir "${target_dir}" \
+          --result-file "${current_dir}" \
+          --arch "${arch}" \
+          --model "${model}" \
+          --data "${data[i]}" \
+          --device "${device}" \
+          --imgsz 512 \
+          --metric "psnr" \
+          --metric "ssimc" \
+          --metric "psnry" \
+          --metric "ssim" \
+          --metric "ms_ssim" \
+          --metric "lpips" \
+          --metric "brisque" \
+          --metric "ilniqe" \
+          --metric "niqe" \
+          --metric "pi" \
+          --backend "pyiqa" \
+          --use-gt-mean
+    # Measure NR-IQA
+    else
+        python -W ignore metric.py \
+          --input-dir "${input_dir}" \
+          --target-dir "${target_dir}" \
+          --result-file "${current_dir}" \
+          --arch "${arch}" \
+          --model "${model}" \
+          --data "${data[i]}" \
+          --device "${device}" \
+          --imgsz 512 \
+          --metric "psnr" \
+          --metric "ssimc" \
+          --metric "psnry" \
+          --metric "ssim" \
+          --metric "ms_ssim" \
+          --metric "lpips" \
+          --metric "brisque" \
+          --metric "ilniqe" \
+          --metric "niqe" \
+          --metric "pi" \
+          --backend "pyiqa"
+    fi
+
 done
 
 # Done

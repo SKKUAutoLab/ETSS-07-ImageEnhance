@@ -52,13 +52,13 @@ def predict(args: argparse.Namespace):
             model      = model,
             image_size = imgsz,
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -90,11 +90,10 @@ def predict(args: argparse.Namespace):
             # Save
             if save_image:
                 if use_fullpath:
-                    rel_path = image_path.relative_path(data_name)
-                    save_dir = save_dir / rel_path.parent
+                    rel_path    = image_path.relative_path(data_name)
+                    output_path = save_dir / rel_path.parent / image_path.name
                 else:
-                    save_dir = save_dir / data_name
-                output_path  = save_dir / image_path.name
+                    output_path = save_dir / data_name / image_path.name
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 save_image_tensor(restored, output_path)
    

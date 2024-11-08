@@ -35,13 +35,13 @@ def get_albumentation_target_type(annotation) -> str | None:
     """Returns the type of target that Albumentations expects.
     One of: [``'image'``, ``'mask'``, ``'bboxes'``, ``'keypoints'``, ``'values'``].
     """
-    if annotation in [ImageAnnotation]:
+    if annotation in [ImageAnnotation, FrameAnnotation, DepthMapAnnotation]:
         return "image"
     elif annotation in [BBoxAnnotation, BBoxesAnnotation]:
         return "bboxes"
     elif annotation in [ClassificationAnnotation, RegressionAnnotation]:
         return "values"
-    elif annotation in [SegmentationAnnotation]:
+    elif annotation in [SemanticSegmentationAnnotation]:
         return "mask"
     else:
         error_console.log(f"Unknown annotation type: {annotation}, {type(annotation)}")

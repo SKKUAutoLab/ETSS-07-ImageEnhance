@@ -1,0 +1,29 @@
+# Basic
+hostname    : ~
+config      : ~
+arch        : "neurop"
+data        : "fivek_dark"
+data_dir    : ~
+root        : ~
+project     : ~
+variant     : ~
+fullname    : "neurop_fivek_dark"
+save_dir    : ~
+weights     : "zoo/vision/enhance/retouch/neurop/neurop/fivek_dark/neurop_fivek_dark.pth"
+device      : 0
+local_rank  : ~
+launcher    : ~
+epochs      : ~
+steps       : ~
+imgsz       : 512
+resize      : ~
+benchmark   : True
+save_image  : True
+save_debug  : False
+use_data_dir: False
+use_fullpath: False
+exist_ok    : False
+verbose     : True
+
+# Model Specific
+opt_path: "neurop_fivek_dark.yaml"

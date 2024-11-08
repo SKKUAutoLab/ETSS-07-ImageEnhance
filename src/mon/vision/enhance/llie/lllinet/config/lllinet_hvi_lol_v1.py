@@ -17,7 +17,7 @@ root_dir     = current_file.parents[1]
 model_name = "lllinet_hvi"
 data_name  = "lol_v1"
 root       = current_file.parents[1] / "run"
-data_root  = mon.DATA_DIR / "enhance" / "llie"
+data_root  = mon.DATA_DIR / "enhance"
 project    = None
 variant    = None
 fullname   = f"{model_name}_{data_name}"
@@ -67,6 +67,7 @@ model = {
 			"network_params_only": True,
         }
     ],          # Optimizer(s) for training model.
+	"debug"       : False,          # If ``True``, run the model in debug mode (when predicting).
 	"verbose"     : verbose,        # Verbosity.
 }
 

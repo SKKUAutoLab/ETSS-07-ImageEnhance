@@ -1,72 +1,39 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import annotations
-
 import cv2
-import torch
+import numpy as np
 
-import mon
-from mon import albumentation as A
-from mon.vision.enhance.llie.d2ce import D2CE
+# reading the damaged image
+damaged_img = cv2.imread(filename=r"data/10.png")
+# get the shape of the image
+height, width = damaged_img.shape[0], damaged_img.shape[1]
+# Converting all pixels greater than zero to black while black becomes white
+thres = 5
+for i in range(height):
+	for j in range(width):
+		if damaged_img[i, j, 0] > thres:
+			damaged_img[i, j] = 0
+		elif damaged_img[i, j, 1] > thres:
+			damaged_img[i, j] = 0
+		elif damaged_img[i, j, 2] > thres:
+			damaged_img[i, j] = 0
+		else:
+			damaged_img[i, j] = [255, 255, 255]
+# saving the mask
+mask = damaged_img
+kernel = np.ones((5, 5), np.uint8)
+mask = cv2.dilate(mask, kernel, iterations=1)
+cv2.imwrite('mask.jpg', mask)
 
-transform = A.Compose([
-	A.ResizeMultipleOf(
-		height            = 504,
-		width             = 504,
-		keep_aspect_ratio = False,
-		multiple_of       = 14,
-		resize_method     = "lower_bound",
-		interpolation     = cv2.INTER_AREA,
-	),
-	# A.NormalizeImageMeanStd(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+# Open the image.
+img = cv2.imread(r"data/10.png")
+# Load the mask.
+mask = cv2.imread('mask.jpg', 0)
+# Inpaint.
+dst  = cv2.inpaint(img, mask, 9, cv2.INPAINT_NS)
+# Write the output.
+cv2.imwrite('cat_inpainted.png', dst)
 
-datamodule = {
-	"name"      : "lol_v1",
-	"root"      : mon.DATA_DIR / "llie",  # A root directory where the data is stored.
-	"transform" : A.Compose(transforms=[
-		A.ResizeMultipleOf(
-			height            = 504,
-			width             = 504,
-			keep_aspect_ratio = False,
-			multiple_of       = 14,
-			resize_method     = "lower_bound",
-			interpolation     = cv2.INTER_AREA,
-		),
-		# A.Flip(),
-		# A.Rotate(),
-	]),  # Transformations performing on both the input and target.
-	"to_tensor" : True,          # If ``True``, convert input and target to :class:`torch.Tensor`.
-	"cache_data": False,         # If ``True``, cache data to disk for faster loading next time.
-	"batch_size": 4,             # The number of samples in one forward pass.
-	"devices"   : 0,             # A list of devices to use. Default: ``0``.
-	"shuffle"   : True,          # If ``True``, reshuffle the datapoints at the beginning of every epoch.
-	"verbose"   : True,          # Verbosity.
-}
-datamodule: mon.DataModule = mon.DATAMODULES.build(config=datamodule)
-datamodule.prepare_data()
-datamodule.setup(stage="train")
-input, target, extra = next(iter(datamodule.val_dataloader))
-
-# image = cv2.imread("data/01.jpg")
-# image = mon.read_image(path="data/01.jpg", to_rgb=True, to_tensor=False, normalize=False)
-# h, w  = image.shape[:2]
-# image = transform(image=image)["image"]
-# image = mon.to_image_tensor(image, keepdim=False, normalize=True)
-# image = image.to(torch.get_default_dtype())
-
-model = D2CE()
-# c_1, c_2, d, e, gf, o = model(input)
-results = model.forward_loss(input, None)
-
-d = results["depth"]
-d = d[1]
-d = mon.to_image_nparray(d, False, True)
-cv2.imshow("d", d)
-
-e = results["edge"]
-e = e[1]
-e = mon.to_image_nparray(e, False, True)
-cv2.imshow("e", e)
+# displaying mask
+cv2.imshow("damaged image mask", mask)
+cv2.imshow('cat_inpainted.png', dst)
 cv2.waitKey(0)
+cv2.destroyAllWindows()

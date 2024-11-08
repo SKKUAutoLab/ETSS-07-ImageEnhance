@@ -47,7 +47,7 @@ class ZSN2N(base.ImageEnhancementModel):
     model_dir: core.Path    = current_dir
     arch     : str          = "zsn2n"
     tasks    : list[Task]   = [Task.DENOISE]
-    schemes  : list[Scheme] = [Scheme.ZERO_REFERENCE, Scheme.INSTANCE]
+    schemes  : list[Scheme] = [Scheme.UNSUPERVISED, Scheme.ZERO_REFERENCE, Scheme.INSTANCE]
     zoo      : dict         = {}
     
     def __init__(
@@ -87,9 +87,7 @@ class ZSN2N(base.ImageEnhancementModel):
     
     def init_weights(self, m: nn.Module):
         pass
-    
-    # region Forward Pass
-    
+        
     def forward_loss(self, datapoint: dict, *args, **kwargs) -> dict:
         # Forward
         self.assert_datapoint(datapoint)
@@ -104,7 +102,7 @@ class ZSN2N(base.ImageEnhancementModel):
         # Symmetric Loss
         pred1                = noisy1 - outputs1["enhanced"]
         pred2                = noisy2 - outputs2["enhanced"]
-        noisy_denoised       =  noisy - outputs["enhanced"]
+        noisy_denoised       =  noisy -  outputs["enhanced"]
         denoised1, denoised2 = self.pair_downsampler(noisy_denoised)
         mse_loss  = nn.MSELoss()
         loss_res  = 0.5 * (mse_loss(noisy1, pred2)    + mse_loss(noisy2, pred1))
@@ -124,11 +122,7 @@ class ZSN2N(base.ImageEnhancementModel):
         if self.predicting:
             y = torch.clamp(y, 0, 1)
         return {"enhanced": y}
-    
-    # endregion
-    
-    # region Training
-    
+  
     def infer(
         self,
         datapoint    : dict,
@@ -178,7 +172,7 @@ class ZSN2N(base.ImageEnhancementModel):
                 if resize:
                     datapoint[k] = core.resize(v, image_size)
                 else:
-                    datapoint[k] = core.resize_divisible(v, 32)
+                    datapoint[k] = core.resize(v, divisible_by=32)
         for k, v in datapoint.items():
             if isinstance(v, torch.Tensor):
                 datapoint[k] = v.to(self.device)
@@ -213,8 +207,6 @@ class ZSN2N(base.ImageEnhancementModel):
         outputs["time"] = timer.avg_time
         return outputs
         
-    # endregion
-    
 # endregion
 
 

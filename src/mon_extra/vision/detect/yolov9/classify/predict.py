@@ -115,7 +115,7 @@ def run(
         with dt[1]:
             results = model(im)
 
-        # Post-process
+        # Post-processing
         with dt[2]:
             pred = F.softmax(results, dim=1)  # probabilities
 

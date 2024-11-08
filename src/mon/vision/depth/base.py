@@ -28,14 +28,12 @@ class DepthEstimationModel(VisionModel, ABC):
     
     tasks: list[Task] = [Task.DEPTH]
     
-    # region Forward Pass
-    
     def assert_datapoint(self, datapoint: dict) -> bool:
         if "image" not in datapoint:
             raise ValueError("The key ``'image'`` must be defined in the "
                              "`datapoint`.")
         
-        has_target = any(item in self.schemes for item in [Scheme.SUPERVISED])
+        has_target = any(item in self.schemes for item in [Scheme.SUPERVISED]) and not self.predicting
         if has_target:
             if "depth" not in datapoint:
                 raise ValueError("The key ``'depth'`` must be defined in the "
@@ -77,7 +75,5 @@ class DepthEstimationModel(VisionModel, ABC):
                 results[metric_name] = metric(pred, target)
         # Return
         return results
-    
-    # endregion
-    
+        
 # endregion

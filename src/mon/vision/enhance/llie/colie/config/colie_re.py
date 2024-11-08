@@ -14,7 +14,7 @@ current_file = mon.Path(__file__).absolute()
 model_name = "colie_re"
 data_name  = ""
 root       = current_file.parents[1] / "run"
-data_root  = mon.DATA_DIR / "enhance" / "llie"
+data_root  = mon.DATA_DIR / "enhance"
 project    = None
 variant    = None
 fullname   = f"{model_name}_{data_name}"
@@ -33,7 +33,7 @@ model = {
 	"root"        : root,           # The root directory of the model.
 	"in_channels" : 3,              # The first layer's input channel.
 	"out_channels": None,           # A number of classes, which is also the last layer's output channels.
-	"window_size" : 1,              # Context window size.
+	"window_size" : 7,              # Context window size.
 	"down_size"   : 256,            # Downsampling size.
 	"num_layers"  : 4,              # Number of layers.
 	"hidden_dim"  : 256,            # Hidden dimension.
@@ -62,6 +62,7 @@ model = {
 			"network_params_only": True,
         }
     ],          # Optimizer(s) for training model.
+	"debug"       : False,          # If ``True``, run the model in debug mode (when predicting).
 	"verbose"     : verbose,        # Verbosity.
 }
 

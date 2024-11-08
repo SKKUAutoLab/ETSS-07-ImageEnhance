@@ -8,12 +8,10 @@ import logging
 import math
 import os
 import random
-import socket
 import time
 from copy import deepcopy
 from threading import Thread
 
-import click
 import numpy as np
 import torch.distributed as dist
 import torch.nn as nn
@@ -35,14 +33,19 @@ from utils.autoanchor import check_anchors
 from utils.datasets import create_dataloader
 from utils.general import (
     check_file, check_img_size, colorstr, fitness, fitness_ap,
-    fitness_ap50, fitness_f1, fitness_p, fitness_r, get_latest_run, increment_path,
+    fitness_ap50, fitness_f1, fitness_p, fitness_r, get_latest_run,
+    increment_path,
     init_seeds, labels_to_class_weights,
-    labels_to_image_weights, one_cycle, print_mutation, set_logging, strip_optimizer,
+    labels_to_image_weights, one_cycle, print_mutation, set_logging,
+    strip_optimizer,
 )
 from utils.google_utils import attempt_download
 from utils.loss import ComputeLoss, ComputeLossOTA
 from utils.plots import plot_evolution, plot_images, plot_results
-from utils.torch_utils import intersect_dicts, is_parallel, ModelEMA, select_device, torch_distributed_zero_first
+from utils.torch_utils import (
+    intersect_dicts, is_parallel, ModelEMA,
+    select_device, torch_distributed_zero_first,
+)
 from utils.wandb_logging.wandb_utils import check_wandb_resume, WandbLogger
 
 logger       = logging.getLogger(__name__)

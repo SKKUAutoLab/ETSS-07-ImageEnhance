@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module implements training pipeline."""
+"""Train Pipeline.
+
+This script trains a model on a given dataset.
+"""
 
 from __future__ import annotations
 
@@ -28,16 +31,18 @@ def train(args: dict) -> str:
     # Seed
     mon.set_random_seed(args["seed"])
     
-    # Model
-    model: mon.Model = mon.MODELS.build(config=args["model"])
-    if mon.is_rank_zero():
-        mon.print_dict(args, title=model.fullname)
-        console.log("[green]Done")
-    
     # Data I/O
     datamodule: mon.DataModule = mon.DATAMODULES.build(config=args["data"])
     datamodule.prepare_data()
     datamodule.setup(stage="train")
+    
+    # Model
+    num_classes = getattr(datamodule.classlabels, "num_trainable_classes", None)
+    args["model"]["num_classes"] = num_classes
+    model: mon.Model = mon.MODELS.build(config=args["model"])
+    if mon.is_rank_zero():
+        mon.print_dict(args, title=model.fullname)
+        console.log("[green]Done")
     
     # Trainer
     if mon.is_rank_zero():
@@ -133,7 +138,7 @@ def parse_train_args(model_root: str | mon.Path = None) -> dict:
     weights  = weights[0] if isinstance(weights, list | tuple) and len(weights) == 1 else weights
     devices  = mon.parse_device(devices)
     devices  = mon.to_int_list(devices) if "auto" not in devices else "auto"
-    devices  = len(devices) if isinstance(devices, list | tuple) else devices
+    # devices  = len(devices) if isinstance(devices, list | tuple) else devices
     
     # Update arguments
     args["hostname"]  = hostname

@@ -15,7 +15,7 @@ current_file = mon.Path(__file__).absolute()
 model_name = "llunet++_re"
 data_name  = "lol_v1"
 root       = current_file.parents[1] / "run"
-data_root  = mon.DATA_DIR / "enhance" / "llie"
+data_root  = mon.DATA_DIR / "enhance"
 project    = None
 variant    = None
 fullname   = f"{model_name}_{data_name}"
@@ -65,6 +65,7 @@ model = {
 			"network_params_only": True,
         }
     ],          # Optimizer(s) for training model.
+	"debug"       : False,          # If ``True``, run the model in debug mode (when predicting).
 	"verbose"     : verbose,        # Verbosity.
 }
 
@@ -97,8 +98,17 @@ data = {
 trainer = default.trainer | {
 	"callbacks"        : [
 		default.log_training_progress,
-		default.model_checkpoint | {"filename": fullname, "monitor": "val/psnr", "mode": "max"},
-		default.model_checkpoint | {"filename": fullname, "monitor": "val/ssim", "mode": "max", "save_last": True},
+		default.model_checkpoint | {
+			"filename": fullname,
+			"monitor" : "val/psnr",
+			"mode"    : "max",
+		},
+		default.model_checkpoint | {
+			"filename" : fullname,
+			"monitor"  : "val/ssim",
+			"mode"     : "max",
+			"save_last": True,
+		},
 		default.learning_rate_monitor,
 		default.rich_model_summary,
 		default.rich_progress_bar,

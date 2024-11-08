@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 0 * * *" # runs at 00:00 UTC every day
+    - cron: "0 8 * * *" # runs at 08:00 UTC every day
   workflow_dispatch:
     inputs:
       hub:
@@ -98,9 +98,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-14]
         python-version: ["3.11"]
-        model: [yolov8n]
+        model: [yolo11n]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -116,24 +116,27 @@ jobs:
         run: |
           yolo checks
           pip list
+      - name: Benchmark DetectionModel
+        shell: bash
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}.pt' imgsz=160 verbose=0.309
       - name: Benchmark ClassificationModel
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-cls.pt' imgsz=160 verbose=0.166
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-cls.pt' imgsz=160 verbose=0.249
       - name: Benchmark YOLOWorld DetectionModel
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/yolov8s-worldv2.pt' imgsz=160 verbose=0.318
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/yolov8s-worldv2.pt' imgsz=160 verbose=0.337
       - name: Benchmark SegmentationModel
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-seg.pt' imgsz=160 verbose=0.279
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-seg.pt' imgsz=160 verbose=0.195
       - name: Benchmark PoseModel
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-pose.pt' imgsz=160 verbose=0.183
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-pose.pt' imgsz=160 verbose=0.197
       - name: Benchmark OBBModel
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-obb.pt' imgsz=160 verbose=0.472
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/${{ matrix.model }}-obb.pt' imgsz=160 verbose=0.597
       - name: Benchmark YOLOv10Model
         shell: bash
-        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/yolov10n.pt' imgsz=160 verbose=0.178
+        run: coverage run -a --source=ultralytics -m ultralytics.cfg.__init__ benchmark model='path with spaces/yolov10n.pt' imgsz=160 verbose=0.205
       - name: Merge Coverage Reports
         run: |
           coverage xml -o coverage-benchmarks.xml
@@ -156,7 +159,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-14]
+        os: [ubuntu-latest, macos-14, windows-latest]
         python-version: ["3.11"]
         torch: [latest]
         include:
@@ -251,24 +254,28 @@ jobs:
       - name: Pytest tests
         run: pytest --slow tests/
       - name: Benchmark ClassificationModel
-        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8n-cls.pt' imgsz=160 verbose=0.166
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolo11n-cls.pt' imgsz=160 verbose=0.249
       - name: Benchmark YOLOWorld DetectionModel
-        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8s-worldv2.pt' imgsz=160 verbose=0.318
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8s-worldv2.pt' imgsz=160 verbose=0.337
       - name: Benchmark SegmentationModel
-        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8n-seg.pt' imgsz=160 verbose=0.267
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolo11n-seg.pt' imgsz=160 verbose=0.195
       - name: Benchmark PoseModel
-        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8n-pose.pt' imgsz=160 verbose=0.179
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolo11n-pose.pt' imgsz=160 verbose=0.197
       - name: Benchmark OBBModel
-        run: python -m ultralytics.cfg.__init__ benchmark model='yolov8n-obb.pt' imgsz=160 verbose=0.472
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolo11n-obb.pt' imgsz=160 verbose=0.597
+      - name: Benchmark YOLOv10Model
+        run: python -m ultralytics.cfg.__init__ benchmark model='yolov10n.pt' imgsz=160 verbose=0.205
       - name: Benchmark Summary
         run: |
           cat benchmarks.log
           echo "$(cat benchmarks.log)" >> $GITHUB_STEP_SUMMARY
-      - name: Reboot # run a reboot command in the background to free resources for next run and not crash main thread
-        run: sudo bash -c "sleep 10; reboot" &
+      # The below is fixed in: https://github.com/ultralytics/ultralytics/pull/15987
+      # - name: Reboot # run a reboot command in the background to free resources for next run and not crash main thread
+      #   run: sudo bash -c "sleep 10; reboot" &
 
   Conda:
     if: github.repository == 'ultralytics/ultralytics' && (github.event_name == 'schedule' || github.event.inputs.conda == 'true')
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -313,16 +320,16 @@ jobs:
           conda list
       - name: Test CLI
         run: |
-          yolo predict model=yolov8n.pt imgsz=320
-          yolo train model=yolov8n.pt data=coco8.yaml epochs=1 imgsz=32
-          yolo val model=yolov8n.pt data=coco8.yaml imgsz=32
-          yolo export model=yolov8n.pt format=torchscript imgsz=160
+          yolo predict model=yolo11n.pt imgsz=320
+          yolo train model=yolo11n.pt data=coco8.yaml epochs=1 imgsz=32
+          yolo val model=yolo11n.pt data=coco8.yaml imgsz=32
+          yolo export model=yolo11n.pt format=torchscript imgsz=160
       - name: Test Python
         # Note this step must use the updated default bash environment, not a python environment
         run: |
           python -c "
           from ultralytics import YOLO
-          model = YOLO('yolov8n.pt')
+          model = YOLO('yolo11n.pt')
           results = model.train(data='coco8.yaml', epochs=3, imgsz=160)
           results = model.val(imgsz=160)
           results = model.predict(imgsz=160)
@@ -330,8 +337,12 @@ jobs:
           "
       - name: PyTest
         run: |
-          git clone https://github.com/ultralytics/ultralytics
-          pytest ultralytics/tests
+          VERSION=$(conda list ultralytics | grep ultralytics | awk '{print $2}')
+          echo "Ultralytics version: $VERSION"
+          git clone https://github.com/ultralytics/ultralytics.git
+          cd ultralytics
+          git checkout tags/v$VERSION
+          pytest tests
 
   Summary:
     runs-on: ubuntu-latest
@@ -340,7 +351,7 @@ jobs:
     steps:
       - name: Check for failure and notify
         if: (needs.HUB.result == 'failure' || needs.Benchmarks.result == 'failure' || needs.Tests.result == 'failure' || needs.GPU.result == 'failure' || needs.RaspberryPi.result == 'failure' || needs.Conda.result == 'failure' ) && github.repository == 'ultralytics/ultralytics' && (github.event_name == 'schedule' || github.event_name == 'push')
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v1.27.0
         with:
           payload: |
             {"text": "<!channel> GitHub Actions error for ${{ github.workflow }} ❌\n\n\n*Repository:* https://github.com/${{ github.repository }}\n*Action:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n*Author:* ${{ github.actor }}\n*Event:* ${{ github.event_name }}\n"}

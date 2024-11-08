@@ -21,7 +21,6 @@ from torch import nn
 import mon
 from model import Image_network
 from mon import core
-from mon.core import _size_2_t
 
 console      = mon.console
 current_file = mon.Path(__file__).absolute()
@@ -47,14 +46,14 @@ def get_hist(file_name):
 
 def calculate_efficiency_score(
     model     : nn.Module,
-    image_size: _size_2_t = 512,
-    channels  : int       = 3,
-    runs      : int       = 100,
-    use_cuda  : bool      = True,
-    verbose   : bool      = False,
+    image_size: int  = 512,
+    channels  : int  = 3,
+    runs      : int  = 100,
+    use_cuda  : bool = True,
+    verbose   : bool = False,
 ):
     # Define input tensor
-    h, w  = core.parse_hw(image_size)
+    h, w  = core.get_image_size(image_size)
     input = torch.rand(1, channels, h, w)
     hist  = np.zeros((3, 256))
     hist  = torch.from_numpy(hist).float()
@@ -106,7 +105,7 @@ def predict(args: argparse.Namespace):
     
     # Model
     Imgnet = Image_network().to(device)
-    Imgnet.load_state_dict(torch.load(weights))
+    Imgnet.load_state_dict(torch.load(weights, weights_only=True))
     Imgnet.eval()
     
     # Benchmark
@@ -115,13 +114,13 @@ def predict(args: argparse.Namespace):
             model      = copy.deepcopy(Imgnet),
             image_size = imgsz,
             channels   = 3,
-            runs       = 100,
+            runs       = 1000,
             use_cuda   = True,
             verbose    = False,
         )
         console.log(f"FLOPs  = {flops:.4f}")
         console.log(f"Params = {params:.4f}")
-        console.log(f"Time   = {avg_time:.4f}")
+        console.log(f"Time   = {avg_time:.17f}")
     
     # Data I/O
     console.log(f"[bold red]{data}")
@@ -156,24 +155,23 @@ def predict(args: argparse.Namespace):
                 if resize:
                     image = mon.resize(image, imgsz)
                 else:
-                    image = mon.resize_divisible(image, 32)
+                    image = mon.resize(image, divisible_by=32)
                 
                 # Infer
                 timer.tick()
                 enhanced_image, vec, wm, xy = Imgnet(image, histogram)
                 timer.tock()
                 
-                # Post-process
+                # Post-processing
                 enhanced_image = mon.resize(enhanced_image, (h0, w0))
                 
                 # Save
                 if save_image:
                     if use_fullpath:
-                        rel_path = image_path.relative_path(data_name)
-                        save_dir = save_dir / rel_path.parent
+                        rel_path    = image_path.relative_path(data_name)
+                        output_path = save_dir / rel_path.parent / image_path.name
                     else:
-                        save_dir = save_dir / data_name
-                    output_path  = save_dir / image_path.name
+                        output_path = save_dir / data_name / image_path.name
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     torchvision.utils.save_image(enhanced_image, str(output_path))
         
