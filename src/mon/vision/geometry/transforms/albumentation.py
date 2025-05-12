@@ -77,7 +77,6 @@ class CropPatch(DualTransform):
 TRANSFORMS.register(name="fda",                           module=FDA)
 TRANSFORMS.register(name="histogram_matching",            module=HistogramMatching)
 TRANSFORMS.register(name="pixel_distribution_adaptation", module=PixelDistributionAdaptation)
-TRANSFORMS.register(name="template_transform",            module=TemplateTransform)
 
 
 # ----- Dropout -----

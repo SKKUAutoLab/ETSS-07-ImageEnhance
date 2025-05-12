@@ -27,24 +27,25 @@ import numpy as np
 import torch
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
 
 # ----- Dataset -----
-@DATASETS.register(name="fivek_init")
+@DATASETS.register(name="fivekinit")
 class FiveKInit(VisionDataset):
     """Loads FiveKInit dataset from ``root`` dir for model init.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -52,7 +53,7 @@ class FiveKInit(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE, Task.RETOUCH]
+    tasks : list[Task]  = [Task.LLE, Task.RETOUCH]
     splits: list[Split] = [Split.TRAIN]
     datapoint_attrs     = DatapointAttributes({
         "image_ex": ImageAnnotation,
@@ -64,8 +65,8 @@ class FiveKInit(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
@@ -181,7 +182,7 @@ class FiveK(VisionDataset):
     """Loads FiveK dataset from ``root`` dir with Expert A GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -189,7 +190,7 @@ class FiveK(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
@@ -197,11 +198,12 @@ class FiveK(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -220,12 +222,12 @@ class FiveK(VisionDataset):
         self.datapoints["image"] = images
         
 
-@DATASETS.register(name="fivek_a")
+@DATASETS.register(name="fiveka")
 class FiveKA(VisionDataset):
     """Loads FiveKA dataset from ``root`` dir with Expert A GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -233,7 +235,7 @@ class FiveKA(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -243,11 +245,12 @@ class FiveKA(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -281,12 +284,12 @@ class FiveKA(VisionDataset):
             self.datapoints["ref_image"] = ref_images
     
 
-@DATASETS.register(name="fivek_b")
+@DATASETS.register(name="fivekb")
 class FiveKB(VisionDataset):
     """Loads FiveKB dataset from ``root`` dir with Expert B GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -294,7 +297,7 @@ class FiveKB(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -304,11 +307,12 @@ class FiveKB(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -342,12 +346,12 @@ class FiveKB(VisionDataset):
             self.datapoints["ref_image"] = ref_images
             
 
-@DATASETS.register(name="fivek_c")
+@DATASETS.register(name="fivekc")
 class FiveKC(VisionDataset):
     """Loads FiveKC dataset from ``root`` dir with Expert C GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -355,7 +359,7 @@ class FiveKC(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -365,11 +369,12 @@ class FiveKC(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -403,12 +408,12 @@ class FiveKC(VisionDataset):
             self.datapoints["ref_image"] = ref_images
             
 
-@DATASETS.register(name="fivek_d")
+@DATASETS.register(name="fivekd")
 class FiveKD(VisionDataset):
     """Loads FiveKD dataset from ``root`` dir with Expert D GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -416,7 +421,7 @@ class FiveKD(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -426,11 +431,12 @@ class FiveKD(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -464,12 +470,12 @@ class FiveKD(VisionDataset):
             self.datapoints["ref_image"] = ref_images
             
 
-@DATASETS.register(name="fivek_e")
+@DATASETS.register(name="fiveke")
 class FiveKE(VisionDataset):
     """Loads FiveKE dataset from ``root`` dir with Expert E GT.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -477,7 +483,7 @@ class FiveKE(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -487,11 +493,12 @@ class FiveKE(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "fivek" if root.name != "fivek" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -526,11 +533,11 @@ class FiveKE(VisionDataset):
 
 
 # ----- DataModule -----
-@DATAMODULES.register(name="fivek_init")
+@DATAMODULES.register(name="fivekinit")
 class FiveKInitDataModule(core.DataModule):
     """Configures FiveKInit datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -561,7 +568,7 @@ class FiveKInitDataModule(core.DataModule):
 class FiveKDataModule(core.DataModule):
     """Configures FiveK datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -588,11 +595,11 @@ class FiveKDataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="fivek_a")
+@DATAMODULES.register(name="fiveka")
 class FiveKADataModule(core.DataModule):
     """Configures FiveKA datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -619,11 +626,11 @@ class FiveKADataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="fivek_b")
+@DATAMODULES.register(name="fivekb")
 class FiveKBDataModule(core.DataModule):
     """Configures FiveKB datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -650,11 +657,11 @@ class FiveKBDataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="fivek_c")
+@DATAMODULES.register(name="fivekc")
 class FiveKCDataModule(core.DataModule):
     """Configures FiveKC datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -681,11 +688,11 @@ class FiveKCDataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="fivek_d")
+@DATAMODULES.register(name="fivekd")
 class FiveKDDataModule(core.DataModule):
     """Configures FiveKD datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -712,11 +719,11 @@ class FiveKDDataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="fivek_e")
+@DATAMODULES.register(name="fiveke")
 class FiveKEDataModule(core.DataModule):
     """Configures FiveKE datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""

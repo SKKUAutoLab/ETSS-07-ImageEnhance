@@ -150,7 +150,6 @@ elif opts.trainer == 'UNIT':
         print(names[1])
         images = Variable(images.cuda(), volatile=True)
         content, _ = encode(images)
-
         outputs = decode(content)
         outputs = (outputs + 1) / 2.0
         # path = os.path.join(opts.output_folder, 'input{:03d}_output{:03d}.jpg'.format(i, j))

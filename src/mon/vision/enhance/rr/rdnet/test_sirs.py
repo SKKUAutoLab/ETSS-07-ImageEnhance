@@ -1,10 +1,8 @@
 import os
 from os.path import join
 
-import torch.backends.cudnn as cudnn
-
-# import data.sirs_dataset as datasets
 import data.dataset_sir as datasets
+import torch.backends.cudnn as cudnn
 from data.image_folder import read_fns
 from engine import Engine
 from options.net_options.train_options import TrainOptions

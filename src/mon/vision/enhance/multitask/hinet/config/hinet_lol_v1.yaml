@@ -4,7 +4,7 @@ config      : ~
 arch        : "hinet"
 model       : "hinet"
 data        : "lol_v1"
-data_dir    : "data/enhance/lol_v1"
+data_dir    : "data/lol_v1"
 root        : ~
 project     : ~
 variant     : ~

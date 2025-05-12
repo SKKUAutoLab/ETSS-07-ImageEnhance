@@ -57,7 +57,7 @@ def predict(args: dict) -> str:
     
     # Data I/O
     mon.console.log(f"[bold red]{data}")
-    data_name, data_loader = mon.parse_data_loader(data, root, True, verbose=False)
+    data_name, data_loader = mon.parse_data_loader(data, root, False, verbose=False)
     
     # Model
     '''
@@ -103,7 +103,7 @@ def predict(args: dict) -> str:
             if save_image:
                 if keep_subdirs:
                     rel_path       = image_path.relative_path(data_name)
-                    parent_dir     = rel_path.parent.parent
+                    parent_dir     = rel_path.parent
                     gray_save_dir  = save_dir / rel_path.parents[1] / f"{parent_dir.name}_dav2_{encoder}_g"
                     color_save_dir = save_dir / rel_path.parents[1] / f"{parent_dir.name}_dav2_{encoder}_c"
                     # gray_save_dir  = save_dir / parent_dir.parent / f"{parent_dir.name}_dav2_{encoder}_g" / image_path.relative_path(relative_path.parent.name)

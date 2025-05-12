@@ -124,12 +124,12 @@ class Engine(object):
             self.f.write(dataset_name + '\n')
         avg_meters = util.AverageMeters()
         model = self.model
-        opt = self.opt
+        opt   = self.opt
         with torch.no_grad():
             for i, data in enumerate(val_loader):
                 if self.opt.select is not None and data['fn'][0] not in [f'{self.opt.select}.jpg']:
                     continue
-                #print(data.shape())
+                # print(data.shape())
                 index = model.eval(data, savedir=savedir, **kwargs)
 
                 # print(data['fn'][0], index)

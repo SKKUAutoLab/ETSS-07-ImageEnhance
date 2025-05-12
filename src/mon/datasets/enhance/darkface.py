@@ -13,13 +13,14 @@ __all__ = [
 from typing import Literal
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
@@ -30,7 +31,7 @@ class DarkFace(VisionDataset):
     """Loads DarkFace dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -38,7 +39,7 @@ class DarkFace(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE, Task.DETECT]
+    tasks : list[Task]  = [Task.LLE, Task.DETECT]
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
@@ -46,11 +47,12 @@ class DarkFace(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "darkface" if root.name != "darkface" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -75,7 +77,7 @@ class DarkFaceFull(VisionDataset):
     """Loads DarkFaceFull dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -83,7 +85,7 @@ class DarkFaceFull(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
     
-    tasks : list[Task]  = [Task.LLIE, Task.DETECT]
+    tasks : list[Task]  = [Task.LLE, Task.DETECT]
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
@@ -91,11 +93,12 @@ class DarkFaceFull(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "darkface" if root.name != "darkface" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -118,7 +121,7 @@ class DarkFaceFull(VisionDataset):
 class DarkFaceDataModule(core.DataModule):
     """Configures DarkFace datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -149,7 +152,7 @@ class DarkFaceDataModule(core.DataModule):
 class DarkFaceFullDataModule(core.DataModule):
     """Configures DarkFaceFull datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""

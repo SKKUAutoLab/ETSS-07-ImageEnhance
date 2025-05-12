@@ -3,5 +3,5 @@
 
 """Implements NTIRE challenge datasets for image restoration."""
 
-from mon.datasets.ntire.ntire_2024_llie import *
-from mon.datasets.ntire.ntire_2025_llie import *
+from mon.datasets.ntire.ntire2024llie import *
+from mon.datasets.ntire.ntire2025llie import *

@@ -12,10 +12,11 @@ from abc import ABC
 from typing import Any, Literal
 
 from mon import core
-from mon.constants import DepthDataSource, TRANSFORMS
+from mon.constants import DepthDataSource, InfraredDataSource, TRANSFORMS
 from mon.vision.geometry import albumentation
 from mon.vision.types.depth import DepthMapAnnotation
 from mon.vision.types.image import ImageAnnotation
+from mon.vision.types.thermal import InfraredAnnotation
 
 DatapointAttributes = core.DatapointAttributes
 
@@ -33,17 +34,24 @@ class VisionDataset(core.Dataset, ABC):
 
     Args:
         depth_source: Source of depth data. Default is ``'dav2_vitb'``.
+        infrared_source: Source of infrared data. Default is ``'infrared'``.
     """
     
     def __init__(
         self,
-        depth_source: Literal[*DepthDataSource.values()] = "dav2_vitb",
+        depth_source   : Literal[*DepthDataSource.values()]    = "dav2_vitb",
+        infrared_source: Literal[*InfraredDataSource.values()] = "infrared",
         *args, **kwargs
     ):
         if depth_source not in DepthDataSource:
             raise ValueError(f"[depth_source] must be one of {DepthDataSource}, "
                              f"got {depth_source}.")
         self.depth_source = depth_source
+        
+        if infrared_source not in InfraredDataSource:
+            raise ValueError(f"[infrared_source] must be one of {InfraredDataSource}, "
+                             f"got {infrared_source}.")
+        self.infrared_source = infrared_source
         super().__init__(*args, **kwargs)
     
     # ----- Magic Methods -----
@@ -61,7 +69,7 @@ class VisionDataset(core.Dataset, ABC):
         
         if self.transform:
             main_attr      = self.main_attribute
-            args           = {k: v for k, v in datapoint.items() if v}
+            args           = {k: v for k, v in datapoint.items() if v is not None}
             args["image"]  = args.pop(main_attr)
             transformed    = self.transform(**args)
             transformed[main_attr] = transformed.pop("image")
@@ -158,14 +166,19 @@ class VisionDataset(core.Dataset, ABC):
         """Lists multimodal data for the dataset."""
         if "depth" in self.datapoint_attrs:
             self.list_depth_map()
+        if "infrared" in self.datapoint_attrs:
+            self.list_infrared_map()
         
         if self.has_annotations:
             self.list_reference_image()
             if "ref_depth" in self.datapoint_attrs:
                 self.list_reference_depth_map()
+            if "ref_infrared" in self.datapoint_attrs:
+                self.list_reference_infrared_map()
         else:
-            self.datapoints.pop("ref_image", None)
-            self.datapoints.pop("ref_depth", None)
+            self.datapoints.pop("ref_image",    None)
+            self.datapoints.pop("ref_depth",    None)
+            self.datapoints.pop("ref_infrared", None)
     
     def list_reference_image(self):
         """Lists reference images for the dataset."""
@@ -226,8 +239,7 @@ class VisionDataset(core.Dataset, ABC):
                                   f"{self.split_str} reference depth maps"
                 ):
                     root_name = img.root.name
-                    path      = img.path.replace(f"/{root_name}/",
-                                                 f"/{root_name}_{self.depth_source}/")
+                    path      = img.path.replace(f"/{root_name}/", f"/{root_name}_{self.depth_source}/")
                     ref_depths.append(
                         DepthMapAnnotation(
                             path   = path.image_file(),
@@ -236,6 +248,54 @@ class VisionDataset(core.Dataset, ABC):
                         )
                     )
             self.datapoints["ref_depth"] = ref_depths
+    
+    def list_infrared_map(self):
+        """Lists infrared maps for the dataset."""
+        images    = self.datapoints.get("image",    [])
+        infrareds = self.datapoints.get("infrared", [])
+        
+        if len(images) > 0 and len(infrareds) == 0:
+            infrareds: list[InfraredAnnotation] = []
+            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+                for img in pbar.track(
+                    sequence    = images,
+                    description = f"Listing {self.__class__.__name__} "
+                                  f"{self.split_str} infrared maps"
+                ):
+                    root_name = img.root.name
+                    path      = img.path.replace(f"/{root_name}/", f"/{root_name}_{self.infrared_source}/")
+                    infrareds.append(
+                        InfraredAnnotation(
+                            path   = path.image_file(),
+                            root   = img.root,
+                            source = self.infrared_source
+                        )
+                    )
+            self.datapoints["infrared"] = infrareds
+    
+    def list_reference_infrared_map(self):
+        """Lists reference infrared maps for the dataset."""
+        ref_images    = self.datapoints.get("ref_image",    [])
+        ref_infrareds = self.datapoints.get("ref_infrared", [])
+        
+        if len(ref_images) > 0 and len(ref_infrareds) == 0:
+            ref_infrareds: list[InfraredAnnotation] = []
+            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+                for img in pbar.track(
+                    sequence    = ref_images,
+                    description = f"Listing {self.__class__.__name__} "
+                                  f"{self.split_str} reference infrared maps"
+                ):
+                    root_name = img.root.name
+                    path      = img.path.replace(f"/{root_name}/", f"/{root_name}_{self.infrared_source}/")
+                    ref_infrareds.append(
+                        InfraredAnnotation(
+                            path   = path.image_file(),
+                            root   = img.root,
+                            source = self.depth_source
+                        )
+                    )
+            self.datapoints["ref_infrared"] = ref_infrareds
     
     def filter_data(self):
         """Filter unwanted datapoints."""

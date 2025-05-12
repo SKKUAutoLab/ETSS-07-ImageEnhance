@@ -3,5 +3,5 @@
 
 """Implements datasets and datamodules for MIPI challenges."""
 
-from mon.datasets.mipi.mipi_2024_flare import *
-from mon.datasets.mipi.mipi_2024_flare import *
+from mon.datasets.mipi.mipi2024flare import *
+from mon.datasets.mipi.mipi2024flare import *

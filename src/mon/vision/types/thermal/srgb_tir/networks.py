@@ -12,10 +12,10 @@ try:
 except ImportError:  # will be 3.x series
     pass
 
+
 ##################################################################################
 # Discriminator
 ##################################################################################
-
 class MsImageDis(nn.Module):
     
     # Multi-scale discriminator architecture
@@ -84,10 +84,10 @@ class MsImageDis(nn.Module):
                 assert 0, "Unsupported GAN type: {}".format(self.gan_type)
         return loss
 
+
 ##################################################################################
 # Generator
 ##################################################################################
-
 class AdaINGen(nn.Module):
     
     # AdaIN auto-encoder architecture
@@ -188,7 +188,6 @@ class VAEGen(nn.Module):
 ##################################################################################
 # Encoder and Decoders
 ##################################################################################
-
 class StyleEncoder(nn.Module):
     
     def __init__(self, n_downsample, input_dim, dim, style_dim, norm, activ, pad_type):

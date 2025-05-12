@@ -35,7 +35,7 @@ class ImageAnnotation(core.Annotation):
         self,
         path : core.Path | str,
         root : core.Path | str = None,
-        flags: int = cv2.IMREAD_COLOR,
+        flags: int = cv2.IMREAD_COLOR_BGR,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -104,7 +104,7 @@ class ImageAnnotation(core.Annotation):
         Returns:
             ``numpy.ndarray`` of image data or ``None`` if not loaded.
         """
-        return self.image if self.image is not None else self.load(cache=False)
+        return self.image if self.image is not None else self.load(flags=self.flags, cache=False)
     
     @property
     def meta(self) -> dict:
@@ -137,16 +137,20 @@ class ImageAnnotation(core.Annotation):
         Returns:
             ``numpy.ndarray`` in [H, W, C] format, values in [0, 255].
         """
+        # Return the image if it is already loaded
         if self.image is not None:
             return self.image
-        load_path  = path or self.path
+        # Load the image
+        load_path  = path  or self.path
         load_flags = flags or self.flags
         image      = io.load_image(load_path, load_flags, False, False)
+        # Update the shape of the image
         if self._shape != image.shape:
             self._shape = image.shape
+        # Cache the image if needed
         self.image = image if cache else None
         if path:
-            self.path = load_path
+            self.path  = load_path
         if flags:
             self.flags = load_flags
         return image
@@ -165,7 +169,7 @@ class ImageAnnotation(core.Annotation):
         return processing.image_to_tensor(data, normalize)
     
     @staticmethod
-    def collate_fn(batch: list[torch.Tensor | np.ndarray]) -> torch.Tensor | np.ndarray | None:
+    def collate_fn(batch: list) -> torch.Tensor | np.ndarray | None:
         """Collates batch data for ``torch.utils.data.DataLoader``.
 
         Args:

@@ -79,7 +79,7 @@ modelmodule:
 # Datamodule
 datamodule:
   name      : *data                                                             # Data module name (e.g., cifar10).
-  root      : "data/enhance/sice_me"                                            # Root directory of the dataset.
+  root      : "data/sice_me"                                                    # Root directory of the dataset.
   transform :                                                                   # Data augmentation.
     - {name: "resize", height: *imgsz, width : *imgsz}
     - {name: "flip"}

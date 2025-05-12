@@ -72,10 +72,10 @@ class YTMTNetBase(BaseModel):
             util.set_opt_param(optimizer, 'weight_decay', self.opt.wd)
 
     def set_input(self, data, mode='train'):
-        target_t = None
-        target_r = None
+        target_t  = None
+        target_r  = None
         data_name = None
-        identity = False
+        identity  = False
         mode = mode.lower()
         if mode == 'train':
             input, target_t, target_r = data['input'], data['target_t'], data['target_r']
@@ -85,22 +85,31 @@ class YTMTNetBase(BaseModel):
             input, data_name = data['input'], data['fn']
         else:
             raise NotImplementedError('Mode [%s] is not implemented' % mode)
-
+        
+        '''
         if len(self.gpu_ids) > 0:  # transfer data into gpu
             input = input.to(device=self.gpu_ids[0])
             if target_t is not None:
                 target_t = target_t.to(device=self.gpu_ids[0])
             if target_r is not None:
                 target_r = target_r.to(device=self.gpu_ids[0])
+        '''
+        
+        if self.device:  # transfer data into gpu
+            input = input.to(device=self.device)
+            if target_t is not None:
+                target_t = target_t.to(device=self.device)
+            if target_r is not None:
+                target_r = target_r.to(device=self.device)
 
-        self.input = input
-        self.identity = identity
+        self.input      = input
+        self.identity   = identity
         self.input_edge = self.edge_map(self.input)
-        self.target_t = target_t
-        self.target_r = target_r
-        self.data_name = data_name
+        self.target_t   = target_t
+        self.target_r   = target_r
+        self.data_name  = data_name
 
-        self.issyn = False if 'real' in data else True
+        self.issyn   = False if 'real'      in data else True
         self.aligned = False if 'unaligned' in data else True
 
         if target_t is not None:
@@ -114,7 +123,7 @@ class YTMTNetBase(BaseModel):
 
             output_i = tensor2im(self.output_j[6])
             output_j = tensor2im(self.output_j[7])
-            target = tensor2im(self.target_t)
+            target   = tensor2im(self.target_t)
             target_r = tensor2im(self.target_r)
 
             if self.aligned:
@@ -124,23 +133,19 @@ class YTMTNetBase(BaseModel):
 
             if savedir is not None:
                 if self.data_name is not None:
-                    name = os.path.splitext(os.path.basename(self.data_name[0]))[0]
+                    name    = os.path.splitext(os.path.basename(self.data_name[0]))[0]
                     savedir = join(savedir, suffix, name)
                     os.makedirs(savedir, exist_ok=True)
-                    Image.fromarray(output_i.astype(np.uint8)).save(
-                        join(savedir, '{}_t.png'.format(self.opt.name)))
-                    Image.fromarray(output_j.astype(np.uint8)).save(
-                        join(savedir, '{}_r.png'.format(self.opt.name)))
+                    Image.fromarray(output_i.astype(np.uint8)).save(join(savedir, '{}_t.png'.format(self.opt.name)))
+                    Image.fromarray(output_j.astype(np.uint8)).save(join(savedir, '{}_r.png'.format(self.opt.name)))
                     Image.fromarray(target.astype(np.uint8)).save(join(savedir, 't_label.png'))
                     Image.fromarray(tensor2im(self.input).astype(np.uint8)).save(join(savedir, 'm_input.png'))
                 else:
                     if not os.path.exists(join(savedir, 'transmission_layer')):
                         os.makedirs(join(savedir, 'transmission_layer'))
                         os.makedirs(join(savedir, 'blended'))
-                    Image.fromarray(target.astype(np.uint8)).save(
-                        join(savedir, 'transmission_layer', str(self._count) + '.png'))
-                    Image.fromarray(tensor2im(self.input).astype(np.uint8)).save(
-                        join(savedir, 'blended', str(self._count) + '.png'))
+                    Image.fromarray(target.astype(np.uint8)).save(join(savedir, 'transmission_layer', str(self._count) + '.png'))
+                    Image.fromarray(tensor2im(self.input).astype(np.uint8)).save(join(savedir, 'blended', str(self._count) + '.png'))
                     self._count += 1
 
             return res
@@ -154,7 +159,6 @@ class YTMTNetBase(BaseModel):
             name = os.path.splitext(os.path.basename(self.data_name[0]))[0]
             if not os.path.exists(join(savedir, name)):
                 os.makedirs(join(savedir, name))
-
             if os.path.exists(join(savedir, name, '{}.png'.format(self.opt.name))):
                 return
 
@@ -174,10 +178,10 @@ class ClsModel(YTMTNetBase):
         return 'ytmtnet'
 
     def __init__(self):
-        self.epoch = 0
+        self.epoch      = 0
         self.iterations = 0
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.net_c = None
+        self.device     = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.net_c      = None
 
     def print_network(self):
         print('--------------------- Model ---------------------')
@@ -196,29 +200,38 @@ class ClsModel(YTMTNetBase):
         self.net_c.eval()
         
     def initialize(self, opt):
-        self.opt=opt
+        self.opt    = opt
+        self.device = opt.device
         BaseModel.initialize(self, opt)
 
         in_channels = 3
-        self.vgg = None
+        self.vgg    = None
 
         if opt.hyper:
-            self.vgg = losses.Vgg19(requires_grad=False).to(self.device)
+            self.vgg     = losses.Vgg19(requires_grad=False).to(self.device)
             in_channels += 1472
-        channels = [64, 128, 256, 512]
-        layers = [2, 2, 4, 2]
+        channels   = [64, 128, 256, 512]
+        layers     = [2, 2, 4, 2]
         num_subnet = opt.num_subnet
-        self.net_c = PretrainedConvNext("convnext_small_in22k").cuda()
+        self.net_c = PretrainedConvNext("convnext_small_in22k").to(self.device)
         
-        self.net_c.load_state_dict(torch.load('pretrained/cls_model.pth')['icnn'])
-
-        self.net_i = FullNet_NLP(channels, layers, num_subnet, opt.loss_col,num_classes=1000, drop_path=0,save_memory=True, inter_supv=True, head_init_scale=None, kernel_size=3).to(self.device)
-    
+        # self.net_c.load_state_dict(torch.load("pretrained/cls_model.pth")["icnn"])
+        self.net_c.load_state_dict(torch.load(opt.net_c_path)["icnn"])
+        
+        self.net_i = FullNet_NLP(
+            channels, layers, num_subnet, opt.loss_col,
+            num_classes     = 1000,
+            drop_path       = 0,
+            save_memory     = True,
+            inter_supv      = True,
+            head_init_scale = None,
+            kernel_size     = 3
+        ).to(self.device)
         self.edge_map = EdgeMap(scale=1).to(self.device)
     
         if self.isTrain:
             self.loss_dic = losses.init_loss(opt, self.Tensor)
-            vggloss = losses.ContentLoss()
+            vggloss       = losses.ContentLoss()
             vggloss.initialize(losses.VGGLoss(self.vgg))
             self.loss_dic['t_vgg'] = vggloss
 
@@ -230,18 +243,15 @@ class ClsModel(YTMTNetBase):
             elif opt.unaligned_loss == 'mse':
                 cxloss.initialize(nn.MSELoss())
             elif opt.unaligned_loss == 'ctx_vgg':
-                cxloss.initialize(losses.CXLoss(self.vgg, weights=[0.1, 0.1, 0.1, 0.1], indices=[8, 13, 22, 31],
-                                                criterions=[losses.CX_loss] * 3 + [nn.L1Loss()]))
+                cxloss.initialize(losses.CXLoss(self.vgg, weights=[0.1, 0.1, 0.1, 0.1], indices=[8, 13, 22, 31], criterions=[losses.CX_loss] * 3 + [nn.L1Loss()]))
             else:
                 raise NotImplementedError
             self.scaler=torch.cuda.amp.GradScaler()
-            with torch.autocast(device_type='cuda',dtype=torch.float16):
-                self.dinoloss=DINOLoss()
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                self.dinoloss = DINOLoss()
             self.loss_dic['t_cx'] = cxloss
         
-            self.optimizer_G = torch.optim.Adam(self.net_i.parameters(),
-                                                lr=opt.lr, betas=(0.9, 0.999), weight_decay=opt.wd)
-
+            self.optimizer_G = torch.optim.Adam(self.net_i.parameters(), lr=opt.lr, betas=(0.9, 0.999), weight_decay=opt.wd)
 
             self._init_optimizer([self.optimizer_G])
 
@@ -317,20 +327,20 @@ class ClsModel(YTMTNetBase):
         input_i.extend(hypercolumn)
         input_i = torch.cat(input_i, dim=1)
         return input_i
-
+    
     def forward(self):
         # without edge
-        
-        self.output_j=[]
+        self.output_j = []
         input_i = self.input
         if self.vgg is not None:
             input_i = self.hyper_column(input_i)
         with torch.no_grad():
             ipt = self.net_c(input_i)
-        output_i, output_j = self.net_i(input_i,ipt,prompt=True)
+        output_i, output_j = self.net_i(input_i, ipt, prompt=True)
         self.output_i = output_i
         for i in range(self.opt.loss_col):
-            out_reflection, out_clean = output_j[i][:, :3, ...], output_j[i][:, 3:, ...]
+            out_reflection = output_j[i][:, :3, ...]
+            out_clean      = output_j[i][:, 3:, ...]
             self.output_j.append(out_clean) 
             self.output_j.append(out_reflection) 
         return self.output_i, self.output_j
@@ -419,23 +429,24 @@ class ClsModel(YTMTNetBase):
         return gradx, grady
 
     def load(self, model, resume_epoch=None):
-        icnn_path = model.opt.icnn_path
+        icnn_path  = model.opt.icnn_path
         state_dict = torch.load(icnn_path)
         model.net_i.load_state_dict(state_dict['icnn'])
         return state_dict
 
     def state_dict(self):
         state_dict = {
-            'icnn': self.net_i.state_dict(),
+            'icnn' : self.net_i.state_dict(),
             'opt_g': self.optimizer_G.state_dict(),
             #'ema' : self.ema.state_dict(),
-            'epoch': self.epoch, 'iterations': self.iterations
+            'epoch': self.epoch,
+            'iterations': self.iterations
         }
 
         if self.opt.lambda_gan > 0:
             state_dict.update({
                 'opt_d': self.optimizer_D.state_dict(),
-                'netD': self.netD.state_dict(),
+                'netD' : self.netD.state_dict(),
             })
 
         return state_dict

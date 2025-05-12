@@ -6,9 +6,9 @@ device  : cuda
 
 #### datasets
 datasets:
-  name      : fivek_init
+  name      : fivekinit
   mode      : init
-  dataroot  : fivek_init
+  dataroot  : data/fivek
   n_cpus    : 8
   batch_size: 1
 

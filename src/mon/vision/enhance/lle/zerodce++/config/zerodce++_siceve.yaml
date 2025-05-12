@@ -1,0 +1,48 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "zerodce++"                                                       # Model architecture or family (e.g., resnet).
+model       : &model "zerodce++"                                                # Model name (e.g., resnet50).
+data        : &data "siceve"                                                    # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "zerodce++_siceve"                                      # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights "zoo/vision/enhance/lle/zerodce++/zerodce++/siceve/zerodce++_siceve.pth" # Path to the pretrained weights.
+device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+seed        : 100                                                               # Random seed.
+imgsz       : &imgsz 256                                                        # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+epochs      : &epochs 200                                                       # Training epochs.
+steps       : &steps ~                                                          # Training steps.
+benchmark   : False                                                             # Benchmark the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: True                                                              # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True                                                     # Verbosity.
+
+# Network
+network: &network                                                               # Network architecture.
+  scale_factor: 1
+
+# Optimizer
+optimizer: &optimizer                                                           # Optimizer(s).
+  lr          : 0.0001
+  weight_decay: 0.0001
+
+# Datamodule
+datamodule:
+  name      : *data                                                             # Data module name (e.g., cifar10).
+  root      : "data/sice"                                                       # Root directory of the dataset.
+  transform :                                                                   # Data augmentation.
+    - {name: "resize", height: *imgsz, width : *imgsz}
+  to_tensor : True                                                              # If ``True``, convert the data to tensor.
+  batch_size: 8                                                                 # Batch size.
+  cache_data: False                                                             # If ``True``, cache the data.
+  shuffle   : True                                                              # If ``True``, shuffle the data.
+  verbose   : *verbose                                                          # Verbosity.
+  
+# Trainer
+trainer:
+  grad_clip_norm : 0.1
+  display_iter   : 10
+  checkpoint_iter: 10

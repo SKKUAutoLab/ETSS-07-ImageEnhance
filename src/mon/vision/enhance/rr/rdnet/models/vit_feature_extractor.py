@@ -12,11 +12,11 @@ def attn_cosine_sim(x, eps=1e-08):
 
 class VitExtractor:
     
-    BLOCK_KEY = 'block'
-    ATTN_KEY = 'attn'
+    BLOCK_KEY     = 'block'
+    ATTN_KEY      = 'attn'
     PATCH_IMD_KEY = 'patch_imd'
-    QKV_KEY = 'qkv'
-    KEY_LIST = [BLOCK_KEY, ATTN_KEY, PATCH_IMD_KEY, QKV_KEY]
+    QKV_KEY       = 'qkv'
+    KEY_LIST      = [BLOCK_KEY , ATTN_KEY, PATCH_IMD_KEY, QKV_KEY]
 
     def __init__(self, model_name, device):
         self.model = torch.hub.load('facebookresearch/dino:main', model_name).to(device)

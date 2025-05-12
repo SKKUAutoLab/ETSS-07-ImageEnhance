@@ -441,7 +441,6 @@ def init_loss(opt, tensor):
 
 
 class DINOLoss(nn.Module):
-    
     '''
     DINO-ViT as perceptual loss
     '''

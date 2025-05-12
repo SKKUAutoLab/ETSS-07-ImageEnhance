@@ -9,6 +9,7 @@ __all__ = [
     "Enum",
     "are_all_items_in_dict",
     "concat_lists",
+    "generate_combinations",
     "get_module_vars",
     "intersect_dicts",
     "intersect_ordered_dicts",
@@ -215,6 +216,20 @@ def concat_lists(x: list[list]) -> list:
         Flattened list with all elements from nested lists.
     """
     return list(itertools.chain.from_iterable(x))
+
+
+def generate_combinations(x: list | tuple) -> list:
+    """Generate all combinations of a list or tuple.
+
+    Args:
+        x: Input list or tuple (e.g., ``[1, 2, 3]``).
+
+    Returns:
+        List of all combinations of elements in ``x`` (e.g.,
+        ``[[1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]``).
+    """
+    x = list(x) if not isinstance(x, list) else x
+    return [list(comb) for r in range(1, len(x) + 1) for comb in itertools.combinations(x, r)]
 
 
 def iter_to_iter(x: Iterable, item_type: type, return_type: type = None):

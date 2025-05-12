@@ -54,7 +54,10 @@ class ColorConstancyLoss(base.Loss):
         """
         mean_rgb   = torch.mean(input, [2, 3], keepdim=True)
         mr, mg, mb = torch.split(mean_rgb, 1, dim=1)
-        loss       = torch.pow(torch.pow(mr - mg, 2) + torch.pow(mr - mb, 2) + torch.pow(mb - mg, 2), 0.5)
+        d_rg       = torch.pow(mr - mg, 2)
+        d_rb       = torch.pow(mr - mb, 2)
+        d_gb       = torch.pow(mb - mg, 2)
+        loss       = torch.pow(torch.pow(d_rg, 2) + torch.pow(d_rb, 2) + torch.pow(d_gb, 2), 0.5)
         loss       = base.reduce_loss(loss=loss, reduction=self.reduction)
         return loss
     
@@ -132,9 +135,10 @@ class ExposureValueControlLoss(base.Loss):
             Loss value as ``torch.Tensor``
         """
         x    = torch.mean(input, 1, keepdim=True)  # Channel-wise mean: [B, 1, H, W]
-        mean = self.pool(x)                        # Pooled mean: [B, 1, H', W']
-        diff = torch.abs(mean - torch.FloatTensor([self.mean_val]).to(input.device))  # Absolute difference
-        loss = base.reduce_loss(loss=diff, reduction=self.reduction)  # Reduced absolute difference
+        mean = self.pool(x) ** 0.5                 # Pooled mean: [B, 1, H', W']
+        loss = torch.pow(mean - torch.FloatTensor([self.mean_val]).to(input.device), 2)
+        loss = torch.abs(torch.mean(loss))
+        # loss = base.reduce_loss(loss=diff, reduction=self.reduction)  # Reduced absolute difference
         return loss
 
 
@@ -263,7 +267,7 @@ class TotalVariationLoss(base.Loss):
             Loss value as ``torch.Tensor``.
         """
         x = input
-        b, _, h_x, w_x = input.size()
+        b, _, h_x, w_x = x.size()
         count_h = self._tensor_size(x[:, :, 1:, :])  # (x.size()[2]-1) * x.size()[3]
         count_w = self._tensor_size(x[:, :, :, 1:])  # x.size()[2] * (x.size()[3] - 1)
         h_tv    = torch.pow((x[:, :, 1:,  :] - x[:, :, :h_x - 1, :]), 2).sum()

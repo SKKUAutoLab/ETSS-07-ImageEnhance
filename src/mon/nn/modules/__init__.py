@@ -11,6 +11,7 @@ from mon.nn.modules.attention import *
 from mon.nn.modules.conv import *
 from mon.nn.modules.dropout import *
 from mon.nn.modules.inr import *
+from mon.nn.modules.linear import *
 from mon.nn.modules.misc import *
 from mon.nn.modules.moe import *
 from mon.nn.modules.normalization import *

@@ -119,16 +119,20 @@ class StarReLU(nn.Module):
     """
     StarReLU: s * relu(x) ** 2 + b
     """
-    def __init__(self, scale_value=1.0, bias_value=0.0,
-        scale_learnable=True, bias_learnable=True, 
-        mode=None, inplace=True):
+    def __init__(
+        self,
+        scale_value     = 1.0,
+        bias_value      = 0.0,
+        scale_learnable = True,
+        bias_learnable  = True,
+        mode            = None,
+        inplace         = True
+    ):
         super().__init__()
         self.inplace = inplace
-        self.relu = nn.ReLU(inplace=inplace)
-        self.scale = nn.Parameter(scale_value * torch.ones(1),
-            requires_grad=scale_learnable)
-        self.bias = nn.Parameter(bias_value * torch.ones(1),
-            requires_grad=bias_learnable)
+        self.relu    = nn.ReLU(inplace=inplace)
+        self.scale   = nn.Parameter(scale_value * torch.ones(1), requires_grad=scale_learnable)
+        self.bias    = nn.Parameter(bias_value * torch.ones(1), requires_grad=bias_learnable)
         
     def forward(self, x):
         return self.scale * self.relu(x)**2 + self.bias
@@ -136,8 +140,20 @@ class StarReLU(nn.Module):
 
 class FullNet_NLP(nn.Module):
     
-    def __init__(self, channels=[32, 64, 96, 128], layers=[2, 3, 6, 3], num_subnet=5,loss_col=4, kernel_size=3, num_classes=1000,
-                 drop_path=0.0, save_memory=True, inter_supv=True, head_init_scale=None, pretrained_cols=16) -> None:
+    def __init__(
+        self,
+        channels        = [32, 64, 96, 128],
+        layers          = [2,  3,  6,  3],
+        num_subnet      = 5,
+        loss_col        = 4,
+        kernel_size     = 3,
+        num_classes     = 1000,
+        drop_path       = 0.0,
+        save_memory     = True,
+        inter_supv      = True,
+        head_init_scale = None,
+        pretrained_cols = 16
+    ) -> None:
         super().__init__()
         self.num_subnet = num_subnet
         self.Loss_col=(loss_col+1)

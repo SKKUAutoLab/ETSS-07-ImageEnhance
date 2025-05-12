@@ -195,10 +195,9 @@ def list_extra_models(task: str = None, mode: str = None, arch: str = None) -> l
     if task in Task.values():
         task   = Task(task)
         models = [m for m in models if task in flatten_models[m]["tasks"]]
-   
+
     if mode == "train":
-        models = [m for m in models
-                  if any(lt in MLType.trainable() for lt in flatten_models[m]["mltypes"])]
+        models = [m for m in models if any(lt in MLType.trainable() for lt in flatten_models[m]["mltypes"])]
     
     if arch:
         models = [m for m in models if arch == flatten_models[m]["arch"]]
@@ -482,7 +481,8 @@ def parse_weights_file(
     for i, w in enumerate(weights):
         if w is not None and not core.Path(w).exists():
             weights[i] = (ROOT_DIR / w) if (ROOT_DIR / w).exists() else (root / w)
-    
+    weights = [core.Path(w) for w in weights if w not in [None, "None", ""]]
+
     if len(weights) == 1:
         return weights[0]
     return weights or None

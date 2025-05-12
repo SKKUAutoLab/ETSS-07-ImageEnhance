@@ -102,7 +102,7 @@ def predict(args: dict) -> str:
             if save_image:
                 if keep_subdirs:
                     rel_path         = image_path.relative_path(data_name)
-                    parent_dir       = rel_path.parent.parent
+                    parent_dir       = rel_path.parent
                     gray_save_dir    = save_dir / rel_path.parents[1] / f"{parent_dir.name}_depth_pro_g"
                     color_save_dir   = save_dir / rel_path.parents[1] / f"{parent_dir.name}_depth_pro_c"
                     gray_i_save_dir  = save_dir / rel_path.parents[1] / f"{parent_dir.name}_depth_pro_g_i"

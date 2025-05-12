@@ -8,18 +8,29 @@ References:
     - https://github.com/lime-j/RDNet
 """
 
+from models import make_model
+import model as mmodel
+import mon
 import torch
 import torch.optim
 import torchvision
-
-import model as mmodel
-import mon
+from options.net_options.train_options import TrainOptions
 
 current_file = mon.Path(__file__).absolute()
 current_dir  = current_file.parents[0]
 
 
 # ----- Predict -----
+def tensor2im(image_tensor):
+    image_tensor = image_tensor.detach()
+    image_numpy  = image_tensor[0].cpu().float().numpy()
+    image_numpy  = np.clip(image_numpy, 0, 1)
+    if image_numpy.shape[0] == 1:
+        image_numpy = np.tile(image_numpy, (3, 1, 1))
+    image_numpy  = (np.transpose(image_numpy, (1, 2, 0))) * 255.0
+    return image_numpy
+
+
 @torch.no_grad()
 def predict(args: dict) -> str:
     # Parse args
@@ -41,12 +52,20 @@ def predict(args: dict) -> str:
     keep_subdirs = args["keep_subdirs"]
     verbose      = args["verbose"]
     
+    opt = TrainOptions().parse()
+    opt.isTrain    = False
+    opt.no_log     = True
+    opt.display_id = 0
+    opt.verbose    = False
+    
     # Start
     mon.console.rule(f"[bold red] {fullname}")
     mon.console.log(f"Machine: {hostname}")
     
     # Device
-    device = mon.set_device(device)
+    device          = mon.set_device(device)
+    cudnn.benchmark = True
+    opt.device      = device
     
     # Seed
     mon.set_random_seed(seed)
@@ -56,9 +75,12 @@ def predict(args: dict) -> str:
     data_name, data_loader = mon.parse_data_loader(data, root, True, verbose=False)
     
     # Model
-    dce_net = mmodel.enhance_net_nopool().to(device)
-    dce_net.load_state_dict(torch.load(weights, map_location=device, weights_only=True))
-    dce_net.eval()
+    opt.net_c_path = str(weights / "cls_model.pth")
+    opt.icnn_path  = str(weights / "rdnet.pth")
+    model = make_model(opt.model)
+    model.initialize(opt)
+    model.net_i.eval()
+    model.net_c.eval()
     
     # Benchmark
     if benchmark:
@@ -78,10 +100,20 @@ def predict(args: dict) -> str:
             meta       = datapoint["meta"]
             image_path = mon.Path(meta["path"])
             image      = datapoint["image"].to(device)
-           
+            
             # Infer
             timer.tick()
-            _, enhanced, _ = dce_net(image)
+            model.set_input(
+                data={
+                    "input": image,
+                    "fn"   : image_path,
+                },
+                mode="test"
+            )
+            output_i, output_j = model.forward()
+            output_i = tensor2im(output_i)
+            output_j = tensor2im(output_j)
+            enhanced = output_i
             timer.tock()
             
             # Save

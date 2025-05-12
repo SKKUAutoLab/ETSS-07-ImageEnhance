@@ -15,4 +15,4 @@ from mon.datasets import *
 from mon.nn import *
 from mon.vision import *
 
-__version__ = "2.6.0"
+__version__ = "2.7.0"

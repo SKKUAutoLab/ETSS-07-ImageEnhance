@@ -15,13 +15,14 @@ __all__ = [
 from typing import Literal
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
@@ -32,7 +33,7 @@ class Rain100(VisionDataset):
     """Loads Rain100 dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -48,11 +49,12 @@ class Rain100(VisionDataset):
     })
     has_test_annotations: bool = True
     
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "rain100" if root.name != "rain100" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+        
         super().__init__(root=root, *args, **kwargs)
     
     def list_data(self):
@@ -78,7 +80,7 @@ class Rain100H(VisionDataset):
     """Loads Rain100H dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -94,11 +96,12 @@ class Rain100H(VisionDataset):
     })
     has_test_annotations: bool = True
     
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "rain100h" if root.name != "rain100h" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+        
         super().__init__(root=root, *args, **kwargs)
     
     def list_data(self):
@@ -124,7 +127,7 @@ class Rain100L(VisionDataset):
     """Loads Rain100L dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -140,11 +143,12 @@ class Rain100L(VisionDataset):
     })
     has_test_annotations: bool = True
     
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "rain100l" if root.name != "rain100l" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+        
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):

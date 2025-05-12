@@ -1,0 +1,63 @@
+name: Issue Screening
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  screen-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get details and check for keywords
+        id: issue_check
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueNumber = issue.number;
+            const title = (issue.title || "").toLowerCase();
+            const body = (issue.body || "").toLowerCase();
+            core.setOutput('number', issueNumber);
+
+            const keywords = ["spam", "badword", "inappropriate", "suspicious", "unusual", "star", "stars", "buy", "buying"];
+            let containsKeyword = false;
+
+            console.log(`Checking issue #${issueNumber} for whole word keywords...`);
+            for (const keyword of keywords) {
+              const regex = new RegExp(`\\b${keyword}\\b`);
+              if (regex.test(title) || regex.test(body)) {
+                containsKeyword = true;
+                console.log(`Whole word keyword '${keyword}' found in issue #${issueNumber}.`);
+                break;
+              }
+            }
+
+            console.log(`Keyword check for issue #${issueNumber} completed. contains_keyword=${containsKeyword}`);
+            core.setOutput('contains_keyword', containsKeyword);
+
+      - name: Close and Modify Issue if it contains keywords
+        if: steps.issue_check.outputs.contains_keyword == 'true'
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.ISSUE }}
+          script: |
+            const issueNumber = ${{ steps.issue_check.outputs.number }};
+            try {
+              console.log(`Attempting to close, clear body, and rename title of issue #${issueNumber} due to keyword.`);
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                state: 'closed',
+                title: "Cleared suspicious issues",
+                body: ""
+              });
+              console.log(`Successfully closed, cleared body, and renamed title of issue #${issueNumber}.`);
+            } catch (error) {
+              console.error(`Failed to update issue #${issueNumber}:`, error);
+              throw error;
+            }

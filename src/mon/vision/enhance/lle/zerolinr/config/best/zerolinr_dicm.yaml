@@ -1,0 +1,121 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "zerolinr"                                                        # Model architecture or family (e.g., resnet).
+model       : &model "zerolinr"                                                 # Model name (e.g., resnet50).
+data        : &data "dicm"                                                      # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "zerolinr_dicm"                                         # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights ~                                                        # Path to the pretrained weights.
+device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+seed        : 100                                                               # Random seed.
+imgsz       : &imgsz 256                                                        # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+epochs      : &epochs 100                                                       # Training epochs. Default is ``300``.
+steps       : &steps ~                                                          # Training steps.
+benchmark   : False                                                             # Benchmark the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: False                                                             # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True                                                     # Verbosity.
+                                                                                
+### For ``mon`` Framework ###
+# Network
+network: &network                                                               # Network architecture.
+  mapping_func     : "pvde"                                                     # One of: ["p", "v", "d", "e", "pv", "pd", "pe", "pvde"]. Default is "pvde".
+  window_size      : 9                                                          # Context window size. Default is ``9``.
+  down_size        : *imgsz                                                     # Input image size. Default is ``256``.
+  num_layers       : 4                                                          # Total layer's depth. Default is ``4``.
+  add_layers       : 2                                                          # Number of layers for output branch. Default is ``2``.
+  w0               : 30.0                                                       # Default is ``30.0``.
+  first_bias_scale : 20.0                                                       # For "finer". Default is ``20.0``.
+  s_nonlinear      : "finer"                                                    # Activation function for the spatial branch. Default is ``"finer"``.
+  use_ff           : True                                                       # Use Fourier Feature embedding for the spatial branch. Default is ``True``.
+  ff_gaussian_scale: 10.0                                                       # For Fourier Feature embedding. Default is ``10.0``.
+  v_nonlinear      : "finer"                                                    # Activation function for the pixel value branch. Default is ``"finer"``.
+  reduce_channels  : False                                                      # Reduce the output channels of input encoders. Default is ``False``.
+  depth_threshold  : 1.0                                                        # For adjusting the learned residual. Default is ``1.0``.
+  edge_threshold   : 0.05                                                       # Edge threshold. Default is ``0.05``.
+  gf_radius        : 7                                                          # Radius of the guided filter. Default is ``7``.
+  use_denoise      : False                                                      # Use denoising. Default is ``False``.
+  denoise_ksize    : [3, 3]                                                     # For denoising. Default is ``[3, 3]``.
+  denoise_color    : 0.1                                                        # For denoising. Default is ``0.1``.
+  denoise_space    : [1.5, 1.5]                                                 # For denoising. Default is ``[1.5, 1.5]``.
+  iters            : *epochs
+  
+# Optimizer
+optimizer: &optimizer                                                           # Optimizer(s).
+  optimizer:
+    name        : "adam"
+    lr          : 0.00005
+    weight_decay: 0.00001
+  lr_scheduler       : ~                                                        # Learning rate scheduler.s
+  network_params_only: True
+
+# Loss
+loss: &loss                                                                     # Loss function.
+  loss_e_mean: 0.1                                                              # Default is ``0.1``.
+  loss_w_f   : 1                                                                # Default is ``1.``
+  loss_w_s   : 5                                                                # Default is ``5``.
+  loss_w_e   : 8                                                                # Default is ``8``.
+  loss_w_tv  : 20                                                               # Default is ``20``.
+  loss_w_de  : 1                                                                # Default is ``1``.
+  loss_w_c   : 5                                                                # Default is ``5``.
+
+# Metric
+metrics: &metrics                                                               # Metrics for evaluation.
+  train: ~                                                                      
+  val  :                                                                        
+    - {name: "psnr"}                                                            
+    - {name: "ssim"}                                                            
+  test :                                                                        
+    - {name: "psnr"}                                                            
+    - {name: "ssim"}                                                            
+
+# Model
+modelmodule:
+  name     : *model                                                             # Model name (e.g., resnet50).
+  fullname : *fullname                                                          # Full name of the current run (e.g., resnet50_cifar10_01).
+  root     : *save_dir                                                          # Root directory of the current run.
+  <<       : *network                                                           # Network architecture.
+  weights  : *weights                                                           # Path to the pretrained weights.
+  optimizer: *optimizer                                                         # Optimizer(s).
+  loss     : *loss                                                              # Loss function.
+  metrics  : *metrics                                                           # Metrics for evaluation.
+  debug    : *save_debug
+  verbose  : *verbose                                                           # Verbosity.
+
+# Datamodule
+datamodule:                                                                     
+  name      : *data                                                             # Data module name (e.g., cifar10).
+  root      : "data/dicm"                                                       # Root directory of the dataset.
+  transform : ~                                                                 # Data augmentation.
+  to_tensor : True                                                              # If ``True``, convert the data to tensor.
+  batch_size: 1                                                                 # Batch size.
+  cache_data: False                                                             # If ``True``, cache the data.
+  shuffle   : True                                                              # If ``True``, shuffle the data.
+  verbose   : *verbose                                                          # Verbosity.
+
+# Trainer
+trainer:                                                                        
+  accelerator: "auto"                                                           # Accelerator.
+  callbacks:
+    - {name: "model_checkpoint", filename: *fullname, monitor: "val/psnr", mode: "max"}
+    - {name: "model_checkpoint", filename: *fullname, monitor: "val/ssim", mode: "max", save_last: True}
+    - {name: "log_training_progress", "filename": "log.csv", "every_n_epochs": 1, verbose: *verbose}
+    - {name: "learning_rate_monitor"}
+    - {name: "rich_model_summary", max_depth: 2}
+    - {name: "rich_progress_bar", refresh_rate: 1, leave: False}
+  check_val_every_n_epoch: 1                                                    # Run validation loop every after every `n` training epochs.
+  default_root_dir       : *save_dir                                            # Default path for logs and weights.
+  devices                : "auto"                                               # Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`.
+  enable_checkpointing   : True
+  enable_model_summary   : True
+  enable_progress_bar    : True
+  log_every_n_steps      : 1                                                    # How often to log within steps.
+  logger                 : True                                                 # Logger (or iterable collection of loggers) for experiment tracking (True = `TensorBoardLogger`).
+  max_epochs             : *epochs                                              # -1: infinite training.
+  max_steps              : *steps                                               # -1: infinite training.
+  precision              : 32                                                   # Double precision (64), full precision (32), half precision (16) or bfloat16 precision (bf16).
+  strategy               : "auto"                                               # 'ddp', 'ddp_spawn', 'ddp2', 'ddp_cpu', 'ddp2_cpu', 'ddp_spawn_cpu', 'horovod', 'tpu', 'tpu_spawn', 'auto'.

@@ -17,13 +17,14 @@ from typing import Literal
 import cv2
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
@@ -91,14 +92,15 @@ class Cityscapes(VisionDataset):
 
     def __init__(
         self,
-        root       : core.Path = DATA_DIR / "cityscapes",
+        root       : core.Path,
         use_blurred: bool = False,
         use_coarse : bool = False,
         *args, **kwargs
     ):
+        root = core.Path(root)
         root = root / "cityscapes" if root.name != "cityscapes" else root
         if not root.is_dir():
-            raise FileNotFoundError(f"[root] must be a directory, got {root}.")
+            raise FileNotFoundError(f"[root] directory not found: [{root}].")
 
         self.use_blurred = use_blurred
         self.use_coarse  = use_coarse

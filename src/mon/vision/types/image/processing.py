@@ -162,9 +162,11 @@ def image_to_2d(image: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
         ValueError: If ``image`` dimensions are not 3 or 4.
         TypeError: If ``image`` is not a ``torch.Tensor`` or ``numpy.ndarray``.
     """
+    '''
     if not 3 <= image.ndim <= 4:
         raise ValueError(f"[image]'s number of dimensions must be between 3 and 4, "
                          f"got {image.ndim}.")
+    '''
     
     if isinstance(image, torch.Tensor):
         if image.ndim == 3:
@@ -195,10 +197,12 @@ def image_to_3d(image: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
         ValueError: If ``image`` dimensions are not 2, 3, or 4.
         TypeError: If ``image`` is not a ``torch.Tensor`` or ``numpy.ndarray``.
     """
+    '''
     if not 2 <= image.ndim <= 4:
         raise ValueError(f"[image]'s number of dimensions must be between 2 and 4, "
                          f"got {image.ndim}.")
-
+    '''
+    
     if isinstance(image, torch.Tensor):
         if image.ndim == 2:
             image = image.unsqueeze(0)
@@ -217,7 +221,7 @@ def image_to_3d(image: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
 
 def image_to_4d(
     image: torch.Tensor | np.ndarray
-           | list[torch.Tensor] | list[np.ndarray]
+           | list[torch.Tensor]       | list[np.ndarray]
            | tuple[torch.Tensor, ...] | tuple[np.ndarray, ...]
 ) -> torch.Tensor | np.ndarray:
     """Converts a 2D or 3D image to 4D.
@@ -232,10 +236,12 @@ def image_to_4d(
         ValueError: If ``image`` dimensions are not 2, 3, or 4.
         TypeError: If ``image`` type is not supported.
     """
+    '''
     if not 2 <= image.ndim <= 4:
         raise ValueError(f"[image]'s number of dimensions must be between 2 and 4, "
                          f"got {image.ndim}.")
-
+    '''
+    
     if isinstance(image, torch.Tensor):
         if image.ndim == 2:  # [H, W] -> [1, 1, H, W]
             image = image.unsqueeze(0).unsqueeze(0)
@@ -258,7 +264,9 @@ def image_to_4d(
         else:
             raise TypeError(f"[image] list/tuple must contain consistent 3D or 4D "
                             f"torch.Tensor or numpy.ndarray, got mixed types or "
-                            f"dimensions.")
+                            f"dimensions: "
+                            f"{[type(i) for i in image]} "
+                            f"{[i.shape for i in image if i is not None]}.")
     else:
         raise TypeError(f"[image] must be a torch.Tensor, numpy.ndarray, or "
                         f"list/tuple of either, got {type(image)}.")

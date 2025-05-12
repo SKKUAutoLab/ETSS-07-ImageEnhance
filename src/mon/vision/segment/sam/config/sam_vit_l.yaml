@@ -1,0 +1,36 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "sam"                                                             # Model architecture or family (e.g., resnet).
+model       : &model "sam_vit_l"                                                # Model name (e.g., resnet50).
+data        : &data ~                                                           # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "sam_vit_l"                                             # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights "zoo/vision/segment/sam/sam_vit_l/pretrained/sam_vit_l.pth" # Path to the pretrained weights.
+device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+seed        : 0                                                                 # Random seed.
+imgsz       : &imgsz 512                                                        # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+epochs      : &epochs 1000                                                      # Training epochs.
+steps       : &steps ~                                                          # Training steps.
+benchmark   : False                                                             # Benchmark the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: True                                                              # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True
+
+# Network
+network: &network                                                               # Network architecture.
+  model_type                    : "vit_l"
+  points_per_side               : 32
+  points_per_batch              : 64
+  pred_iou_thresh               : 0.88
+  stability_score_thresh        : 0.95
+  stability_score_offset        : 1.0
+  box_nms_thresh                : 0.7
+  crop_n_layers                 : 0
+  crop_nms_thresh               : 0.7
+  crop_n_points_downscale_factor: 1
+  min_mask_region_area          : 0
+  output_mode                   : "binary_mask"

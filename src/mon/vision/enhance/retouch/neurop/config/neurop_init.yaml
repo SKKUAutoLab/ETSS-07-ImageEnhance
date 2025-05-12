@@ -2,7 +2,7 @@
 root        : ~                                                                 # Root directory of the current run.
 arch        : "neurop"                                                          # Model architecture or family (e.g., resnet).
 model       : &model "neurop"                                                   # Model name (e.g., resnet50).
-data        : &data "fivek_init"                                                # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+data        : &data "fivekinit"                                                 # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
 fullname    : &fullname "neurop_init"                                           # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
 save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
 weights     : &weights ~                                                        # Path to the pretrained weights.

@@ -25,7 +25,8 @@ class SemanticSegmentationAnnotation(core.Annotation):
     Args:
         path: Path to image file as ``core.Path`` or ``str``.
         root: Root dir as ``core.Path`` or ``str``. Default is ``None``.
-        flags: Flag to read image (e.g., ``cv2.IMREAD_COLOR``). Default is ``cv2.IMREAD_COLOR``.
+        flags: Flag to read image (e.g., ``cv2.IMREAD_COLOR_BGR``).
+            Default is ``cv2.IMREAD_COLOR_BGR``.
     """
     
     albumentation_target_type: str = "mask"
@@ -34,7 +35,7 @@ class SemanticSegmentationAnnotation(core.Annotation):
         self,
         path : core.Path | str,
         root : core.Path | str = None,
-        flags: int = cv2.IMREAD_COLOR,
+        flags: int = cv2.IMREAD_COLOR_BGR,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)

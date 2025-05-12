@@ -1,0 +1,31 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "zerotig"                                                         # Model architecture or family (e.g., resnet).
+model       : &model "zerotig"                                                  # Model name (e.g., resnet50).
+data        : &data "bvirlv"                                                    # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "zerotig_bvirlv"                                        # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights "zoo/vision/enhance/lle/zerotig/zerotig/bvirlv/zerotig_bvirlv.pt"  # Path to the pretrained weights.
+device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+seed        : 2                                                                 # Random seed.
+imgsz       : &imgsz 512                                                        # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+epochs      : &epochs 5                                                         # Training epochs.
+steps       : &steps ~                                                          # Training steps.
+benchmark   : False                                                             # Benchmark the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: True                                                              # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True                                                     # Verbosity.
+
+# Network
+network: &network                                                               # Network architecture.
+  raft_model: "zoo/vision/enhance/lle/zerotig/zerotig/pretrained/raft_sintel.pth"
+  of_scale  : 3                                                                 # Downscale size when compute OF
+
+# Optimizer
+optimizer: &optimizer                                                           # Optimizer(s).
+  lr          : 0.0003
+  weight_decay: 0.0003

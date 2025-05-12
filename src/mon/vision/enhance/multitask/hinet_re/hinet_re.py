@@ -211,7 +211,7 @@ class HINet_RE(base.ImageEnhancementModel):
     
     arch     : str          = "hinet"
     name     : str          = "hinet_re"
-    tasks    : list[Task]   = [Task.DEBLUR, Task.DENOISE, Task.DERAIN, Task.DESNOW, Task.LLIE]
+    tasks    : list[Task]   = [Task.DEBLUR, Task.DENOISE, Task.DERAIN, Task.DESNOW, Task.LLE]
     mltypes  : list[MLType] = [MLType.SUPERVISED]
     model_dir: core.Path    = current_dir
     zoo      : dict         = {}

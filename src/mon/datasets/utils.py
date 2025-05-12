@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATASETS, EXTRA_DATASETS, Split, Task
+from mon.constants import DATASETS, EXTRA_DATASETS, Split, Task, ROOT_DIR
 
 
 # ----- Retrieve -----
@@ -65,7 +65,7 @@ def list_datasets(
     Args:
         task: Task for which datasets are listed.
         mode: Mode of datasets (``train`` or ``test``).
-        project_root: Root directory of project. Default is ``None``.
+        project_root: Root directory of the project. Default is ``None``.
 
     Returns:
         Sorted list of dataset names matching task and mode.
@@ -99,20 +99,12 @@ def parse_data_loader(
         ValueError: If ``src`` is invalid.
     """
     src = core.Path(src)
+
     if src.stem in DATASETS:
-        src = src.stem
-        if (data_root not in [None, "None", ""]
-            and core.Path(data_root / src).is_dir()):
-            root = data_root / src
-        else:
-            defaults_dict = dict(zip(
-                DATASETS[src].__init__.__code__.co_varnames[1:],
-                DATASETS[src].__init__.__defaults__
-            ))
-            root = defaults_dict.get("root", None)
-        if root and not root.is_dir():
-            root = DATA_DIR
-        
+        src  = src.stem
+        root = core.parse_data_dir(root=data_root, data_dir=src)
+        # if root and not root.is_dir():
+        #     root = root / "data"
         config = {
             "name"     : src,
             "root"     : root,

@@ -6,6 +6,7 @@
 __all__ = [
     "VideoLoader",
     "VideoLoaderCV",
+    "is_video_dataset",
 ]
 
 from abc import ABC
@@ -14,7 +15,7 @@ from typing import Any
 import cv2
 
 from mon import core
-from mon.constants import Split, TRANSFORMS
+from mon.constants import Split, Task, TRANSFORMS
 from mon.vision.geometry import albumentation
 from mon.vision.types.video import FrameAnnotation
 
@@ -35,7 +36,8 @@ class VideoLoader(core.Dataset, ABC):
         verbose: If ``True``, enables verbose output. Default is ``True``.
     """
     
-    datapoint_attrs = core.DatapointAttributes({
+    tasks: list[Task] = [Task.VIDEO]
+    datapoint_attrs   = core.DatapointAttributes({
         "frame": FrameAnnotation,
     })
     
@@ -401,3 +403,20 @@ class VideoLoaderCV(VideoLoader):
             "split"        : self.split_str,
             "stem"         : str(self.root.stem),
         }
+
+
+# ----- Validation Check -----
+def is_video_dataset(dataset: core.Dataset) -> bool:
+    """Checks if dataset is a video dataset.
+
+    Args:
+        dataset: Dataset to check.
+
+    Returns:
+        ``True`` if dataset is a video dataset, ``False`` otherwise.
+    """
+    if dataset is None:
+        return False
+    if hasattr(dataset, "tasks") and isinstance(dataset.tasks, (list, tuple)):
+        return Task.VIDEO in dataset.tasks
+    return isinstance(dataset, (VideoLoader, VideoLoaderCV))

@@ -11,7 +11,7 @@ from typing import Literal
 
 import torch
 
-from mon.nn.modules.inr.base import ReLULayer, SigmoidLayer, TanhLayer
+from mon.nn.modules.inr.core import ReLULayer, SigmoidLayer, TanhLayer
 from mon.nn.modules.inr.finer import FINERLayer
 from mon.nn.modules.inr.gauss import GaussLayer
 from mon.nn.modules.inr.siren import SineLayer

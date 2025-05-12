@@ -10,6 +10,7 @@ __all__ = [
     "DepthDataSource",
     "Enum",
     "ImageExtension",
+    "InfraredDataSource",
     "MLType",
     "MemoryUnit",
     "RunMode",
@@ -347,6 +348,7 @@ class WeightExtension(Enum):
     ONNX = ".onnx"
     PT   = ".pt"
     PTH  = ".pth"
+    TAR  = ".tar"
 
 
 # ----- ML/DL -----
@@ -359,7 +361,7 @@ class MLType(Enum):
     UNSUPERVISED    = "unsupervised"     # Unsupervised learning with unlabeled data.
     UNPAIRED        = "unpaired"         # Unpaired learning with varying reference data of the same input (e.g., varying illumination within the same scene).
     SELF_SUPERVISED = "self_supervised"  # Self-Supervised learning with self-generated supervision.
-    ZERO_REFERENCE  = "zero_reference"   # Zero-Reference learning without any reference (e.g., mixing arbitrary low and normal-light images).
+    ZERO_REFERENCE  = "zero_reference"   # Zero-Reference learning without any reference (e.g., mixing different low and normal-light images).
     ZERO_SHOT       = "zero_shot"        # Zero-Shot learning without any training data.
     
     @classmethod
@@ -403,15 +405,17 @@ class Task(Enum):
     DESNOW    = "desnow"                # desnowing
     DETECT    = "detect"                # object detection
     INPAINT   = "inpaint"               # inpainting
-    LLIE      = "llie"                  # low-light image enhancement
+    LLE       = "lle"                   # low-light enhancement
     NIGHTTIME = "nighttime"             # nighttime
     POSE      = "pose"                  # pose estimation
-    RETOUCH   = "retouch"               # image retouching
+    RETOUCH   = "retouch"               # Retouching
+    RGB2TIR   = "rgb2tir"               # RGB-to-TIR translation
     RR        = "rr"                    # reflection removal
     SEGMENT   = "segment"               # semantic segmentation
     SR        = "sr"                    # super-resolution
     TRACK     = "track"                 # object tracking
-    UIE       = "uie"                   # underwater image enhancement
+    UE        = "ue"                    # underwater enhancement
+    VIDEO     = "video"                 # video processing
 
 
 # ----- Vision -----
@@ -420,7 +424,14 @@ class DepthDataSource(Enum):
     
     DAv2_ViTB = "dav2_vitb"
     DAv2_ViTL = "dav2_vitl"
+    DEPTH     = "depth"
 
+
+class InfraredDataSource(Enum):
+    """Infrared data source types."""
+    
+    INFRARED = "infrared"
+    
 
 class ShapeCode(Enum):
     """Shape conversion code."""

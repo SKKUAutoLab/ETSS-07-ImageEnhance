@@ -6,4 +6,4 @@ models.
 """
 
 from mon.vision.enhance.multitask.hinet_re import *
-from mon.vision.enhance.multitask.zero_restore import *
+from mon.vision.enhance.multitask.zerorestore import *

@@ -11,24 +11,25 @@ __all__ = [
 from typing import Literal
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
 
 # ----- Dataset -----
-@DATASETS.register(name="sid_sony")
+@DATASETS.register(name="sidsony")
 class SIDSony(VisionDataset):
-    """Loads SIDSony dataset from ``root`` dir.
+    """Loads SID-Sony dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -36,7 +37,7 @@ class SIDSony(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
 
-    tasks : list[Task]  = [Task.LLIE]
+    tasks : list[Task]  = [Task.LLE]
     splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
@@ -46,16 +47,17 @@ class SIDSony(VisionDataset):
     })
     has_test_annotations: bool = False
     
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
-        root = root / "sid_sony" if root.name != "sid_sony" else root
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
+        root = root / "sid" if root.name != "sid" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+        
         super().__init__(root=root, *args, **kwargs)
     
     def list_data(self):
         """Lists ``datapoints`` with image annotations for split."""
-        patterns = [self.root / self.split_str / "image"]
+        patterns = [self.root / "sony" / self.split_str / "image"]
         
         images: list[ImageAnnotation] = []
         with core.create_progress_bar(disable=self.disable_pbar) as pbar:
@@ -70,11 +72,11 @@ class SIDSony(VisionDataset):
     
 
 # ----- DataModule -----
-@DATAMODULES.register(name="sid_sony")
+@DATAMODULES.register(name="sidsony")
 class SIDSonyDataModule(core.DataModule):
-    """Configures SIDSony datasets for training/testing."""
+    """Configures SID-Sony datasets for training/testing."""
 
-    tasks: list[Task] = [Task.LLIE]
+    tasks: list[Task] = [Task.LLE]
     
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""

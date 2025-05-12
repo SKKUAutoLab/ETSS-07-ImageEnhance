@@ -11,10 +11,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Literal
 
 import lightning
+import torch
 from torch.utils import data
 
 from mon.constants import Task
-from mon.core import rich, type_extensions
+from mon.core import rich, type_extensions, device as D
 from mon.core.types import dataset
 
 
@@ -29,7 +30,7 @@ class DataModule(lightning.LightningDataModule, ABC):
     Args:
         datasets: Dataset(s) to use.
         batch_size: Samples per forward pass. Default is ``1``.
-        devices: Devices to use. Default is ``0``.
+        devices: Devices to use. Default is ``cpu``.
         shuffle: If ``True``, reshuffles data each epoch. Default is ``True``.
         collate_fn: Function to fuse datapoints for ``batch_size`` > ``1``.
         verbose: If ``True``, enables verbose output. Default is ``True``.
@@ -41,7 +42,7 @@ class DataModule(lightning.LightningDataModule, ABC):
         self,
         datasets   : Any      = None,
         batch_size : int      = 1,
-        devices    : int | str | list[int | str] = 0,
+        devices    : int | str | torch.device = "cpu",
         shuffle    : bool     = True,
         collate_fn : Callable = None,
         verbose    : bool     = True,
@@ -49,7 +50,8 @@ class DataModule(lightning.LightningDataModule, ABC):
     ):
         super().__init__()
         self.batch_size     = batch_size
-        self.devices        = type_extensions.to_list(devices)
+        # self.devices        = type_extensions.to_list(devices)
+        self.devices        = D.set_device(devices)
         self.shuffle        = shuffle
         self.collate_fn     = collate_fn
         self.verbose        = verbose
@@ -76,7 +78,8 @@ class DataModule(lightning.LightningDataModule, ABC):
         Returns:
             Number of workers (4 times device count).
         """
-        return 4 * len(self.devices)
+        devices = self.devices if isinstance(self.devices, (list, tuple)) else [self.devices]
+        return 4 * len(devices)
     
     @property
     def train_dataloader(self) -> data.DataLoader | None:
@@ -90,13 +93,14 @@ class DataModule(lightning.LightningDataModule, ABC):
         
         self.classlabels = getattr(self.train, "classlabels", self.classlabels)
         return data.DataLoader(
-            dataset     = self.train,
-            batch_size  = self.batch_size,
-            shuffle     = self.shuffle,
-            num_workers = self.num_workers,
-            pin_memory  = True,
-            drop_last   = False,
-            collate_fn  = getattr(self.train, "collate_fn", self.collate_fn),
+            dataset            = self.train,
+            batch_size         = self.batch_size,
+            shuffle            = self.shuffle,
+            num_workers        = self.num_workers,
+            pin_memory         = True,
+            drop_last          = False,
+            collate_fn         = getattr(self.train, "collate_fn", self.collate_fn),
+            generator          = torch.Generator(device=self.devices),
             persistent_workers = True
         )
     
@@ -111,13 +115,14 @@ class DataModule(lightning.LightningDataModule, ABC):
             return None
         
         return data.DataLoader(
-            dataset     = self.val,
-            batch_size  = self.batch_size,
-            shuffle     = False,
-            num_workers = self.num_workers,
-            pin_memory  = True,
-            drop_last   = False,
-            collate_fn  = getattr(self.val, "collate_fn", self.collate_fn),
+            dataset            = self.val,
+            batch_size         = self.batch_size,
+            shuffle            = False,
+            num_workers        = self.num_workers,
+            pin_memory         = True,
+            drop_last          = False,
+            collate_fn         = getattr(self.val, "collate_fn", self.collate_fn),
+            generator          = torch.Generator(device=self.devices),
             persistent_workers = True
         )
     
@@ -132,13 +137,14 @@ class DataModule(lightning.LightningDataModule, ABC):
             return None
         
         return data.DataLoader(
-            dataset     = self.test,
-            batch_size  = 1,
-            shuffle     = False,
-            num_workers = self.num_workers,
-            pin_memory  = True,
-            drop_last   = False,
-            collate_fn  = getattr(self.test, "collate_fn", self.collate_fn),
+            dataset            = self.test,
+            batch_size         = 1,
+            shuffle            = False,
+            num_workers        = self.num_workers,
+            pin_memory         = True,
+            drop_last          = False,
+            collate_fn         = getattr(self.test, "collate_fn", self.collate_fn),
+            generator          = torch.Generator(device=self.devices),
             persistent_workers = True
         )
     
@@ -153,13 +159,14 @@ class DataModule(lightning.LightningDataModule, ABC):
             return None
         
         return data.DataLoader(
-            dataset     = self.predict,
-            batch_size  = self.batch_size,
-            shuffle     = False,
-            num_workers = self.num_workers,
-            pin_memory  = True,
-            drop_last   = True,
-            collate_fn  = self.collate_fn,
+            dataset            = self.predict,
+            batch_size         = self.batch_size,
+            shuffle            = False,
+            num_workers        = self.num_workers,
+            pin_memory         = True,
+            drop_last          = True,
+            collate_fn         = self.collate_fn,
+            generator          = torch.Generator(device=self.devices),
             persistent_workers = True
         )
     
@@ -190,6 +197,7 @@ class DataModule(lightning.LightningDataModule, ABC):
         Args:
             stage: Running stage (``train``, ``test``, ``predict``, or ``None``).
         """
+        pass
     
     def get_classlabels(self):
         """Loads class labels from datasets."""

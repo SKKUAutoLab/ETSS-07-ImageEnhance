@@ -61,7 +61,7 @@ def load_image(
             image = np.expand_dims(image, axis=-1)
         if utils.is_image_colored(image):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
+
     if to_tensor:
         image = processing.image_to_tensor(image, normalize=normalize, device=device)
     

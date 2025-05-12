@@ -15,13 +15,14 @@ __all__ = [
 from typing import Literal
 
 from mon import core, vision
-from mon.constants import DATA_DIR, DATAMODULES, DATASETS, Split, Task
+from mon.constants import DATAMODULES, DATASETS, Split, Task
 
 # ----- Alias -----
 ClassLabels                    = core.ClassLabels
 DatapointAttributes            = core.DatapointAttributes
 DepthMapAnnotation             = vision.DepthMapAnnotation
 ImageAnnotation                = vision.ImageAnnotation
+InfraredAnnotation             = vision.InfraredAnnotation
 SemanticSegmentationAnnotation = vision.SemanticSegmentationAnnotation
 VisionDataset                  = vision.VisionDataset
 
@@ -32,7 +33,7 @@ class Flare7KPPReal(VisionDataset):
     """Loads Flare7K++Real dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -48,11 +49,12 @@ class Flare7KPPReal(VisionDataset):
     })
     has_test_annotations: bool = True
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "flare7k++" if root.name != "flare7k++" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -76,7 +78,7 @@ class Flare7KPPSynthetic(VisionDataset):
     """Loads Flare7K++Synthetic dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -92,11 +94,12 @@ class Flare7KPPSynthetic(VisionDataset):
     })
     has_test_annotations: bool = True
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "flare7k++" if root.name != "flare7k++" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):
@@ -120,7 +123,7 @@ class Flare7KPPExtra(VisionDataset):
     """Loads Flare7K++Extra dataset from ``root`` dir.
 
     Args:
-        root: Directory path to dataset. Default is ``DATA_DIR / "enhance"``.
+        root: Directory path to dataset.
         *args: Additional args for parent class.
         **kwargs: Additional kwargs for parent class.
 
@@ -135,11 +138,12 @@ class Flare7KPPExtra(VisionDataset):
     })
     has_test_annotations: bool = False
 
-    def __init__(self, root: core.Path = DATA_DIR / "enhance", *args, **kwargs):
-        """Initializes dataset with ``root`` path and parent args."""
+    def __init__(self, root: core.Path, *args, **kwargs):
+        root = core.Path(root)
         root = root / "flare7k++" if root.name != "flare7k++" else root
         if not root.is_dir():
             raise FileNotFoundError(f"[root] directory not found: [{root}].")
+
         super().__init__(root=root, *args, **kwargs)
 
     def list_data(self):

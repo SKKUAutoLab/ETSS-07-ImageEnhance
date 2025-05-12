@@ -535,7 +535,7 @@ def rmdirs(paths: Path | str | list[Path | str]):
 
 
 # ----- Convert -----
-def parse_data_dir(root: str | pathlib.Path, data_dir: str | pathlib.Path) -> str | pathlib.Path:
+def parse_data_dir(root: str | pathlib.Path, data_dir: str | pathlib.Path = "") -> str | pathlib.Path:
     """Parses the absolute data directory path from given components.
 
     Args:
@@ -547,14 +547,28 @@ def parse_data_dir(root: str | pathlib.Path, data_dir: str | pathlib.Path) -> st
     """
     from mon.constants import ROOT_DIR
     
-    root     = pathlib.Path(root)
-    data_dir = pathlib.Path(data_dir)
-    if not data_dir.is_dir():
-        if (ROOT_DIR / data_dir).is_dir():
-            data_dir = ROOT_DIR / data_dir
-        elif (root / data_dir).is_dir():
-            data_dir = root / data_dir
-    return data_dir
+    root_      = pathlib.Path(root)     if root     not in [None, "None", ""] else ROOT_DIR
+    data_dir_  = pathlib.Path(data_dir) if data_dir not in [None, "None", ""] else None
+
+    candidates = []
+    if data_dir_:
+        candidates.extend([
+            data_dir_,
+            root_    / data_dir_,
+            root_    / "data" / data_dir_,
+            ROOT_DIR / data_dir_,
+            ROOT_DIR / "data" / data_dir_
+        ])
+    candidates.extend([
+        root_    / "data",
+        ROOT_DIR / "data"
+    ])
+
+    for d in candidates:
+        if d.is_dir():
+            return d
+
+    return root
 
 
 def parse_save_dir(

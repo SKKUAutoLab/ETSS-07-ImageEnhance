@@ -10,7 +10,7 @@ __all__ = [
 
 import torch
 
-from mon.nn.modules.inr import base
+from mon.nn.modules.inr import core
 
 
 # ----- Positional Encoding Layer -----
@@ -98,5 +98,5 @@ class PEMLP(torch.nn.Module):
         """
         from mon import vision
         s, _   = vision.image_size(x)
-        coords = base.create_coords(s).to(x.device)
+        coords = core.create_coords(s).to(x.device)
         return self.net(self.enconding(coords))

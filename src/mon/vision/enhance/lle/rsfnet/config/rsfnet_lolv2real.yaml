@@ -1,0 +1,58 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "rsfnet"                                                          # Model architecture or family (e.g., resnet).
+model       : &model "rsfnet"                                                   # Model name (e.g., resnet50).
+data        : &data "lolv2real"                                                 # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "rsfnet_lolv2real"                                      # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights "zoo/vision/enhance/lle/rsfnet/rsfnet/lolv2real/rsfnet_lolv2real.pth" # Path to the pretrained weights.
+device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+seed        : 2                                                                 # Random seed.
+imgsz       : &imgsz 512                                                        # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+epochs      : &epochs 50                                                        # Training epochs.
+steps       : &steps ~                                                          # Training steps.
+benchmark   : False                                                             # Benchmark the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: True                                                              # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True                                                     # Verbosity.
+
+# Network
+network: &network                                                               # Network architecture.
+  factors   : 5
+  max_iters : 3
+  freeze    : 25
+  etaA      : 0.1
+  f_rgb     : True
+  f_denoise : True
+  f_over_exp: False
+  wc        : 10
+  we        : 2
+  wf        : 2
+  wt        : 2
+  
+# Optimizer
+optimizer: &optimizer                                                           # Optimizer(s).
+  lr      : 0.01
+  lr_step : 1
+  lr_decay: 1
+
+# Datamodule
+datamodule:
+  name      : *data                                                             # Data module name (e.g., cifar10).
+  root      : "data/lolv2"                                                      # Root directory of the dataset.
+  transform :
+    - {name: "resize", height: 256, width : 256}
+  to_tensor : True                                                              # If ``True``, convert the data to tensor.
+  batch_size: 10                                                                # Batch size.
+  cache_data: False                                                             # If ``True``, cache the data.
+  shuffle   : True                                                              # If ``True``, shuffle the data.
+  verbose   : *verbose                                                          # Verbosity.
+
+# Trainer
+trainer:
+  max_norm : 1.0
+  data_mean: 0.05
