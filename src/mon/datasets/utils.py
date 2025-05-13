@@ -4,10 +4,11 @@
 """Implements utilities for data I/O classes and functions."""
 
 __all__ = [
-    "parse_data_loader",
-    "list_mon_datasets",
-    "list_extra_datasets",
     "list_datasets",
+    "list_extra_datasets",
+    "list_mon_datasets",
+    "parse_data_loader",
+    "parse_data_name",
 ]
 
 from mon import core, vision
@@ -78,6 +79,32 @@ def list_datasets(
 
 
 # ----- Convert -----
+def parse_data_name(src: core.Path | str) -> str:
+    """Parses data name for data src.
+
+    Args:
+        src: Source of input data.
+
+    Returns:
+        Data name
+
+    Raises:
+        ValueError: If ``src`` is invalid.
+    """
+    src = core.Path(src)
+
+    if src.stem in DATASETS:
+        data_name = src.stem
+    elif src.is_dir():
+        data_name = src.name
+    elif src.is_video_file():
+        data_name = src.name
+    else:
+        raise ValueError(f"[src] is invalid: {src}.")
+
+    return data_name
+
+
 def parse_data_loader(
     src      : core.Path | str,
     data_root: core.Path | str = None,

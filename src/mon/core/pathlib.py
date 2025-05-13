@@ -615,7 +615,16 @@ def parse_output_dir(
     dirname = Path(dirname)
     file    = Path(file)
     if keep_subdirs:
+        # Example:
+        # root     = .../enhance/run/predict/zerodce/zerodce/dicm
+        # dirname  = dicm
+        # file     = .../enhance/data/dicm/test/image/0001.jpg
+        # rel_path = dicm/test/image//0001.jpg
+        # return   : .../enhance/run/predict/zerodce/zerodce/dicm/test/image
         rel_path = file.relative_path(dirname)
         return root / rel_path.parent
     else:
-        return root / dirname
+        if dirname.stem != root.stem:
+            return root / dirname.stem
+        else:
+            return root
