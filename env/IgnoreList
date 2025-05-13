@@ -52,6 +52,9 @@ lost+found
 DfsrPrivate
 
 *.cache
+*.deb
 *.lock
-data/*
-poetry.lock
+__pycache__/
+_gsdata_/
+/data/
+/project/*/data/

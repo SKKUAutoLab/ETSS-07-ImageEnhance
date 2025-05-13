@@ -33,6 +33,7 @@ class ColorConstancyLoss(base.Loss):
 
     Args:
         loss_weight: Weight of the loss as ``float``. Default is ``1.0``.
+        eps: Small constant to avoid sqrt by zero as ``float``. Default is ``1e-6``.
         reduction: Reduction method as ``Literal["none", "mean", "sum"]``.
             Default is ``"mean"``.
 
@@ -40,8 +41,9 @@ class ColorConstancyLoss(base.Loss):
         - https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L9
     """
     
-    def __init__(self, reduction: Literal["none", "mean", "sum"] = "mean"):
+    def __init__(self, eps: float = 1e-6, reduction: Literal["none", "mean", "sum"] = "mean"):
         super().__init__(reduction=reduction)
+        self.eps = eps
     
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         """Computes the color constancy loss for the input tensor.
@@ -54,10 +56,14 @@ class ColorConstancyLoss(base.Loss):
         """
         mean_rgb   = torch.mean(input, [2, 3], keepdim=True)
         mr, mg, mb = torch.split(mean_rgb, 1, dim=1)
-        d_rg       = torch.pow(mr - mg, 2)
-        d_rb       = torch.pow(mr - mb, 2)
-        d_gb       = torch.pow(mb - mg, 2)
-        loss       = torch.pow(torch.pow(d_rg, 2) + torch.pow(d_rb, 2) + torch.pow(d_gb, 2), 0.5)
+        d_rg       = torch.pow(torch.abs(mr - mg), 2)
+        d_rb       = torch.pow(torch.abs(mr - mb), 2)
+        d_gb       = torch.pow(torch.abs(mb - mg), 2)
+        d_rg2      = torch.pow(d_rg, 2)
+        d_rb2      = torch.pow(d_rb, 2)
+        d_gb2      = torch.pow(d_gb, 2)
+        loss       = d_rg2 + d_rb2 + d_gb2
+        loss       = torch.pow(loss + self.eps, 0.5)
         loss       = base.reduce_loss(loss=loss, reduction=self.reduction)
         return loss
     

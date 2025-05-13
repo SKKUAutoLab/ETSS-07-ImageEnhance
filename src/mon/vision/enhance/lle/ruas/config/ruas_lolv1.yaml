@@ -7,12 +7,17 @@ fullname    : &fullname "ruas_lolv1"                                            
 save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
 weights     : &weights "zoo/vision/enhance/lle/ruas/ruas/lolv1/ruas_lolv1.pt"   # Path to the pretrained weights.
 device      : 0                                                                 # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+torchrun    : False                                                             # If ``True``, use torch.distributed.run to run the training script.
+master_port : 7777                                                              # Master port for distributed training.
+master_addr : "localhost"                                                       # Master address for distributed training.
+local_rank  : -1                                                                # Local rank for distributed training.
+epochs      : &epochs 200                                                       # Training epochs.
+steps       : &steps ~                                                          # Training steps.
 seed        : 2                                                                 # Random seed.
 imgsz       : &imgsz 512                                                        # Image size for the model.
 resize      : False                                                             # Resize the input image to `imgsz`.
-epochs      : &epochs 200                                                       # Training epochs.
-steps       : &steps ~                                                          # Training steps.
 benchmark   : False                                                             # Benchmark the model.
+save_result : True                                                              # Save the result of the model.
 save_image  : True                                                              # Save the output image.
 save_debug  : &save_debug True                                                  # Save the debug information.
 use_fullname: True                                                              # Use the full name for the save_dir.

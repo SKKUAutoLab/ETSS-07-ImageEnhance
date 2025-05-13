@@ -5,12 +5,20 @@ import kornia
 
 import mon
 
+current_file = mon.Path(__file__).absolute()
+current_dir  = current_file.parents[0]
+
+
+# ----- Run -----
 data_name   = "darkcityscapes"
 split       = "test"
 ref_ext     = ".png"
 use_gf      = False
-input_dir   = mon.DATA_DIR / "enhance" / data_name / split / "image"
-ref_dir     = mon.DATA_DIR / "enhance" / data_name / split / "ref"
+data_dir    = mon.parse_data_dir(current_dir, data_name)
+input_dir   = data_dir / split / "image"
+ref_dir     = data_dir / split / "ref"
+# input_dir   = mon.DATA_DIR / "enhance" / data_name / split / "image"
+# ref_dir     = mon.DATA_DIR / "enhance" / data_name / split / "ref"
 output_dir  = "ref_v_gf" if use_gf else "ref_v"
 output_dir  = mon.Path(f"run/predict/io/{output_dir}/{data_name}")
 

@@ -1,23 +1,23 @@
 #!/bin/bash
 
-# Main
 clear
 echo "$HOSTNAME"
 
-# Define the directory where you want to perform the recursive renaming
-directory="/media/longpham/hdd_01/30_areas/family/photos"
+# ----- Input -----
+directory="/home/longpham/10_workspace/11_code/mon"
 
+# ----- Functions -----
+normalize_name() {
+    # Function to normalize names (lowercase, replace ' ' and '-' with '_', and reduce '__' to '_')
+    echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr '-' '_' | sed 's/__\+/_/g'
+}
 
+# ----- Main -----
 # Validate the directory
 if [ ! -d "$directory" ]; then
     echo "Error: '$directory' is not a valid directory."
     exit 1
 fi
-
-# Function to normalize names (lowercase, replace ' ' and '-' with '_', and reduce '__' to '_')
-normalize_name() {
-    echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr '-' '_' | sed 's/__\+/_/g'
-}
 
 # Process both files and directories in one pass
 find "$directory" -depth | while IFS= read -r path; do
@@ -39,5 +39,6 @@ find "$directory" -depth | while IFS= read -r path; do
     fi
 done
 
+# ----- Done -----
 echo "Renaming process completed."
 exit 0

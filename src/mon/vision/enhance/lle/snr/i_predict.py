@@ -32,19 +32,23 @@ def predict(args: dict) -> str:
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
+    torchrun     = args["torchrun"]
+    epochs       = args["epochs"]
+    steps        = args["steps"]
     seed         = args["seed"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
-    epochs       = args["epochs"]
-    steps        = args["steps"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
     
-    opt_path     = str(current_dir / "options" / "test" / args["opt_path"])
-    opt          = option.parse(opt_path, is_train=False)
+    opt_path     = current_dir / "options" / "test" / args["opt_path"]
+    opt          = option.parse(str(opt_path), is_train=False)
     opt          = option.dict_to_nonedict(opt)
     
     # Start
@@ -118,8 +122,8 @@ def predict(args: dict) -> str:
             # Save
             if save_image:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(str(output_path), enhanced)
                 # torchvision.utils.save_image(enhanced, str(output_path))
     

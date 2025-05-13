@@ -1,33 +1,9 @@
-[submodule "src/mon_extra/multimodal/clip"]
-	path = src/mon_extra/multimodal/clip
-	url  = https://github.com/phlong3105/clip
-[submodule "src/mon_extra/multimodal/openclip"]
-	path = src/mon_extra/multimodal/openclip
-	url  = https://github.com/phlong3105/openclip
-[submodule "src/mon_extra/vision/depth/depth_anything_v2"]
-	path = src/mon_extra/vision/depth/depth_anything_v2
-	url  = https://github.com/phlong3105/depth_anything_v2
-[submodule "src/mon_extra/vision/detect/yolov7"]
-	path = src/mon_extra/vision/detect/yolov7
-	url  = https://github.com/phlong3105/yolov7
-[submodule "src/mon_extra/vision/detect/yolov9"]
-	path = src/mon_extra/vision/detect/yolov9
-	url  = https://github.com/phlong3105/yolov9
-[submodule "src/mon_extra/vision/detect/yolox"]
-	path = src/mon_extra/vision/detect/yolox
-	url  = https://github.com/phlong3105/yolox
-[submodule "src/mon_extra/vision/segment/fastsam"]
-	path = src/mon_extra/vision/segment/fastsam
-	url  = https://github.com/phlong3105/fastsam
-[submodule "src/mon_extra/vision/segment/mobile_sam"]
-	path = src/mon_extra/vision/segment/mobile_sam
-	url  = https://github.com/phlong3105/mobile_sam
-[submodule "src/mon_extra/vision/segment/sam"]
-	path = src/mon_extra/vision/segment/sam
-	url  = https://github.com/phlong3105/sam
-[submodule "src/mon_extra/vision/segment/sam2"]
-	path = src/mon_extra/vision/segment/sam2
-	url  = https://github.com/phlong3105/sam2
-[submodule "src/mon_extra/vision/ultralytics"]
-	path = src/mon_extra/vision/ultralytics
+[submodule "src/mon/extra/snntorch"]
+	path = src/mon/extra/snntorch
+	url  = https://github.com/phlong3105/snntorch
+[submodule "src/mon/extra/spikingjelly"]
+	path = src/mon/extra/spikingjelly
+	url  = https://github.com/phlong3105/spikingjelly
+[submodule "src/mon/extra/ultralytics"]
+	path = src/mon/extra/ultralytics
 	url  = https://github.com/phlong3105/ultralytics

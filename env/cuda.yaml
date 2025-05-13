@@ -1,0 +1,27 @@
+#
+# - Install   : conda env create -f environment.yml
+# - Update    : conda env update --name one --file environment.yml
+# - Update pip: pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+#
+
+name: mon
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Basic
+  - python=3.12
+  - git                                 # Distributed version control system.
+  - pip                                 # PyPA recommended tool for installing Python packages.
+  # CUDA
+  - cuda-toolkit=12.6                   # CUDA Toolkit - Including CUDA runtime.
+  - cudnn                               # NVIDIA's cuDNN deep neural network acceleration library.
+  - cupy                                # NumPy & SciPy for GPU.
+  - pynvml                              # Python Bindings for the NVIDIA Management Library.
+  - pip:
+    # Building Tools
+    - poetry                            # Python packaging and dependency management made easy.
+    # AI
+    - tensorrt                          # # TensorRT is a high-performance deep learning inference library and runtime.

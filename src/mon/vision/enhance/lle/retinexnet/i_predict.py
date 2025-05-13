@@ -24,15 +24,19 @@ def predict(args: dict) -> str:
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
+    torchrun     = args["torchrun"]
+    epochs       = args["epochs"]
+    steps        = args["steps"]
     seed         = args["seed"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
-    epochs       = args["epochs"]
-    steps        = args["steps"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
     
     # Start
@@ -63,6 +67,7 @@ def predict(args: dict) -> str:
             meta        = datapoint["meta"]
             image_path  = meta["path"]
             output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
+            output_dir  = output_dir / "predict"
             output_dir.mkdir(parents=True, exist_ok=True)
             timer.tick()
             model.predict([image_path], res_dir=str(output_dir), ckpt_dir=str(weights))

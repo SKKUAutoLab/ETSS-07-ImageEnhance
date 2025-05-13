@@ -101,11 +101,9 @@ def parse_data_loader(
     src = core.Path(src)
 
     if src.stem in DATASETS:
-        src  = src.stem
-        root = core.parse_data_dir(root=data_root, data_dir=src)
-        # if root and not root.is_dir():
-        #     root = root / "data"
-        config = {
+        src         = src.stem
+        root        = core.parse_data_dir(root=data_root, data_dir=src)
+        config      = {
             "name"     : src,
             "root"     : root,
             "split"    : Split.TEST,

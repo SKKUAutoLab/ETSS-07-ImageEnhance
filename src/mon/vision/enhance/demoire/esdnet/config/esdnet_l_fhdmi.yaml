@@ -7,12 +7,17 @@ fullname    : &fullname "esdnet_l_fhdmi"                                        
 save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
 weights     : &weights "zoo/vision/enhance/demoire/esdnet/esdnet_l/fhdmi/esdnet_l_fhdmi.pth" # Path to the pretrained weights.
 device      : &device 0                                                         # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+torchrun    : False                                                             # If ``True``, use torch.distributed.run to run the training script.
+master_port : 7777                                                              # Master port for distributed training.
+master_addr : "localhost"                                                       # Master address for distributed training.
+local_rank  : -1                                                                # Local rank for distributed training.
+epochs      : &epochs 150                                                       # Training epochs.
+steps       : &steps -1                                                         # Training steps.
 seed        : &seed 123                                                         # Random seed.
 imgsz       : &imgsz 512                                                        # Image size for the model.
 resize      : False                                                             # Resize the input image to `imgsz`.
-epochs      : &epochs 150                                                       # Training epochs.
-steps       : &steps -1                                                         # Training steps.
 benchmark   : False                                                             # Benchmark the model.
+save_result : True                                                              # Save the result of the model.
 save_image  : True                                                              # Save the output image.
 save_debug  : &save_debug False                                                 # Save the debug information.
 use_fullname: False                                                             # Use the full name for the save_dir.

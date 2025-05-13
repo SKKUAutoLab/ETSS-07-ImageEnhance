@@ -31,7 +31,6 @@ current_dir  = current_file.parents[0]
 
 
 # ----- Predict -----
-
 def load_classes(path):
     # Loads *.names file at "path"
     with open(path, "r") as f:
@@ -201,11 +200,7 @@ def predict(opt, save_img: bool = False):
     print("Done. (%.3fs)" % (time.time() - t0))
 
 
-
-
 # ----- Main -----
-
-
 def main() -> str:
     # Parse args
     args        = mon.parse_predict_args(model_root=current_dir)

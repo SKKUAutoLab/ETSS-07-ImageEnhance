@@ -1,3 +1,8 @@
+# Fisheye8K dataset:
+#   - train: 5288 images
+#   - val  : 2712 images
+#   - test : 1000 images
+
 task: detection
 
 evaluator:
@@ -11,8 +16,8 @@ train_dataloader:
   type: DataLoader
   dataset:
     type        : CocoDetection
-    img_folder  : /data/train/image
-    ann_file    : /data/train/train.json
+    img_folder  : /data/fisheye8k/train/image
+    ann_file    : /data/fisheye8k/train/train.json
     return_masks: False
     transforms:
       type: Compose
@@ -27,8 +32,8 @@ val_dataloader:
   type: DataLoader
   dataset:
     type        : CocoDetection
-    img_folder  : /data/val/image
-    ann_file    : /data/val/val.json
+    img_folder  : /data/fisheye8k/val/image
+    ann_file    : /data/fisheye8k/val/val.json
     return_masks: False
     transforms:
       type: Compose

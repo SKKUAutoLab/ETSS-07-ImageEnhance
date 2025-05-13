@@ -21,7 +21,7 @@ def dice_coefficient(
     input       : torch.Tensor,
     target      : torch.Tensor,
     reduce_batch: bool  = False,
-    epsilon     : float = 1e-6
+    eps        : float = 1e-6
 ) -> torch.Tensor:
     """Computes Dice coefficient for input and target tensors.
 
@@ -29,7 +29,7 @@ def dice_coefficient(
         input: Prediction tensor as ``torch.Tensor``.
         target: Ground truth tensor as ``torch.Tensor``.
         reduce_batch: Reduces batch dim if ``True``. Default is ``False``.
-        epsilon: Smoothing factor. Default is ``1e-6``.
+        eps: Smoothing factor. Default is ``1e-6``.
 
     Returns:
         Dice coefficient as ``torch.Tensor``.
@@ -47,7 +47,7 @@ def dice_coefficient(
     inter    = 2 * (input * target).sum(dim=sum_dim)
     sets_sum = input.sum(dim=sum_dim) + target.sum(dim=sum_dim)
     sets_sum = torch.where(sets_sum == 0, inter, sets_sum)
-    dice     = (inter + epsilon) / (sets_sum + epsilon)
+    dice     = (inter + eps) / (sets_sum + eps)
     return dice
 
 
@@ -55,7 +55,7 @@ def multiclass_dice_coefficient(
     input       : torch.Tensor,
     target      : torch.Tensor,
     reduce_batch: bool  = False,
-    epsilon     : float = 1e-6
+    eps         : float = 1e-6
 ) -> torch.Tensor:
     """Computes Dice coefficient for multiclass tensors.
 
@@ -63,7 +63,7 @@ def multiclass_dice_coefficient(
         input: Prediction tensor as ``torch.Tensor``.
         target: Ground truth tensor as ``torch.Tensor``.
         reduce_batch: Reduces batch dim if ``True``. Default is ``False``.
-        epsilon: Smoothing factor. Default is ``1e-6``.
+        eps: Smoothing factor. Default is ``1e-6``.
 
     Returns:
         Average Dice coefficient as ``torch.Tensor``.
@@ -72,7 +72,7 @@ def multiclass_dice_coefficient(
         input        = input.flatten(0, 1),
         target       = target.flatten(0, 1),
         reduce_batch = reduce_batch,
-        epsilon      = epsilon,
+        eps= eps,
     )
 
 

@@ -59,7 +59,9 @@ def load_image(
         image = cv2.imread(str(path), flags)  # BGR
         if image.ndim == 2:  # [H, W] -> [H, W, 1] for grayscale
             image = np.expand_dims(image, axis=-1)
-        if utils.is_image_colored(image):
+        if utils.is_image_grayscale(image) and flags != cv2.IMREAD_GRAYSCALE:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif utils.is_image_colored(image):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     if to_tensor:

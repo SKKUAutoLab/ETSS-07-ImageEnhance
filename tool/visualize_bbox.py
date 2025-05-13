@@ -18,8 +18,8 @@ import mon
 # region Function
 
 @click.command()
-@click.option("--image-dir",  type=click.Path(exists=True),  default=mon.DATA_DIR, help="Image directory.")
-@click.option("--label-dir",  type=click.Path(exists=True),  default=mon.DATA_DIR, help="Image directory.")
+@click.option("--image-dir",  type=click.Path(exists=True),  help="Image directory.")
+@click.option("--label-dir",  type=click.Path(exists=True),  help="Image directory.")
 @click.option("--output-dir", type=click.Path(exists=False), default=None,         help="Output directory.")
 @click.option("--format",     type=click.Choice(["voc", "coco", "yolo"], case_sensitive=False), default="yolo", help="Bounding bbox format.")
 @click.option("--verbose",    is_flag=True)

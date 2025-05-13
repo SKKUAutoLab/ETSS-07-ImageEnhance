@@ -19,12 +19,10 @@ from src.core import YAMLConfig
 def draw(images, labels, boxes, scores, thrh=0.4):
     for i, im in enumerate(images):
         draw = ImageDraw.Draw(im)
-
-        scr = scores[i]
-        lab = labels[i][scr > thrh]
-        box = boxes[i][scr > thrh]
+        scr  = scores[i]
+        lab  = labels[i][scr > thrh]
+        box  = boxes[i][scr > thrh]
         scrs = scr[scr > thrh]
-
         for j, b in enumerate(box):
             draw.rectangle(list(b), outline="red")
             draw.text(
@@ -32,7 +30,6 @@ def draw(images, labels, boxes, scores, thrh=0.4):
                 text=f"{lab[j].item()} {round(scrs[j].item(), 2)}",
                 fill="blue",
             )
-
         im.save("torch_results.jpg")
 
 

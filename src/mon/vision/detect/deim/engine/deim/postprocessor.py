@@ -31,17 +31,17 @@ class PostProcessor(nn.Module):
 
     def __init__(
         self,
-        num_classes=80,
-        use_focal_loss=True,
-        num_top_queries=300,
-        remap_mscoco_category=False
+        num_classes           = 80,
+        use_focal_loss        = True,
+        num_top_queries       = 300,
+        remap_mscoco_category = False
     ) -> None:
         super().__init__()
-        self.use_focal_loss = use_focal_loss
-        self.num_top_queries = num_top_queries
-        self.num_classes = int(num_classes)
+        self.use_focal_loss        = use_focal_loss
+        self.num_top_queries       = num_top_queries
+        self.num_classes           = int(num_classes)
         self.remap_mscoco_category = remap_mscoco_category
-        self.deploy_mode = False
+        self.deploy_mode           = False
 
     def extra_repr(self) -> str:
         return f'use_focal_loss={self.use_focal_loss}, num_classes={self.num_classes}, num_top_queries={self.num_top_queries}'
@@ -87,7 +87,6 @@ class PostProcessor(nn.Module):
             results.append(result)
 
         return results
-
 
     def deploy(self, ):
         self.eval()

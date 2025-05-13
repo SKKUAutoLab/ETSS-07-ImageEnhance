@@ -32,19 +32,23 @@ def train(args: argparse.Namespace):
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
+    torchrun     = args["torchrun"]
+    epochs       = args["epochs"]
+    steps        = args["steps"]
     seed         = args["seed"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
-    epochs       = args["epochs"]
-    steps        = args["steps"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
     
-    opt_path = str(current_dir / "options" / "train" / args["opt_path"])
-    opt      = parse(opt_path)
+    opt_path = current_dir / "options" / "train" / args["opt_path"]
+    opt      = parse(str(opt_path))
     opt      = dict_to_nonedict(opt)
     opt["network_G"]["init_model"] = mon.ROOT_DIR / opt["network_G"]["init_model"]
     

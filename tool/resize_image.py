@@ -19,8 +19,8 @@ import mon
 # region Function
 
 @click.command()
-@click.option("--input-dir",    type=click.Path(exists=True),  default=mon.DATA_DIR, help="Image directory.")
-@click.option("--output-dir",   type=click.Path(exists=False), default=None,         help="Output directory.")
+@click.option("--input-dir",    type=click.Path(exists=True),                help="Image directory.")
+@click.option("--output-dir",   type=click.Path(exists=False), default=None, help="Output directory.")
 @click.option("--imgsz",        type=int,                      default=512)
 @click.option("--divisible-by", type=int,                      default=32)
 @click.option("--side",         type=click.Choice(["short", "long", "vert", "horz"], case_sensitive=False), default="short")

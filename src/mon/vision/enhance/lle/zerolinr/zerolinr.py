@@ -126,7 +126,7 @@ class Loss(nn.Loss):
         loss_w_de  : float = 1.0,
         loss_w_c   : float = 5.0,
         reduction  : Literal["none", "mean", "sum"] = "mean",
-        verbose    : bool = True,
+        verbose    : bool = False,
     ):
         super().__init__(reduction=reduction)
         self.loss_w_f   = loss_w_f
@@ -571,6 +571,7 @@ class ZeroLINR(base.ImageEnhancementModel):
             loss_w_tv   = self.loss["loss_w_tv"],
             loss_w_de   = loss_w_de,
             loss_w_c    = self.loss["loss_w_c"],
+            verbose     = self.loss["verbose"],
         )
         
         # Load weights

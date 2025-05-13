@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Implements ExDark datasets."""
+"""Implements ExDark datasets.
+
+References:
+    - https://github.com/cs-chan/Exclusively-Dark-Image-Dataset
+"""
 
 __all__ = [
     "ExDark",
@@ -43,6 +47,7 @@ class ExDark(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
+        "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
 
@@ -87,6 +92,7 @@ class ExDarkFull(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
+        "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
 

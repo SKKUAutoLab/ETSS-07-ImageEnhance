@@ -69,7 +69,7 @@ parser.add_argument(
     **kwargs
 )
 """
-CLI_OPTIONS = {
+CLI_OPTIONS  = {
     # Basic
     "root"        : {
         "default"    : None,
@@ -145,6 +145,7 @@ CLI_OPTIONS = {
         "prompt_only": False,
         "prompt_text": "Weights",
     },
+    # Training
     "device"      : {
         "default"    : None,
         "type"       : _str_or_none,
@@ -153,19 +154,33 @@ CLI_OPTIONS = {
         "prompt_only": False,
         "prompt_text": "Device",
     },
-    "imgsz"       : {
-        "action"     : "append",
-        "default"    : None,
-        "type"       : _int_or_none,
-        "help"       : "Image size.",
-        "prompt_only": False,
-        "prompt_text": "Image size",
-    },
-    "resize"      : {
+    "torchrun"    : {
+        "default"    : False,
         "action"     : "store_true",
-        "help"       : "Resize the input image.",
+        "help"       : "Using torch distributed training.",
         "prompt_only": False,
-        "prompt_text": "Resize?       ",
+        "prompt_text": "Use torchrun?",
+    },
+    "master_port" : {
+        "default"    : 7777,
+        "type"       : _int_or_none,
+        "help"       : "Port for distributed communication.",
+        "prompt_only": False,
+        "prompt_text": "Master Port",
+    },
+    "master_addr" : {
+        "default"    : "localhost",
+        "type"       : _str_or_none,
+        "help"       : "Master node address.",
+        "prompt_only": False,
+        "prompt_text": "Master Address",
+    },
+    "local_rank"  : {
+        # "default"    : 0,
+        "type"       : _int_or_none,
+        "help"       : "Local rank for distributed training.",
+        "prompt_only": False,
+        "prompt_text": "Local Rank",
     },
     "epochs"      : {
         "default"    : None,
@@ -181,15 +196,43 @@ CLI_OPTIONS = {
         "prompt_only": False,
         "prompt_text": "Steps",
     },
+    # Prediction
+    "seed"        : {
+        "default"    : None,
+        "type"       : _int_or_none,
+        "help"       : "Seed.",
+        "prompt_only": False,
+        "prompt_text": "Seed ",
+    },
+    "imgsz"       : {
+        "action"     : "append",
+        "default"    : None,
+        "type"       : _int_or_none,
+        "help"       : "Image size.",
+        "prompt_only": False,
+        "prompt_text": "Image size",
+    },
+    "resize"      : {
+        "action"     : "store_true",
+        "help"       : "Resize the input image.",
+        "prompt_only": False,
+        "prompt_text": "Resize?       ",
+    },
     "benchmark"   : {
         "action"     : "store_true",
         "help"       : "Enable benchmark mode.",
         "prompt_only": False,
         "prompt_text": "Benchmark?    ",
     },
+    "save_result" : {
+        "action"     : "store_true",
+        "help"       : "Save results.",
+        "prompt_only": False,
+        "prompt_text": "Save result?  ",
+    },
     "save_image"  : {
         "action"     : "store_true",
-        "help"       : "Save the output images.",
+        "help"       : "Save output images.",
         "prompt_only": False,
         "prompt_text": "Save image?   ",
     },
@@ -222,35 +265,6 @@ CLI_OPTIONS = {
         "help"       : "Verbose mode.",
         "prompt_only": False,
         "prompt_text": "Verbosity?    ",
-    },
-    # Distributed Training
-    "torchrun"    : {
-        "default"    : False,
-        "action"     : "store_true",
-        "help"       : "Distributed training.",
-        "prompt_only": False,
-        "prompt_text": "Use torchrun? ",
-    },
-    "master_port" : {
-        "default"    : 7777,
-        "type"       : _int_or_none,
-        "help"       : "Port for distributed communication.",
-        "prompt_only": False,
-        "prompt_text": "Master Port   ",
-    },
-    "master_addr" : {
-        "default"    : "localhost",
-        "type"       : _str_or_none,
-        "help"       : "Master node address.",
-        "prompt_only": False,
-        "prompt_text": "Master Address",
-    },
-    "local_rank"  : {
-        # "default"    : 0,
-        "type"       : _int_or_none,
-        "help"       : "Local rank for distributed training.",
-        "prompt_only": False,
-        "prompt_text": "Local Rank    ",
     },
 }
 

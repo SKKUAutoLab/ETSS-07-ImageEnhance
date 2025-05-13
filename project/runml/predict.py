@@ -19,17 +19,21 @@ def predict(args: dict) -> str:
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"] or "auto"
+    torchrun     = args["torchrun"]
+    epochs       = args["epochs"]
+    steps        = args["steps"]
     seed         = args["seed"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
-    epochs       = args["epochs"]
-    steps        = args["steps"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
-    
+
     # Start
     mon.console.rule(f"[bold red] {fullname}")
     mon.console.log(f"Machine: {hostname}")
@@ -87,17 +91,17 @@ def predict(args: dict) -> str:
             if save_image:
                 _, output   = outputs.popitem()
                 output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
                 mon.write_image(output_path, output)
             
             # Save Debug
             if save_debug:
-                debug_dir = mon.parse_debug_dir(save_dir, data_name, image_path, keep_subdirs)
-                debug_dir.mkdir(parents=True, exist_ok=True)
+                debug_dir = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
                 for k, v in outputs.items():
                     if mon.is_image(v):
-                        path = debug_dir / f"{image_path.stem}_{k}{mon.SAVE_IMAGE_EXT}"
+                        path = debug_dir / "debug" / f"{image_path.stem}_{k}{mon.SAVE_IMAGE_EXT}"
+                        path.parent.mkdir(parents=True, exist_ok=True)
                         mon.write_image(path, v)
     
     # Finish

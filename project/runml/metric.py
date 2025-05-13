@@ -238,7 +238,7 @@ def main(
     # Show results
     # console.rule(f"[bold red] {model}")
     mon.console.log(f"[bold green]Model: {model}")
-    mon.console.log(f"[bold red]Data : {input_dir.name}")
+    mon.console.log(f"[bold red]Data : {data}")
     message = ""
     # Headers
     for m, v in results.items():

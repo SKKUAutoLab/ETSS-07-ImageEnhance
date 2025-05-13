@@ -4,7 +4,6 @@
 """Trains a model on a given dataset."""
 
 import mon
-import mon.core.utils
 
 current_file = mon.Path(__file__).absolute()
 current_dir  = current_file.parents[0]
@@ -20,17 +19,21 @@ def train(args: dict) -> str:
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
+    torchrun     = args["torchrun"]
+    epochs       = args["epochs"]
+    steps        = args["steps"]
     seed         = args["seed"]
     # imgsz        = args["imgsz"]
     # resize       = args["resize"]
-    epochs       = args["epochs"]
-    steps        = args["steps"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
-    
+
     # Start
     if mon.is_rank_zero():
         mon.console.rule("[bold red] INITIALIZATION")
@@ -43,9 +46,9 @@ def train(args: dict) -> str:
     mon.set_random_seed(seed)
     
     # Data I/O
-    data_root = mon.parse_data_dir(root, args["datamodule"].get("root", ""))
     args["datamodule"] |= {
-        "root": data_root,
+        "root"   : mon.parse_data_dir(root, args["datamodule"].get("root", "")),
+        "devices": device,
     }
     datamodule: mon.DataModule = mon.DATAMODULES.build(config=args["datamodule"])
     datamodule.prepare_data()

@@ -17,7 +17,6 @@ __all__ = [
     "hash_files",
     "mkdirs",
     "parse_data_dir",
-    "parse_debug_dir",
     "parse_output_dir",
     "parse_save_dir",
     "rmdirs",
@@ -620,27 +619,3 @@ def parse_output_dir(
         return root / rel_path.parent
     else:
         return root / dirname
-
-
-def parse_debug_dir(
-    root        : str | Path,
-    dirname     : str | Path,
-    file        : str | Path,
-    keep_subdirs: bool = False,
-):
-    """Parses the debug directory path from given components.
-    
-    Args:
-        root: Root directory.
-        dirname: Directory name.
-        file: File name.
-        keep_subdirs: If ``True``, keeps subdirectories in the path. Default is ``False``.
-    """
-    root    = Path(root)
-    dirname = Path(dirname)
-    file    = Path(file)
-    if keep_subdirs:
-        rel_path = file.relative_path(dirname)
-        return root / rel_path.parents[1] / f"{rel_path.parent.name}_debug"
-    else:
-        return root / f"{dirname}_debug"

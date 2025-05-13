@@ -19,19 +19,20 @@ def mod(a, b):
 
 
 class DetDETRPostProcessor(nn.Module):
+
     def __init__(
         self,
-        num_classes=80,
-        use_focal_loss=True,
-        num_top_queries=300,
-        box_process_format=BoxProcessFormat.RESIZE,
+        num_classes        = 80,
+        use_focal_loss     = True,
+        num_top_queries    = 300,
+        box_process_format = BoxProcessFormat.RESIZE,
     ) -> None:
         super().__init__()
-        self.use_focal_loss = use_focal_loss
-        self.num_top_queries = num_top_queries
-        self.num_classes = int(num_classes)
+        self.use_focal_loss     = use_focal_loss
+        self.num_top_queries    = num_top_queries
+        self.num_classes        = int(num_classes)
         self.box_process_format = box_process_format
-        self.deploy_mode = False
+        self.deploy_mode        = False
 
     def extra_repr(self) -> str:
         return f"use_focal_loss={self.use_focal_loss}, num_classes={self.num_classes}, num_top_queries={self.num_top_queries}"
@@ -44,8 +45,8 @@ class DetDETRPostProcessor(nn.Module):
             scores, index = torch.topk(scores.flatten(1), self.num_top_queries, dim=-1)
             labels = index % self.num_classes
             # labels = mod(index, self.num_classes) # for tensorrt
-            index = index // self.num_classes
-            boxes = boxes.gather(dim=1, index=index.unsqueeze(-1).repeat(1, 1, boxes.shape[-1]))
+            index  = index // self.num_classes
+            boxes  = boxes.gather(dim=1, index=index.unsqueeze(-1).repeat(1, 1, boxes.shape[-1]))
 
         else:
             scores = F.softmax(logits)[:, :, :-1]
@@ -53,17 +54,15 @@ class DetDETRPostProcessor(nn.Module):
             if scores.shape[1] > self.num_top_queries:
                 scores, index = torch.topk(scores, self.num_top_queries, dim=-1)
                 labels = torch.gather(labels, dim=1, index=index)
-                boxes = torch.gather(
-                    boxes, dim=1, index=index.unsqueeze(-1).tile(1, 1, boxes.shape[-1])
-                )
+                boxes  = torch.gather(boxes, dim=1, index=index.unsqueeze(-1).tile(1, 1, boxes.shape[-1]))
 
         if kwargs is not None:
             boxes = box_revert(
                 boxes,
-                in_fmt="cxcywh",
-                out_fmt="xyxy",
-                process_fmt=self.box_process_format,
-                normalized=True,
+                in_fmt      = "cxcywh",
+                out_fmt     = "xyxy",
+                process_fmt = self.box_process_format,
+                normalized  = True,
                 **kwargs,
             )
 
@@ -78,9 +77,7 @@ class DetDETRPostProcessor(nn.Module):
 
         return results
 
-    def deploy(
-        self,
-    ):
+    def deploy(self):
         self.eval()
         self.deploy_mode = True
         return self

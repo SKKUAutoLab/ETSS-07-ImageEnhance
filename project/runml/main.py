@@ -3,7 +3,11 @@
 
 """Implements main running pipeline."""
 
+import os
 import subprocess
+import sys
+
+import torch
 
 import mon
 import menu_rich
@@ -15,29 +19,34 @@ current_dir  = current_file.parents[0]
 # ----- Train -----
 def run_train(args: dict):
     # Get user input
+    root         = mon.Path(args["root"])
     task         = args["task"]
     mode         = args["mode"]
-    config       = args["config"]
-    root         = mon.Path(args["root"])
     arch         = args["arch"]
     model        = args["model"]
+    config       = args["config"]
     data         = args["data"]
     fullname     = args["fullname"]
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
-    imgsz        = args["imgsz"]
-    resize       = args["resize"]
+    torchrun     = args["torchrun"]
+    master_port  = args["master_port"]
+    master_addr  = args["master_addr"]
     epochs       = args["epochs"]
     steps        = args["steps"]
+    seed         = args["seed"]
+    imgsz        = args["imgsz"]
+    resize       = args["resize"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
-    # use_fullname = args["use_fullname"]
+    use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
-    
+
     assert root.exists()
     
     # Parse arguments
@@ -52,47 +61,51 @@ def run_train(args: dict):
         weights_path = weights,
     )
     assert config not in [None, "None", ""]
-    # save_dir = save_dir or mon.parse_save_dir(root/"run"/"train", arch, model, data, project, variant)
-    weights  = mon.to_str(weights, ",")
-    
-    kwargs   = {
-        "--config"  : config,
-        "--root"    : str(root),
-        "--arch"    : arch,
-        "--model"   : model,
-        "--fullname": fullname,
-        "--save-dir": str(save_dir),
-        "--weights" : weights,
-        "--device"  : device,
-        # "--imgsz"   : imgsz,
-        "--epochs"  : epochs,
-        "--steps"   : steps,
-    }
-    flags  = ["--benchmark"]    if benchmark    else []
-    flags += ["--save-image"]   if save_image   else []
-    flags += ["--save-debug"]   if save_debug   else []
-    flags += ["--keep-subdirs"] if keep_subdirs else []
-    flags += ["--exist-ok"]     if exist_ok     else []
-    flags += ["--verbose"]      if verbose      else []
-    
+    weights = mon.to_str(weights, ",")
+
+    kwargs  = {}
+    flags   = []
+    kwargs |= {"--root"    : str(root)}
+    kwargs |= {"--arch"    : arch}
+    kwargs |= {"--model"   : model}
+    kwargs |= {"--config"  : config}
+    # kwargs |= {"--data"    : data}
+    kwargs |= {"--fullname": fullname}
+    kwargs |= {"--save-dir": str(save_dir)}
+    kwargs |= {"--weights" : weights}
+    kwargs |= {"--device"  : device}
+    flags  += ["--torchrun"]     if torchrun     else []
+    kwargs |= {"--epochs"  : epochs}
+    kwargs |= {"--steps"   : steps}
+    kwargs |= {"--seed"    : seed}
+    # kwargs |= {"--imgsz"   : imgsz}
+    # flags  += ["--resize"]       if resize       else []
+    flags  += ["--benchmark"]    if benchmark    else []
+    flags  += ["--save-image"]   if save_image   else []
+    flags  += ["--save-debug"]   if save_debug   else []
+    flags  += ["--use-fullname"] if use_fullname else []
+    flags  += ["--keep-subdirs"] if keep_subdirs else []
+    flags  += ["--exist-ok"]     if exist_ok     else []
+    flags  += ["--verbose"]      if verbose      else []
+
     # Parse script file
+    python_call = ["python"]
+    env         = {**os.environ}
     if use_extra_model:
-        # torch_distributed_launch = mon.EXTRA_MODELS[arch][model]["torch_distributed_launch"]
         script_file = mon.EXTRA_MODELS[arch][model]["model_dir"] / "i_train.py"
-        python_call = ["python"]
-        # device      = mon.parse_device(device)
-        # if isinstance(device, list) and torch_distributed_launch:
-        #     python_call = [
-        #         f"python",
-        #         f"-m",
-        #         f"torch.distributed.launch",
-        #         f"--nproc_per_node={str(len(device))}",
-        #         f"--master_port=9527"
-        #     ]
+        if torchrun:
+            device_     = mon.parse_device(device)
+            python_call = [
+                "python", "-m", "torch.distributed.run",
+                f"--nproc_per_node={len(device_)}",
+                f"--master_port={master_port}",
+                f"--master_addr={master_addr}",
+            ]
+            os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(device_)
+            env = {**os.environ, "CUDA_VISIBLE_DEVICES": ",".join(device_), **env}
     else:
         script_file = current_dir / "train.py"
-        python_call = ["python"]
-    
+
     # Parse arguments
     args_call: list[str] = []
     for k, v in kwargs.items():
@@ -113,7 +126,7 @@ def run_train(args: dict):
             args_call +
             flags
         )
-        result = subprocess.run(command, cwd=current_dir)
+        result = subprocess.run(command, cwd=current_dir, env=env)
         print(result)
     else:
         raise ValueError(f"Cannot find Python training script file at: {script_file}.")
@@ -122,22 +135,27 @@ def run_train(args: dict):
 # ----- Predict -----
 def run_predict(args: dict):
     # Get user input
+    root         = mon.Path(args["root"])
     task         = args["task"]
     mode         = args["mode"]
-    config       = args["config"]
-    root         = mon.Path(args["root"])
     arch         = args["arch"]
     model        = args["model"]
+    config       = args["config"]
     data         = args["data"]
     fullname     = args["fullname"]
     save_dir     = args["save_dir"]
     weights      = args["weights"]
     device       = args["device"]
-    imgsz        = args["imgsz"]
-    resize       = args["resize"]
+    torchrun     = args["torchrun"]
+    master_port  = args["master_port"]
+    master_addr  = args["master_addr"]
     epochs       = args["epochs"]
     steps        = args["steps"]
+    seed         = args["seed"]
+    imgsz        = args["imgsz"]
+    resize       = args["resize"]
     benchmark    = args["benchmark"]
+    save_result  = args["save_result"]
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
@@ -164,28 +182,31 @@ def run_predict(args: dict):
     weights = mon.to_str(weights, ",")
     
     for d in data:
-        kwargs  = {
-            "--config"  : config,
-            "--root"    : str(root),
-            "--arch"    : arch,
-            "--model"   : model,
-            "--data"    : d,
-            "--fullname": fullname,
-            "--save-dir": str(save_dir),
-            "--weights" : weights,
-            "--device"  : device,
-            "--imgsz"   : imgsz,
-            # "--epochs"  : epochs,
-            # "--steps"   : steps,
-        }
-        flags   = ["--resize"]       if resize       else []
+        kwargs  = {}
+        flags   = []
+        kwargs |= {"--root"    : str(root)}
+        kwargs |= {"--arch"    : arch}
+        kwargs |= {"--model"   : model}
+        kwargs |= {"--config"  : config}
+        kwargs |= {"--data"    : d}
+        kwargs |= {"--fullname": fullname}
+        kwargs |= {"--save-dir": str(save_dir)}
+        kwargs |= {"--weights" : weights}
+        kwargs |= {"--device"  : device}
+        # flags  += ["--torchrun"]     if torchrun     else []
+        # kwargs |= {"--epochs"  : epochs}
+        # kwargs |= {"--steps"   : steps}
+        kwargs |= {"--seed"    : seed}
+        kwargs |= {"--imgsz"   : imgsz}
+        flags  += ["--resize"]       if resize       else []
         flags  += ["--benchmark"]    if benchmark    else []
         flags  += ["--save-image"]   if save_image   else []
         flags  += ["--save-debug"]   if save_debug   else []
+        flags  += ["--use-fullname"] if use_fullname else []
         flags  += ["--keep-subdirs"] if keep_subdirs else []
         flags  += ["--exist-ok"]     if exist_ok     else []
         flags  += ["--verbose"]      if verbose      else []
-        
+
         # Parse script file
         if use_extra_model:
             script_file = mon.EXTRA_MODELS[arch][model]["model_dir"] / "i_predict.py"
@@ -237,5 +258,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# endregion
