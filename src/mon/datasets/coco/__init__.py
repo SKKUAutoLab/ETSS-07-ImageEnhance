@@ -3,4 +3,4 @@
 
 """Implements COCO datasets for detection and segmentation."""
 
-from mon.datasets.coco.coco2017 import *
+from mon.datasets.coco.coco91 import *

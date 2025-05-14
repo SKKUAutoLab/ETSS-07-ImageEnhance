@@ -17,9 +17,8 @@ from .clas_engine import evaluate, train_one_epoch
 
 
 class ClasSolver(BaseSolver):
-    def fit(
-        self,
-    ):
+
+    def fit(self):
         print("Start training")
         self.train()
         args = self.cfg

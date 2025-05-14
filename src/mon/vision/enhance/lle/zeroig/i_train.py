@@ -47,6 +47,7 @@ def train(args: dict) -> str:
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
 

@@ -304,7 +304,7 @@ class RunmlCLI:
         self.config_args = {}
 
     def __len__(self):
-        return 26
+        return 27
 
     def cycle_next(self):
         """Move to the next option, wrapping around if needed."""
@@ -473,17 +473,25 @@ class RunmlCLI:
                 text    = CLI_OPTIONS["keep_subdirs"]["prompt_text"],
                 default = self.args["keep_subdirs"] or self.config_args.get("keep_subdirs"),
             ).prompt()
-        if self.index == 23:  # Exist OK?
+        if self.index == 23:  # Save Nearby
+            if self.args["mode"] not in ["predict"]:
+                self.cycle_next()
+            else:
+                self.args["save_nearby"] = Confirm(
+                    text    = CLI_OPTIONS["save_nearby"]["prompt_text"],
+                    default = self.args["save_nearby"] or self.config_args.get("save_nearby"),
+                ).prompt()
+        if self.index == 24:  # Exist OK?
             self.args["exist_ok"] = Confirm(
                 text    = CLI_OPTIONS["exist_ok"]["prompt_text"],
                 default = self.args["exist_ok"] or self.config_args.get("exist_ok"),
             ).prompt()
-        if self.index == 24:  # Use Verbose
+        if self.index == 25:  # Use Verbose
             self.args["verbose"] = Confirm(
                 text    = CLI_OPTIONS["verbose"]["prompt_text"],
                 default = self.args["verbose"] or self.config_args.get("verbose"),
             ).prompt()
-        if self.index == 25:  # Finish
+        if self.index == 26:  # Finish
             rich.print_dict(self.args, title="Arguments")
             finish = Confirm(text="Finish/Re-input", default=True).prompt()
             if finish:

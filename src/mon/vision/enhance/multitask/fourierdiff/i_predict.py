@@ -68,6 +68,7 @@ def predict(args: dict) -> str:
     save_image   = args["save_image"]
     save_debug   = args["save_debug"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     verbose      = args["verbose"]
 
     opt_path     = current_dir / "options" / args["opt_path"]
@@ -135,8 +136,8 @@ def predict(args: dict) -> str:
             
             # Save
             if save_image:
-                output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 torchvision.utils.save_image(enhanced, str(output_path))
         

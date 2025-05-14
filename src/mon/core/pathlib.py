@@ -587,44 +587,77 @@ def parse_save_dir(
     Returns:
         Parsed save dir path as ``str`` or ``pathlib.Path``.
     """
-    save_dir = pathlib.Path(root)
+    save_dir = Path(root)
+    data     = Path(data) if data not in [None, "None", ""] else None
     if arch:
         save_dir /= arch
     if model:
         save_dir /= model
         if data:
-            save_dir /= data
+            if data.is_dir() or data.is_file():
+                save_dir /= data.stem
+            else:
+                save_dir /= data
     return save_dir
 
 
 def parse_output_dir(
     root        : str | Path,
     dirname     : str | Path,
-    file        : str | Path,
+    subdir_name : str | Path,
+    src_path    : str | Path,
     keep_subdirs: bool = False,
-):
+    save_nearby : bool = False,
+) -> pathlib.Path:
     """Parses the output directory path from given components.
+
+    It should be in this pattern:
+        ``root/dirname/file``.
+        where:
+            root = ``parse_save_dir()``
     
     Args:
-        root: Root directory.
+        root: Root directory. Root is assumed to be in this pattern: ``root/arch/model/[fullname or dirname]``.
+        src_path: Source file path.
         dirname: Directory name.
-        file: File name.
-        keep_subdirs: If ``True``, keeps subdirectories in the path. Default is ``False``.
+        subdir_name: Subdirectory name. Default is ``None``.
+        keep_subdirs: If ``True``, keeps subdirectories in the path.
+            Default is ``False``.
+        save_nearby: If ``True``, saves in the same parent directory as the file.
+            Default is ``False``.
+
+    Example:
+        root     = ../enhance/run/predict/zerodce/zerodce/dicm
+        dirname  = dicm
+        src_path = ../enhance/data/dicm/test/image/0001.jpg
+        rel_path = dicm/test/image/0001.jpg
+        return   : ../enhance/run/predict/zerodce/zerodce/dicm/test/image
     """
-    root    = Path(root)
-    dirname = Path(dirname)
-    file    = Path(file)
+    root        = Path(root)
+    dirname     = Path(dirname)
+    subdir_name = subdir_name if subdir_name not in [None, "None", ""] else None
+    subdir_name = None if save_nearby else subdir_name
+    src_path    = Path(src_path)
+
+    # Update root and dirname
+    if save_nearby:
+        if root.stem == dirname.stem:
+            root_suffix = root.parent.stem
+        else:
+            root_suffix = root.stem
+        root    = src_path.parent.parent / f"{src_path.parent.stem}_{root_suffix}"
+        dirname = Path(src_path.parent.stem)
+
     if keep_subdirs:
-        # Example:
-        # root     = .../enhance/run/predict/zerodce/zerodce/dicm
-        # dirname  = dicm
-        # file     = .../enhance/data/dicm/test/image/0001.jpg
-        # rel_path = dicm/test/image//0001.jpg
-        # return   : .../enhance/run/predict/zerodce/zerodce/dicm/test/image
-        rel_path = file.relative_path(dirname)
-        return root / rel_path.parent
+        rel_path = src_path.relative_path(dirname)
+        if subdir_name:
+            return root / subdir_name / rel_path.parent
+        else:
+            return root / rel_path.parent
     else:
-        if dirname.stem != root.stem:
-            return root / dirname.stem
+        if not save_nearby and dirname.stem != root.stem:
+            root = root / dirname.stem
+        if subdir_name:
+            return root / subdir_name
         else:
             return root

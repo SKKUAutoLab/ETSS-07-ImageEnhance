@@ -11,12 +11,13 @@ from torchvision.ops import box_iou
 
 
 class Validator:
+
     def __init__(
         self,
-        gt: List[Dict[str, torch.Tensor]],
-        preds: List[Dict[str, torch.Tensor]],
-        conf_thresh=0.5,
-        iou_thresh=0.5,
+        gt         : List[Dict[str, torch.Tensor]],
+        preds      : List[Dict[str, torch.Tensor]],
+        conf_thresh = 0.5,
+        iou_thresh  = 0.5,
     ) -> None:
         """
         Format example:

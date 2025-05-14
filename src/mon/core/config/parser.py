@@ -129,6 +129,7 @@ def parse_train_args(model_root: str | pathlib.Path = None) -> dict | argparse.N
     save_debug   = cli_args["save_debug"]   or args["save_debug"]
     use_fullname = cli_args["use_fullname"] or args["use_fullname"]
     keep_subdirs = cli_args["keep_subdirs"] or args["keep_subdirs"]
+    save_nearby  = cli_args["save_nearby"]  or args["save_nearby"]
     exist_ok     = cli_args["exist_ok"]     or args["exist_ok"]
     verbose      = cli_args["verbose"]      or args["verbose"]
     extra_args   = cli_args.get("extra_args")
@@ -172,6 +173,7 @@ def parse_train_args(model_root: str | pathlib.Path = None) -> dict | argparse.N
     args["save_debug"]   = save_debug
     args["use_fullname"] = use_fullname
     args["keep_subdirs"] = keep_subdirs
+    args["save_nearby"]  = save_nearby
     args["exist_ok"]     = exist_ok
     args["verbose"]      = verbose
     args |= extra_args
@@ -179,14 +181,10 @@ def parse_train_args(model_root: str | pathlib.Path = None) -> dict | argparse.N
     # Save config file
     if not exist_ok:
         pathlib.delete_dir(paths=save_dir)
-        
     save_dir.mkdir(parents=True, exist_ok=True)
     if config and config.is_config_file():
-        # pathlib.copy_file(src=config, dst=save_dir / f"config{config.suffix}")
         pathlib.copy_file(src=config, dst=save_dir / f"{config.name}")
-    
-    # Return
-    # args = argparse.Namespace(**args)
+
     return args
 
 
@@ -233,13 +231,14 @@ def parse_predict_args(model_root: str | pathlib.Path = None) -> dict | argparse
     save_debug   = cli_args["save_debug"]   or args["save_debug"]
     use_fullname = cli_args["use_fullname"]  # or args["use_fullname"]
     keep_subdirs = cli_args["keep_subdirs"] or args["keep_subdirs"]
+    save_nearby  = cli_args["save_nearby"]  or args["save_nearby"]
     exist_ok     = cli_args["exist_ok"]     or args["exist_ok"]
     verbose      = cli_args["verbose"]      or args["verbose"]
     extra_args   = cli_args.get("extra_args")
     
     # Parse arguments
     if save_dir in [None, ""]:
-        if use_fullname:
+        if use_fullname or save_nearby:
             save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, model, fullname)
         else:
             save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, model, data)
@@ -277,6 +276,7 @@ def parse_predict_args(model_root: str | pathlib.Path = None) -> dict | argparse
     args["save_debug"]   = save_debug
     args["use_fullname"] = use_fullname
     args["keep_subdirs"] = keep_subdirs
+    args["save_nearby"]  = save_nearby
     args["exist_ok"]     = exist_ok
     args["verbose"]      = verbose
     args |= extra_args
@@ -284,12 +284,9 @@ def parse_predict_args(model_root: str | pathlib.Path = None) -> dict | argparse
     # Save config file
     if not exist_ok:
         pathlib.delete_dir(paths=save_dir)
+    if not save_nearby:
+        save_dir.mkdir(parents=True, exist_ok=True)
+        if config and config.is_config_file():
+            pathlib.copy_file(src=config, dst=save_dir / f"{config.name}")
 
-    save_dir.mkdir(parents=True, exist_ok=True)
-    if config and config.is_config_file():
-        # pathlib.copy_file(src=config, dst=save_dir / f"config{config.suffix}")
-        pathlib.copy_file(src=config, dst=save_dir / f"{config.name}")
-    
-    # Return
-    # args = argparse.Namespace(**args)
     return args

@@ -28,7 +28,11 @@ __all__ = [
     "OPTIMIZERS",
     "ROOT_DIR",
     "SAVE_CKPT_EXT",
+    "SAVE_DEBUG_DIR",
+    "SAVE_IMAGE_DIR",
     "SAVE_IMAGE_EXT",
+    "SAVE_LABEL_DIR",
+    "SAVE_VISUALIZE_DIR",
     "SAVE_WEIGHTS_EXT",
     "SERIALIZERS",
     "STRATEGIES",
@@ -71,9 +75,13 @@ if not DATA_DIR.is_dir():
 
 
 # ----- Constants -----
-SAVE_CKPT_EXT    = TorchExtension.CKPT.value
-SAVE_IMAGE_EXT   = ImageExtension.JPG.value
-SAVE_WEIGHTS_EXT = TorchExtension.PT.value
+SAVE_DEBUG_DIR     = "debug"
+SAVE_IMAGE_DIR     = "pred"
+SAVE_LABEL_DIR     = "label"
+SAVE_VISUALIZE_DIR = "visualize"
+SAVE_CKPT_EXT      = TorchExtension.CKPT.value
+SAVE_IMAGE_EXT     = ImageExtension.JPG.value
+SAVE_WEIGHTS_EXT   = TorchExtension.PT.value
 # List 3rd party modules
 EXTRA_STR      = "[extra]"
 EXTRA_DATASETS = {}

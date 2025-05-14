@@ -222,8 +222,6 @@ class DetSolver(BaseSolver):
         )
 
         if self.output_dir:
-            dist_utils.save_on_master(
-                coco_evaluator.coco_eval["bbox"].eval, self.output_dir / "eval.pth"
-            )
+            dist_utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, self.output_dir / "eval.pth")
 
         return

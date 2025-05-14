@@ -96,7 +96,7 @@ def parse_data_name(src: core.Path | str) -> str:
     if src.stem in DATASETS:
         data_name = src.stem
     elif src.is_dir():
-        data_name = src.name
+        data_name = src.stem
     elif src.is_video_file():
         data_name = src.name
     else:

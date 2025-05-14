@@ -254,6 +254,12 @@ CLI_OPTIONS  = {
         "prompt_only": False,
         "prompt_text": "Keep Subdirs? ",
     },
+    "save_nearby" : {
+        "action"     : "store_true",
+        "help"       : "Save outputs nearby the source.",
+        "prompt_only": False,
+        "prompt_text": "Save Nearby?  ",
+    },
     "exist_ok"    : {
         "action"     : "store_true",
         "help"       : "Keep existing directories.",

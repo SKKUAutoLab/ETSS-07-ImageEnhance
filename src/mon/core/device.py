@@ -123,7 +123,7 @@ def set_device(device: Any) -> torch.device | str:
     if device == "cpu":
         return torch.device("cpu")
     if isinstance(device, list):
-        console.log(f"Using first device in {device}: {device[0]}")
+        console.log(f"Using the first available device in {device}: {device[0]}")
         device = device[0]
     return torch.device(f"cuda:{device[0]}")
 

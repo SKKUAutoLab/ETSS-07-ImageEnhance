@@ -65,7 +65,7 @@ class Dataset(dataset.Dataset, ABC):
     splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST, Split.PREDICT]
     datapoint_attrs     = DatapointAttributes({})
     has_test_annotations: bool = False
-    classlabels: ClassLabels   = None
+    classlabels         : ClassLabels = None
     
     def __init__(
         self,
@@ -85,6 +85,7 @@ class Dataset(dataset.Dataset, ABC):
         self.verbose    = verbose
         self.index      = 0  # Used with `__iter__` and `__next__`
         self.datapoints = {}
+        # Order-specific, DO NOT CHANGE
         self.init_transform(transform)
         self.init_datapoints()
         self.init_data(cache_data=cache_data)
@@ -265,7 +266,7 @@ class Dataset(dataset.Dataset, ABC):
         if not self.datapoint_attrs:
             raise ValueError("[datapoint_attrs] has no defined attributes.")
         self.datapoints = {k: list[v]() for k, v in self.datapoint_attrs.items()}
-    
+
     def init_data(self, cache_data: bool = False):
         """Initializes dataset data.
 

@@ -44,6 +44,7 @@ def run_train(args: dict):
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
 
@@ -85,6 +86,7 @@ def run_train(args: dict):
     flags  += ["--save-debug"]   if save_debug   else []
     flags  += ["--use-fullname"] if use_fullname else []
     flags  += ["--keep-subdirs"] if keep_subdirs else []
+    flags  += ["--save-nearby"]  if save_nearby  else []
     flags  += ["--exist-ok"]     if exist_ok     else []
     flags  += ["--verbose"]      if verbose      else []
 
@@ -160,6 +162,7 @@ def run_predict(args: dict):
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
     
@@ -204,6 +207,7 @@ def run_predict(args: dict):
         flags  += ["--save-debug"]   if save_debug   else []
         flags  += ["--use-fullname"] if use_fullname else []
         flags  += ["--keep-subdirs"] if keep_subdirs else []
+        flags  += ["--save-nearby"]  if save_nearby  else []
         flags  += ["--exist-ok"]     if exist_ok     else []
         flags  += ["--verbose"]      if verbose      else []
 

@@ -9,9 +9,7 @@ import torch.nn as nn
 from ..misc import MetricLogger, SmoothedValue, reduce_dict
 
 
-def train_one_epoch(
-    model: nn.Module, criterion: nn.Module, dataloader, optimizer, ema, epoch, device
-):
+def train_one_epoch(model: nn.Module, criterion: nn.Module, dataloader, optimizer, ema, epoch, device):
     """ """
     model.train()
 

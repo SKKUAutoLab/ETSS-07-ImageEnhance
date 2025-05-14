@@ -128,7 +128,7 @@ pip install -r requirements.txt
 <summary> COCO2017 Dataset </summary>
 
 1. Download COCO2017 from [OpenDataLab](https://opendatalab.com/OpenDataLab/COCO_2017) or [COCO](https://cocodataset.org/#download).
-1. Modify paths in [coco_detection.yml](options/dataset/coco_detection.yaml)
+1. Modify paths in [coco_detection.yml](options/dataset/coco80_detection.yaml)
 
     ```yaml
     train_dataloader:

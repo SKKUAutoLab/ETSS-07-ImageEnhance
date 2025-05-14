@@ -82,8 +82,8 @@ def predict(args: argparse.Namespace):
             
             # Save
             if save_image:
-                output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 save_image_tensor(restored, output_path)
    

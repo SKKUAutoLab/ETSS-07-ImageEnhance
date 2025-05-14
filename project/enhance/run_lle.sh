@@ -4,7 +4,39 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-data="dicm, fusion, lime, mef, npe, vv, lolv1, lolv2real, lolv2syn, fivek, sice, sicegrad, sicemix, sidsony, darkcityscapes, darkface, exdark, lolistreettest, lolistreetval, nightcity"
+data=(
+    ### Unpaired Set
+    "dicm"
+    "lime"
+    "mef"
+    "npe"
+    "vv"
+    ### LOLs Set
+    "lolv1"
+    "lolv2real"
+    "lolv2syn"
+    ### FiveK Set
+    #"fiveka"
+    #"fivekb"
+    "fivekc"
+    #"fivekd"
+    "fiveke"
+    ### SICE Set
+    "sice"
+    "sicegrad"
+    "sicemix"
+    ### Camera-Specific Set
+    "sidsony"
+    ### Real-World Set
+    "darkcityscapes"
+    "darkface"
+    "exdark"
+    "lolistreettest"
+    "lolistreetval"
+    "nightcity"
+)
+data_str=$(printf "%s, " "${data[@]}")
+data_str=${data_str%, }  # Remove trailing ", "
 
 # ----- Directory -----
 current_file=$(readlink -f "$0")
@@ -19,7 +51,7 @@ python -W ignore main.py \
     --root "${current_dir}" \
     --task "lle" \
     --mode "predict" \
-    --data "${data}" \
+    --data "${data_str}" \
     --benchmark \
     --save-image \
     --save-debug \

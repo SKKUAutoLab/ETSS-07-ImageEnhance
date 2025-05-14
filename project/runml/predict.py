@@ -31,6 +31,7 @@ def predict(args: dict) -> str:
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
 
@@ -90,17 +91,17 @@ def predict(args: dict) -> str:
             # Save image
             if save_image:
                 _, output   = outputs.popitem()
-                output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 mon.write_image(output_path, output)
             
             # Save Debug
             if save_debug:
-                debug_dir = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
+                debug_dir = mon.parse_output_dir(save_dir, data_name, mon.SAVE_DEBUG_DIR, image_path, keep_subdirs, save_nearby)
                 for k, v in outputs.items():
                     if mon.is_image(v):
-                        path = debug_dir / "debug" / f"{image_path.stem}_{k}{mon.SAVE_IMAGE_EXT}"
+                        path = debug_dir / f"{image_path.stem}_{k}{mon.SAVE_IMAGE_EXT}"
                         path.parent.mkdir(parents=True, exist_ok=True)
                         mon.write_image(path, v)
     

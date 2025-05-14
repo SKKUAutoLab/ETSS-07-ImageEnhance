@@ -92,10 +92,10 @@ https://github.com/user-attachments/assets/e5933d8e-3c8a-400e-870b-4e452f5321d9
 ### Objects365+COCO
 | 模型 | 数据集 | AP<sup>val</sup> | 参数量 | 时延 (ms) | GFLOPs | 配置 | 权重 | 日志 |
 | :---: | :---: | :---: |  :---: | :---: | :---: | :---: | :---: | :---: |
-**D&#8209;FINE&#8209;S** | Objects365+COCO | **50.7** | 10M | 3.49ms | 25 | [yml](options/dfine/objects365/dfine_hgnetv2_s_obj2coco.yaml) | [50.7](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_s_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_s_obj2coco_log.txt)
-**D&#8209;FINE&#8209;M** | Objects365+COCO | **55.1** | 19M | 5.62ms | 57 | [yml](options/dfine/objects365/dfine_hgnetv2_m_obj2coco.yaml) | [55.1](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_m_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_m_obj2coco_log.txt)
-**D&#8209;FINE&#8209;L** | Objects365+COCO | **57.3** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_obj2coco.yaml) | [57.3](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj2coco_e25.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_l_obj2coco_log_e25.txt)
-**D&#8209;FINE&#8209;X** | Objects365+COCO | **59.3** | 62M | 12.89ms | 202 | [yml](options/dfine/objects365/dfine_hgnetv2_x_obj2coco.yaml) | [59.3](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_x_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_x_obj2coco_log.txt)
+**D&#8209;FINE&#8209;S** | Objects365+COCO | **50.7** | 10M | 3.49ms | 25 | [yml](options/dfine/objects365/dfine_hgnetv2_s_objects3652coco80.yaml) | [50.7](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_s_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_s_obj2coco_log.txt)
+**D&#8209;FINE&#8209;M** | Objects365+COCO | **55.1** | 19M | 5.62ms | 57 | [yml](options/dfine/objects365/dfine_hgnetv2_m_objects3652coco80.yaml) | [55.1](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_m_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_m_obj2coco_log.txt)
+**D&#8209;FINE&#8209;L** | Objects365+COCO | **57.3** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_objects3652coco80.yaml) | [57.3](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj2coco_e25.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_l_obj2coco_log_e25.txt)
+**D&#8209;FINE&#8209;X** | Objects365+COCO | **59.3** | 62M | 12.89ms | 202 | [yml](options/dfine/objects365/dfine_hgnetv2_x_objects3652coco80.yaml) | [59.3](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_x_obj2coco.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj2coco/dfine_x_obj2coco_log.txt)
 
 **我们强烈推荐您使用 Objects365 预训练模型进行微调：**
 
@@ -105,11 +105,11 @@ https://github.com/user-attachments/assets/e5933d8e-3c8a-400e-870b-4e452f5321d9
 
 | 模型 | 数据集 | AP<sup>val</sup> | AP<sup>5000</sup> | 参数量 | 时延 (ms) | GFLOPs | 配置 | 权重 | 日志 |
 | :---: | :---: | :---: |  :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-**D&#8209;FINE&#8209;S** | Objects365 | **31.0** | **30.5** | 10M | 3.49ms | 25 | [yml](options/dfine/objects365/dfine_hgnetv2_s_obj365.yaml) | [30.5](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_s_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_s_obj365_log.txt)
-**D&#8209;FINE&#8209;M** | Objects365 | **38.6** | **37.4** | 19M | 5.62ms | 57 | [yml](options/dfine/objects365/dfine_hgnetv2_m_obj365.yaml) | [37.4](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_m_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_m_obj365_log.txt)
-**D&#8209;FINE&#8209;L** | Objects365 | - | **40.6** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_obj365.yaml) | [40.6](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_l_obj365_log.txt)
-**D&#8209;FINE&#8209;L (E25)** | Objects365 | **44.7** | **42.6** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_obj365.yaml) | [42.6](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj365_e25.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_l_obj365_log_e25.txt)
-**D&#8209;FINE&#8209;X** | Objects365 | **49.5** | **46.5** | 62M | 12.89ms | 202 | [yml](options/dfine/objects365/dfine_hgnetv2_x_obj365.yaml) | [46.5](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_x_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_x_obj365_log.txt)
+**D&#8209;FINE&#8209;S** | Objects365 | **31.0** | **30.5** | 10M | 3.49ms | 25 | [yml](options/dfine/objects365/dfine_hgnetv2_s_objects365.yaml) | [30.5](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_s_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_s_obj365_log.txt)
+**D&#8209;FINE&#8209;M** | Objects365 | **38.6** | **37.4** | 19M | 5.62ms | 57 | [yml](options/dfine/objects365/dfine_hgnetv2_m_objects365.yaml) | [37.4](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_m_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_m_obj365_log.txt)
+**D&#8209;FINE&#8209;L** | Objects365 | - | **40.6** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_objects365.yaml) | [40.6](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_l_obj365_log.txt)
+**D&#8209;FINE&#8209;L (E25)** | Objects365 | **44.7** | **42.6** | 31M | 8.07ms | 91 | [yml](options/dfine/objects365/dfine_hgnetv2_l_objects365.yaml) | [42.6](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_obj365_e25.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_l_obj365_log_e25.txt)
+**D&#8209;FINE&#8209;X** | Objects365 | **49.5** | **46.5** | 62M | 12.89ms | 202 | [yml](options/dfine/objects365/dfine_hgnetv2_x_objects365.yaml) | [46.5](https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_x_obj365.pth) | [url](https://raw.githubusercontent.com/Peterande/storage/refs/heads/master/logs/obj365/dfine_x_obj365_log.txt)
 - **E25**: 重新训练，并将训练延长至 25 个 epoch。
 - **AP<sup>val</sup>** 是在 *Objects365* 完整的验证集上进行评估的。
 - **AP<sup>5000</sup>** 是在 *Objects365* 验证集的前5000个样本上评估的。
@@ -144,7 +144,7 @@ pip install -r requirements.txt
 <summary> COCO2017 数据集 </summary>
 
 1. 从 [OpenDataLab](https://opendatalab.com/OpenDataLab/COCO_2017) 或者 [COCO](https://cocodataset.org/#download) 下载 COCO2017。
-1.修改 [coco_detection.yml](options/dataset/coco_detection.yaml) 中的路径。
+1.修改 [coco_detection.yml](options/dataset/coco80_detection.yaml) 中的路径。
 
     ```yaml
     train_dataloader:
@@ -223,7 +223,7 @@ python tools/remap_obj365.py --base_dir ${BASE_DIR}
 python tools/resize_obj365.py --base_dir ${BASE_DIR}
 ```
 
-8. 修改 [obj365_detection.yml](options/dataset/obj365_detection.yaml) 中的路径。
+8. 修改 [obj365_detection.yml](options/dataset/objects365_detection.yaml) 中的路径。
 
     ```yaml
     train_dataloader:

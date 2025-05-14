@@ -4,7 +4,19 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-data="rain100, rain100l, rain100h, rain800, rain1200, rain1400, rain2800, raincityscapes, gtrain"
+data=(
+    "rain100"
+    "rain100l"
+    "rain100h"
+    "rain800"
+    "rain1200"
+    "rain1400"
+    "rain2800"
+    "raincityscapes"
+    "gtrain"
+)
+data_str=$(printf "%s, " "${data[@]}")
+data_str=${data_str%, }  # Remove trailing ", "
 
 # ----- Directory -----
 current_file=$(readlink -f "$0")
@@ -19,7 +31,7 @@ python -W ignore main.py \
     --root "${current_dir}" \
     --task "derain" \
     --mode "predict" \
-    --data "${data}" \
+    --data "${data_str}" \
     --verbose \
     "$@"
 

@@ -17,7 +17,7 @@ import torch
 from mon import core
 from mon.constants import (
     LOSSES, LR_SCHEDULERS, MLType, METRICS, OPTIMIZERS, SAVE_IMAGE_EXT, SAVE_WEIGHTS_EXT,
-    Task,
+    Task, SAVE_DEBUG_DIR
 )
 from mon.nn import loss as L, metric as M
 from mon.nn.model import utils
@@ -162,7 +162,7 @@ class Model(lightning.LightningModule, ABC):
             root: Path input to set as root directory.
         """
         self._root      = core.Path(root)
-        self._debug_dir = self._root / "debug"
+        self._debug_dir = self._root / SAVE_DEBUG_DIR
         self._ckpt_dir  = self._root
     
     @property
@@ -184,7 +184,7 @@ class Model(lightning.LightningModule, ABC):
             Debug directory as ``core.Path``
         """
         if self._debug_dir is None:
-            self._debug_dir = self.root / "debug"
+            self._debug_dir = self.root / SAVE_DEBUG_DIR
         return self._debug_dir
     
     @property

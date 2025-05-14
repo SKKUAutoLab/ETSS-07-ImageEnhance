@@ -4,7 +4,11 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-data=""
+data=(
+
+)
+data_str=$(printf "%s, " "${data[@]}")
+data_str=${data_str%, }  # Remove trailing ", "
 
 # ----- Directory -----
 current_file=$(readlink -f "$0")
@@ -22,7 +26,7 @@ python -W ignore main.py \
     --arch "depth_anything_v2" \
     --model "depth_anything_v2_vitb" \
     --config 0 \
-    --data "${data}" \
+    --data "${data_str}" \
     --verbose \
     "$@"
 

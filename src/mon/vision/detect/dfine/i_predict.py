@@ -58,6 +58,7 @@ def predict(args: dict) -> str:
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
 
@@ -135,8 +136,8 @@ def predict(args: dict) -> str:
 
             # Save Result
             if save_result:
-                output_dir = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                label_path = output_dir / "label" / f"{image_path.stem}.txt"
+                output_dir = mon.parse_output_dir(save_dir, data_name, mon.SAVE_LABEL_DIR, image_path, keep_subdirs, save_nearby)
+                label_path = output_dir / f"{image_path.stem}.txt"
                 label_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(str(label_path), "w") as f:
                     for j, img in enumerate(image):
@@ -149,8 +150,8 @@ def predict(args: dict) -> str:
 
             # Save Image
             if save_image:
-                output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_path = output_dir / "visualize" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_VISUALIZE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 # output_path.parent.mkdir(parents=True, exist_ok=True)
                 # torchvision.utils.save_image(enhanced, str(output_path))
         

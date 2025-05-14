@@ -45,6 +45,7 @@ def predict(args: dict) -> str:
     save_debug   = args["save_debug"]
     use_fullname = args["use_fullname"]
     keep_subdirs = args["keep_subdirs"]
+    save_nearby  = args["save_nearby"]
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
     
@@ -120,8 +121,8 @@ def predict(args: dict) -> str:
             
             # Save
             if save_image:
-                output_dir  = mon.parse_output_dir(save_dir, data_name, image_path, keep_subdirs)
-                output_path = output_dir / "predict" / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(str(output_path), enhanced)
     

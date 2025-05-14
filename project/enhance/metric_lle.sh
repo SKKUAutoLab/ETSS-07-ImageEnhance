@@ -4,8 +4,8 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-arch="lightendiffusion"
-model="lightendiffusion"
+arch="zerolinr"
+model="zerolinr"
 data=(
     ### Unpaired Set
     "dicm"
@@ -52,17 +52,17 @@ cd "${runml_dir}" || exit
 for (( i=0; i<${#data[@]}; i++ )); do
     # Input
     if [ "${data[i]}" == "fiveka" ]; then
-        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/pred"
     elif [ "${data[i]}" == "fivekb" ]; then
-        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/pred"
     elif [ "${data[i]}" == "fivekc" ]; then
-        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/pred"
     elif [ "${data[i]}" == "fivekd" ]; then
-        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/pred"
     elif [ "${data[i]}" == "fiveke" ]; then
-        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/fivek/pred"
     else
-        input_dir="${current_dir}/run/predict/${arch}/${model}/${data[i]}/predict"
+        input_dir="${current_dir}/run/predict/${arch}/${model}/${data[i]}/pred"
     fi
 
     # Target
@@ -102,7 +102,7 @@ for (( i=0; i<${#data[@]}; i++ )); do
 
     # Measure FR-IQA
     if [ -d "${target_dir}" ]; then
-        python -W ignore metric.py \
+        python -W ignore metric_iqa.py \
             --input-dir "${input_dir}" \
             --target-dir "${target_dir}" \
             --result-file "${current_dir}" \
@@ -125,7 +125,7 @@ for (( i=0; i<${#data[@]}; i++ )); do
             --use-gt-mean
     # Measure NR-IQA
     else
-        python -W ignore metric.py \
+        python -W ignore metric_iqa.py \
             --input-dir "${input_dir}" \
             --target-dir "${target_dir}" \
             --result-file "${current_dir}" \
