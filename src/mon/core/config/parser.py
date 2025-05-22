@@ -138,6 +138,7 @@ def parse_train_args(model_root: str | pathlib.Path = None) -> dict | argparse.N
     if save_dir in [None, ""]:
         if use_fullname:
             save_dir = pathlib.parse_save_dir(root/"run"/"train", arch, model, fullname)
+            # save_dir = pathlib.parse_save_dir(root/"run"/"train", arch, fullname, None)
         else:
             save_dir = pathlib.parse_save_dir(root/"run"/"train", arch, model, data)
     else:
@@ -239,7 +240,8 @@ def parse_predict_args(model_root: str | pathlib.Path = None) -> dict | argparse
     # Parse arguments
     if save_dir in [None, ""]:
         if use_fullname or save_nearby:
-            save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, model, fullname)
+            # save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, model, fullname)
+            save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, fullname, None)
         else:
             save_dir = pathlib.parse_save_dir(root/"run"/"predict", arch, model, data)
     else:

@@ -6,10 +6,14 @@ from datasets.dataset import Subset
 
 import torchvision
 
+
 def get_dataset(args, config):
     if config.data.random_flip is False:
         tran_transform = test_transform = transforms.Compose(
-            [transforms.Resize(config.data.image_size), transforms.ToTensor()]
+            [
+                transforms.Resize(config.data.image_size),
+                transforms.ToTensor()
+            ]
         )
     else:
         tran_transform = transforms.Compose(
@@ -26,18 +30,15 @@ def get_dataset(args, config):
     if config.data.dataset == 'LLIE':
         dataset = torchvision.datasets.ImageFolder(
             os.path.join(args.exp, "datasets", args.path_y),
-            transform=transforms.Compose([
-                transforms.ToTensor()])
+            transform=transforms.Compose([transforms.ToTensor()])
         )
         num_items = len(dataset)
-        indices = list(range(num_items))
+        indices   = list(range(num_items))
         train_indices, test_indices = (
-            indices[: int(num_items * 0.)],
+            indices[:int(num_items * 0.)],
             indices[int(num_items * 0.):],
         )
         test_dataset = Subset(dataset, test_indices)
-
-
     else:
         dataset, test_dataset = None, None
 

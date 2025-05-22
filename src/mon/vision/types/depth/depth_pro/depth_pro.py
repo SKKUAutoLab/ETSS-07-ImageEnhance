@@ -42,7 +42,6 @@ class DepthPro(nn.ExtraModel, base.DepthEstimationModel):
     
     def __init__(
         self,
-        in_channels         : int  = 3,
         patch_encoder_preset: str  = "dinov2l16_384",
         image_encoder_preset: str  = "dinov2l16_384",
         decoder_features    : int  = 256,

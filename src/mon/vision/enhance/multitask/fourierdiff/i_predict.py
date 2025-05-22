@@ -1,34 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Implements the paper: "LightenDiffusion: Unsupervised Low-Light Image
-Enhancement with Latent-Retinex Diffusion Models," ECCV 2024.
+"""Implements the paper: "Fourier Priors-Guided Diffusion for Zero-Shot Joint
+Low-Light Enhancement and Deblurring," CVPR 2024.
 
 References:
-    - https://github.com/JianghaiSCU/LightenDiffusion
+    - https://github.com/aipixel/FourierDiff
 """
 
 import argparse
 
-import numpy as np
 import torch
-import torchvision
 import yaml
 
 import mon
-from mon.nn import functional as F
-import argparse
-import logging
-import os
-import shutil
-import sys
-import traceback
-
-import numpy as np
-import torch
-import yaml
-
-from guided_diffusion.diffusion_llie import Diffusion
+from guided_diffusion.diffusion_llie_modified import Diffusion
 
 torch.set_printoptions(sci_mode=False)
 
@@ -92,55 +78,21 @@ def predict(args: dict) -> str:
     data_name, data_loader = mon.parse_data_loader(data, root, True, verbose=False)
     
     # Model
-    model_args = argparse.Namespace(**{
-        "mode"        : "evaluation",
-        "resume"      : str(weights),
-        "image_folder": str(save_dir),
-    })
-    diffusion = DenoisingDiffusion(model_args, config)
-    if weights.is_weights_file(exist=True):
-        diffusion.load_ddm_ckpt(str(weights), ema=False)
-    else:
-        mon.console.log(f"Pre-trained model path is missing!")
-    diffusion.model.eval()
+    runner = Diffusion(dict2namespace(args), config)
 
     # Benchmark
-    if benchmark:
-        flops, params = mon.compute_efficiency_score(model=diffusion.model, channels=6)
-        mon.console.log(f"FLOPs : {flops:.4f}")
-        mon.console.log(f"Params: {params:.4f}")
+    # if benchmark:
+    #     flops, params = mon.compute_efficiency_score(model=model, image_size=256, channels=3)
+    #     mon.console.log(f"FLOPs : {flops:.4f}")
+    #     mon.console.log(f"Params: {params:.4f}")
     
     # Predicting
     timer = mon.Timer()
-    with mon.create_progress_bar() as pbar:
-        for i, datapoint in pbar.track(
-            sequence    = enumerate(data_loader),
-            total       = len(data_loader),
-            description = f"[bright_yellow] Predicting"
-        ):
-            # Input
-            meta       = datapoint["meta"]
-            image_path = mon.Path(meta["path"])
-            image      = datapoint["image"].to(device)
+    # Infer
+    timer.tick()
+    runner.sample(weights, data_name, data_loader, imgsz, resize, save_image, save_dir, keep_subdirs, save_nearby)
+    timer.tock()
 
-            h0, w0     = mon.image_size(image)
-            img_h_64   = int(64 * np.ceil(h0 / 64.0))
-            img_w_64   = int(64 * np.ceil(w0 / 64.0))
-            x_cond     = F.pad(image, (0, img_w_64 - w0, 0, img_h_64 - h0), 'reflect')
-
-            # Infer
-            timer.tick()
-            enhanced = diffusion.model(torch.cat((x_cond, x_cond), dim=1))["pred_x"]
-            enhanced = enhanced[:, :, :h0, :w0]
-            timer.tock()
-            
-            # Save
-            if save_image:
-                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
-                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                torchvision.utils.save_image(enhanced, str(output_path))
-        
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")
 

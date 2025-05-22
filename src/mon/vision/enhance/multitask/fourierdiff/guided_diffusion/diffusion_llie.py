@@ -87,35 +87,27 @@ def get_beta_schedule(beta_schedule, *, beta_start, beta_end, num_diffusion_time
 class Diffusion(object):
 
     def __init__(self, args, config, device=None):
-        self.args = args
+        self.args   = args
         self.config = config
         if device is None:
-            device = (
-                torch.device("cuda")
-                if torch.cuda.is_available()
-                else torch.device("cpu")
-            )
+            device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
         self.device = device
 
         self.model_var_type = config.model.var_type
         betas = get_beta_schedule(
-            beta_schedule=config.diffusion.beta_schedule,
-            beta_start=config.diffusion.beta_start,
-            beta_end=config.diffusion.beta_end,
-            num_diffusion_timesteps=config.diffusion.num_diffusion_timesteps,
+            beta_schedule = config.diffusion.beta_schedule,
+            beta_start    = config.diffusion.beta_start,
+            beta_end      = config.diffusion.beta_end,
+            num_diffusion_timesteps = config.diffusion.num_diffusion_timesteps,
         )
         betas = self.betas = torch.from_numpy(betas).float().to(self.device)
         self.num_timesteps = betas.shape[0]
 
-        alphas = 1.0 - betas
-        alphas_cumprod = alphas.cumprod(dim=0)
-        alphas_cumprod_prev = torch.cat(
-            [torch.ones(1).to(device), alphas_cumprod[:-1]], dim=0
-        )
+        alphas              = 1.0 - betas
+        alphas_cumprod      = alphas.cumprod(dim=0)
+        alphas_cumprod_prev = torch.cat([torch.ones(1).to(device), alphas_cumprod[:-1]], dim=0)
         self.alphas_cumprod_prev = alphas_cumprod_prev
-        posterior_variance = (
-            betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-        )
+        posterior_variance  = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         if self.model_var_type == "fixedlarge":
             self.logvar = betas.log()
         elif self.model_var_type == "fixedsmall":
@@ -132,24 +124,23 @@ class Diffusion(object):
             self.config.data.image_size, self.config.data.image_size))
             if not os.path.exists(ckpt):
                 download(
-                    'https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_diffusion_uncond.pt' % (
-                    self.config.data.image_size, self.config.data.image_size), ckpt)
+                    'https://openaipublic.blob.core.windows.net/diffusion/jul-2021/%dx%d_diffusion_uncond.pt'
+                    % (self.config.data.image_size, self.config.data.image_size), ckpt
+                )
         else:
             ckpt = os.path.join(self.args.exp, "logs/imagenet/256x256_diffusion_uncond.pt")
             if not os.path.exists(ckpt):
-                download(
-                    'https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt',
-                    ckpt)
+                download('https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion_uncond.pt', ckpt)
 
         model.load_state_dict(torch.load(ckpt, map_location=self.device),strict=False)
         model.to(self.device)
         model.eval()
 
         print(
-              f'{self.config.time_travel.T_sampling} sampling steps.',
-              f'travel_length = {self.config.time_travel.travel_length},',
-              f'travel_repeat = {self.config.time_travel.travel_repeat}.'
-             )
+            f'{self.config.time_travel.T_sampling} sampling steps.',
+            f'travel_length = {self.config.time_travel.travel_length},',
+            f'travel_repeat = {self.config.time_travel.travel_repeat}.'
+        )
         self.FourierDiff(model, cls_fn)
 
     def FourierDiff(self, model, cls_fn):
@@ -229,38 +220,38 @@ class Diffusion(object):
             )
 
             with torch.no_grad():
-                skip = config.diffusion.num_diffusion_timesteps//config.time_travel.T_sampling
-                n = x.size(0)
+                skip     = config.diffusion.num_diffusion_timesteps // config.time_travel.T_sampling
+                n        = x.size(0)
                 x0_preds = []
-                xs = [x]
+                xs       = [x]
                 
-                times = get_schedule_jump(config.time_travel.T_sampling, 
-                                               config.time_travel.travel_length, 
-                                               config.time_travel.travel_repeat,
-                                              )
+                times = get_schedule_jump(
+                    config.time_travel.T_sampling,
+                    config.time_travel.travel_length,
+                    config.time_travel.travel_repeat,
+                )
                 time_pairs = list(zip(times[:-1], times[1:]))
 
                 # reverse diffusion sampling
                 for i, j in tqdm.tqdm(time_pairs):
-                    i, j = i*skip, j*skip
-                    if j<0: j=-1 
+                    i, j = i * skip, j * skip
+                    if j < 0:
+                        j = -1
 
-                    if j < i: # normal sampling 
-                        t = (torch.ones(n) * i).to(x.device)
-                        next_t = (torch.ones(n) * j).to(x.device)
-                        at = compute_alpha(self.betas, t.long())
+                    if j < i:  # normal sampling
+                        t       = (torch.ones(n) * i).to(x.device)
+                        next_t  = (torch.ones(n) * j).to(x.device)
+                        at      = compute_alpha(self.betas, t.long())
                         at_next = compute_alpha(self.betas, next_t.long())
                         sigma_t = (1 - at_next**2).sqrt()
-                        xt = xs[-1].to('cuda')
+                        xt      = xs[-1].to('cuda')
 
                         et = model(xt, t)
-
-
                         if et.size(1) == 6:
                             et = et[:, :3]
 
-                        x0_t = (xt - et * (1 - at).sqrt()) / at.sqrt()
-                        x0_t = (x0_t - x0_t.min()) / (x0_t.max() - x0_t.min())
+                        x0_t   = (xt - et * (1 - at).sqrt()) / at.sqrt()
+                        x0_t   = (x0_t - x0_t.min()) / (x0_t.max() - x0_t.min())
                         x0_t_frequency = torch.fft.fft2(x0_t, dim=(2, 3))
                         x0_t_m = torch.abs(x0_t_frequency)
                         x0_t_p = torch.angle(x0_t_frequency)
@@ -270,13 +261,13 @@ class Diffusion(object):
                         certerion = L_bri()
                         optimizer_mix = torch.optim.Adam(mix_model.parameters(), lr=1e-2)
 
-                        if i<100:
+                        if i < 100:
                             with torch.enable_grad():
                                 for epoch in range(50):
                                     y_plus_x0_t_frequency = mix_model(y_frequency, x0_t_frequency)
                                     y_plus_x0_t_m = torch.abs(y_plus_x0_t_frequency)
                                     y_plus_x0_t_p = torch.angle(y_plus_x0_t_frequency)
-                                    x0_t_hat = (y_plus_x0_t_m) * np.e ** (1j * (y_p))
+                                    x0_t_hat = y_plus_x0_t_m * np.e ** (1j * y_p)
                                     x0_t_hat = torch.abs(torch.fft.ifft2(x0_t_hat, dim=(2, 3)))
                                     optimizer_mix.zero_grad()
                                     loss = certerion(x0_t_hat)
@@ -286,7 +277,7 @@ class Diffusion(object):
                             y_plus_x0_t_frequency = y_frequency + x0_t_frequency
                             y_plus_x0_t_m = torch.abs(y_plus_x0_t_frequency)
                             y_plus_x0_t_p = torch.angle(y_plus_x0_t_frequency)
-                            x0_t_hat = (y_plus_x0_t_m) * np.e ** (1j * (y_p))
+                            x0_t_hat = y_plus_x0_t_m * np.e ** (1j * (y_p))
                             x0_t_hat = torch.abs(torch.fft.ifft2(x0_t_hat, dim=(2, 3)))
 
                         if sigma_t >= at_next*sigma_y:
@@ -306,22 +297,18 @@ class Diffusion(object):
 
                         x0_preds.append(x0_t.to('cpu'))
                         xs.append(xt_next.to('cpu'))    
-                    else: # time-travel back
-                        next_t = (torch.ones(n) * j).to(x.device)
+                    else:  # time-travel back
+                        next_t  = (torch.ones(n) * j).to(x.device)
                         at_next = compute_alpha(self.betas, next_t.long())
-                        x0_t = x0_preds[-1].to('cuda')
-
+                        x0_t    = x0_preds[-1].to('cuda')
                         xt_next = at_next.sqrt() * x0_t + torch.randn_like(x0_t) * (1 - at_next).sqrt()
-
                         xs.append(xt_next.to('cpu'))
 
                 x = xs[-1]
             x = torch.clamp(x, 0.0, 1.0)
             x = x[:, :, :H, :W]
 
-            tvu.save_image(
-                x[0], os.path.join(self.args.image_folder, f"{name}")
-            )
+            tvu.save_image(x[0], os.path.join(self.args.image_folder, f"{name}"))
 
 
 # Code form RePaint   

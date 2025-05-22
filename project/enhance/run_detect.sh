@@ -26,6 +26,8 @@ python -W ignore main.py \
     --root "${current_dir}" \
     --task "detect" \
     --mode "predict" \
+    --arch "dfine" \
+    --model "dfine_s" \
     --data "${data_str}" \
     --benchmark \
     --save-image \

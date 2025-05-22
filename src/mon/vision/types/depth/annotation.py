@@ -40,7 +40,7 @@ class DepthMapAnnotation(I.ImageAnnotation):
         self,
         path  : core.Path | str,
         root  : core.Path | str = None,
-        source: Literal[*DepthDataSource.values()] = "dav2_vitb",
+        source: Literal[*DepthDataSource.values()] = "dav2_vitl",
         flags : int = cv2.IMREAD_GRAYSCALE,
         *args, **kwargs
     ):

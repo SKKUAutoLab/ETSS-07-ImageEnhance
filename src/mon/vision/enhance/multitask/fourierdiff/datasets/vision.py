@@ -11,14 +11,13 @@ class VisionDataset(data.Dataset):
             root = os.path.expanduser(root)
         self.root = root
         
-        has_transforms = transforms is not None
-        has_separate_transform = transform is not None or target_transform is not None
+        has_transforms         = transforms is not None
+        has_separate_transform = transform  is not None or target_transform is not None
         if has_transforms and has_separate_transform:
-            raise ValueError("Only transforms or transform/target_transform can "
-                             "be passed as argument")
+            raise ValueError("Only transforms or transform/target_transform can be passed as argument")
 
         # for backwards-compatibility
-        self.transform = transform
+        self.transform        = transform
         self.target_transform = target_transform
 
         if has_separate_transform:
@@ -38,11 +37,9 @@ class VisionDataset(data.Dataset):
             body.append("Root location: {}".format(self.root))
         body += self.extra_repr().splitlines()
         if hasattr(self, 'transform') and self.transform is not None:
-            body += self._format_transform_repr(self.transform,
-                                                "Transforms: ")
+            body += self._format_transform_repr(self.transform, "Transforms: ")
         if hasattr(self, 'target_transform') and self.target_transform is not None:
-            body += self._format_transform_repr(self.target_transform,
-                                                "Target transforms: ")
+            body += self._format_transform_repr(self.target_transform, "Target transforms: ")
         lines = [head] + [" " * self._repr_indent + line for line in body]
         return '\n'.join(lines)
 
@@ -56,13 +53,14 @@ class VisionDataset(data.Dataset):
 
 
 class StandardTransform(object):
+
     def __init__(self, transform=None, target_transform=None):
-        self.transform = transform
+        self.transform        = transform
         self.target_transform = target_transform
 
     def __call__(self, input, target):
         if self.transform is not None:
-            input = self.transform(input)
+            input  = self.transform(input)
         if self.target_transform is not None:
             target = self.target_transform(target)
         return input, target
@@ -75,10 +73,7 @@ class StandardTransform(object):
     def __repr__(self):
         body = [self.__class__.__name__]
         if self.transform is not None:
-            body += self._format_transform_repr(self.transform,
-                                                "Transform: ")
+            body += self._format_transform_repr(self.transform, "Transform: ")
         if self.target_transform is not None:
-            body += self._format_transform_repr(self.target_transform,
-                                                "Target transform: ")
-
+            body += self._format_transform_repr(self.target_transform, "Target transform: ")
         return '\n'.join(body)

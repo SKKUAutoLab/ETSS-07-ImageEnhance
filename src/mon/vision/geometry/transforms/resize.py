@@ -56,7 +56,7 @@ def pair_downsample(image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 def resize(
     image        : torch.Tensor | np.ndarray,
     size         : _size_2_t = None,
-    divisible_by : int = None,
+    divisible_by : int       = None,
     side         : Literal["short", "long", "vert", "horz", None] = None,
     interpolation: Literal["nearest", "linear", "bilinear", "bicubic", "trilinear", "area",
                            cv2.INTER_AREA, cv2.INTER_CUBIC, cv2.INTER_LINEAR] = "bilinear",

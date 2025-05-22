@@ -28,6 +28,7 @@ def measure_metric(input_json: mon.Path, target_json: mon.Path):
 
     coco_eval = COCOeval(coco_gt, coco_dt, "bbox")
     coco_eval.params.imgIds = imgIds
+    # coco_eval.params.catIds = [1]
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()

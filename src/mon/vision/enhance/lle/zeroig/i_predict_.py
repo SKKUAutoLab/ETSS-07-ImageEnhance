@@ -94,9 +94,12 @@ def predict(args: dict) -> str:
     mon.console.log(f"[bold red]{data}")
     data_name, data_loader = mon.parse_data_loader(data, root, True, verbose=False)
     
+    # Model
+    model = Finetunemodel(weights=weights).to(device)
+    model.eval()
+    
     # Benchmark
     if benchmark:
-        model = Network()
         # flops, params = mon.compute_efficiency_score(model=model)
         total_params  = calculate_model_parameters(model)
         # mon.console.log(f"FLOPs : {flops:.4f}")
@@ -115,26 +118,10 @@ def predict(args: dict) -> str:
             meta       = datapoint["meta"]
             image_path = mon.Path(meta["path"])
             image      = datapoint["image"]
+            input      = Variable(image).to(device)
             
             # Optimize
             timer.tick()
-            model = Network()
-            model.enhance.in_conv.apply(model.enhance_weights_init)
-            model.enhance.conv.apply(model.enhance_weights_init)
-            model.enhance.out_conv.apply(model.enhance_weights_init)
-            model = model.to(device)
-            model.train()
-            optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-            input     = Variable(image, requires_grad=False).to(device)
-            for _ in range(epochs):
-                optimizer.zero_grad()
-                optimizer.param_groups[0]["capturable"] = True
-                loss = model._loss(input)
-                loss.backward()
-                nn.utils.clip_grad_norm_(model.parameters(), 5)
-                optimizer.step()
-            model = Finetunemodel(model.state_dict())
-            input = Variable(image).to(device)
             enhance, output = model(input)
             timer.tock()
             
@@ -152,7 +139,7 @@ def predict(args: dict) -> str:
                 cv2.imwrite(str(output_path), enhance)
             if save_debug:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, f"{mon.SAVE_IMAGE_DIR}_denoise", image_path, keep_subdirs, save_nearby)
-                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path   = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(str(output_path), output)
     

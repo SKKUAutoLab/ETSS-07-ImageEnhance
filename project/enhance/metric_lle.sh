@@ -4,8 +4,8 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-arch="zerolinr"
-model="zerolinr"
+arch="retinexnet"
+model="retinexnet_lolv1"
 data=(
     ### Unpaired Set
     "dicm"
@@ -32,7 +32,8 @@ data=(
     ### Real-World Set
     "darkcityscapes"
     "darkface"
-    "exdark"
+    # "exdark"
+    "exdark1200"
     "lolistreettest"
     "lolistreetval"
     "nightcity"
@@ -88,6 +89,8 @@ for (( i=0; i<${#data[@]}; i++ )); do
         target_subdir="sice/mix/test/ref"
     elif [ "${data[i]}" == "sidsony" ]; then
         target_subdir="sid/sony/test/ref"
+    elif [ "${data[i]}" == "exdark1200" ]; then
+        target_subdir="sid/sony/test1200/ref"
     elif [ "${data[i]}" == "lolistreetval" ]; then
         target_subdir="lolistreet/val/ref"
     elif [ "${data[i]}" == "lolistreettest" ]; then

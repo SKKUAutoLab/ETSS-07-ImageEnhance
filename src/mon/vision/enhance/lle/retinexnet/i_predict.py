@@ -71,7 +71,7 @@ def predict(args: dict) -> str:
             output_dir  = output_dir / mon.SAVE_IMAGE_DIR
             output_dir.mkdir(parents=True, exist_ok=True)
             timer.tick()
-            model.predict([image_path], res_dir=str(output_dir), ckpt_dir=str(weights))
+            model.predict([image_path], res_dir=str(output_dir), ckpt_dir=str(weights), imgsz=imgsz, resize=resize)
             timer.tock()
     
     # Finish

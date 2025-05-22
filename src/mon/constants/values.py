@@ -515,14 +515,33 @@ EXTRA_MODELS   = {  # architecture/model (+ variant)
     },
     # endregion
     # region enhance/multitask
-    "airnet"   : {
+    "airnet"     : {
         "airnet": {
             "tasks"    : [Task.DENOISE, Task.DERAIN, Task.DEHAZE],
             "mltypes"  : [MLType.SUPERVISED],
             "model_dir": MON_DIR / "vision" / "enhance" / "multitask" / "airnet",
         },
     },
-    "restormer": {
+    "darkir"     : {
+        "darkir_l": {
+            "tasks"    : [Task.DEBLUR, Task.DENOISE, Task.LLE],
+            "mltypes"  : [MLType.SUPERVISED],
+            "model_dir": MON_DIR / "vision" / "enhance" / "multitask" / "darkir",
+        },
+        "darkir_m": {
+            "tasks"    : [Task.DEBLUR, Task.DENOISE, Task.LLE],
+            "mltypes"  : [MLType.SUPERVISED],
+            "model_dir": MON_DIR / "vision" / "enhance" / "multitask" / "darkir",
+        },
+    },
+    "fourierdiff": {
+        "fourierdiff": {
+            "tasks"    : [Task.DEBLUR, Task.LLE],
+            "mltypes"  : [MLType.ZERO_SHOT],
+            "model_dir": MON_DIR / "vision" / "enhance" / "multitask" / "fourierdiff",
+        },
+    },
+    "restormer"  : {
         "restormer": {
             "tasks"    : [Task.DEBLUR, Task.DENOISE, Task.DERAIN, Task.DESNOW, Task.LLE],
             "mltypes"  : [MLType.SUPERVISED],

@@ -22,11 +22,12 @@ __all__ = [
     "image_to_tensor",
     "normalize_image",
     "normalize_image_by_range",
+    "split_image",
 ]
 
 import functools
 from typing import Any
-
+import math
 import numpy as np
 import torch
 
@@ -91,6 +92,85 @@ def blend_images(
         Blended image as ``torch.Tensor`` or ``numpy.ndarray``.
     """
     return add_images_weighted(image1=image1, image2=image2, alpha=alpha, beta=1.0 - alpha, gamma=gamma)
+
+
+# ----- Split -----
+def split_image(image: torch.Tensor | np.ndarray, n: int = 2) -> list[np.ndarray]:
+    """Split an image into ``n`` equal parts.
+
+    Args:
+        image: Image as ``numpy.ndarray`` [H, W, C].
+        n: Number of parts to split into (positive integer). Default is ``2``.
+
+    Returns:
+        List of sub-images.
+
+    Raises:
+        ValueError: If inputs are invalid (e.g., image shape, n).
+    """
+    if not isinstance(image, np.ndarray) or len(image.shape) != 3:
+        raise ValueError(f"[image] must be a 3D numpy array [H, W, C], got {image.shape}.")
+    if n < 1:
+        raise ValueError(f"[n] must be a positive integer, got {n}.")
+
+    h, w = utils.image_size(image)
+    if n > h * w:
+        raise ValueError(f"[n] ({n}) exceeds image pixel count ({h * w}).")
+
+    # Determine orientation
+    is_portrait = h > w
+
+    # Determine rows and cols
+    if n == 1:
+        rows, cols = 1, 1
+    elif n == 2:
+        # Explicitly set grid for N=2 based on orientation
+        rows = 2 if is_portrait else 1
+        cols = 1 if is_portrait else 2
+    else:
+        # General case: start with approximate square grid
+        rows = math.ceil(math.sqrt(n))
+        cols = math.ceil(n / rows)
+        # Adjust to ensure rows * cols = n, prioritizing orientation
+        candidates = []
+        for r in range(1, n + 1):
+            c = math.ceil(n / r)
+            if r * c == n:
+                candidates.append((r, c))
+        if not candidates:
+            raise ValueError(f"Cannot find valid rows and cols for n={n}")
+        # Select grid based on orientation
+        if is_portrait:
+            # Prefer more rows (taller sub-images)
+            rows, cols = max(candidates, key=lambda x: x[0] / x[1])
+        else:
+            # Prefer more cols (wider sub-images)
+            rows, cols = max(candidates, key=lambda x: x[1] / x[0])
+
+    # Compute sub-images and adjust bboxes
+    sub_h      = h // rows
+    sub_w      = w // cols
+    sub_images = []
+
+    for i in range(rows):
+        for j in range(cols):
+            if len(sub_images) >= n:
+                break
+            # Compute sub-image boundaries
+            y_start   = i * sub_h
+            y_end     = min((i + 1) * sub_h, h)
+            x_start   = j * sub_w
+            x_end     = min((j + 1) * sub_w, w)
+            sub_image = image[y_start:y_end, x_start:x_end]
+            if sub_image.size == 0:
+                continue
+            sub_images.append(sub_image)
+
+    # Pad with empty sub-images/bboxes if needed
+    while len(sub_images) < n:
+        sub_images.append(np.zeros_like(sub_images[0]))
+
+    return sub_images
 
 
 # ----- Normalize -----

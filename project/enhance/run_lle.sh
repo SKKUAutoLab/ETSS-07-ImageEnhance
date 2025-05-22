@@ -16,11 +16,12 @@ data=(
     "lolv2real"
     "lolv2syn"
     ### FiveK Set
+    "fivek"
     #"fiveka"
     #"fivekb"
-    "fivekc"
+    #"fivekc"
     #"fivekd"
-    "fiveke"
+    #"fiveke"
     ### SICE Set
     "sice"
     "sicegrad"
@@ -30,7 +31,8 @@ data=(
     ### Real-World Set
     "darkcityscapes"
     "darkface"
-    "exdark"
+    # "exdark"
+    "exdark1200"
     "lolistreettest"
     "lolistreetval"
     "nightcity"

@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Implements the paper: "Depth Anything V2. A More Capable Foundation Model for
+Monocular Depth Estimation," NeurIPS 2024.
+
+References:
+    - https://github.com/DepthAnything/Depth-Anything-V2
+"""
+
 from typing import Sequence
 
 import cv2
@@ -74,7 +81,7 @@ def predict(args: dict) -> str:
     }
     depth_anything = DepthAnythingV2(**model_configs[args.encoder])
     '''
-    depth_anything = DepthAnythingV2(encoder=encoder, features=features, out_channels=out_channels).to(device)
+    depth_anything = DepthAnythingV2(encoder=encoder, features=features, out_channels=out_channels, device=device).to(device)
     depth_anything.load_state_dict(torch.load(str(weights), map_location=device, weights_only=True))
     depth_anything = depth_anything.eval()
     
@@ -104,8 +111,25 @@ def predict(args: dict) -> str:
             depth = depth.astype(np.uint8)
             timer.tock()
             
-            # Save
+            # Save Image
             if save_image:
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                gray = np.repeat(depth[..., np.newaxis], 3, axis=-1)
+                cv2.imwrite(str(output_path), gray)
+
+            # Save Debug
+            if save_debug:
+                debug_dir = mon.parse_output_dir(save_dir, data_name, mon.SAVE_DEBUG_DIR, image_path, keep_subdirs, save_nearby)
+                if save_nearby:
+                    debug_dir = debug_dir.parent / f"{debug_dir.stem}_c"
+                debug_path = debug_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                debug_path.parent.mkdir(parents=True, exist_ok=True)
+                color = (cmap(depth)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
+                cv2.imwrite(str(debug_path), color)
+
+                '''
                 if keep_subdirs:
                     rel_path       = image_path.relative_path(data_name)
                     parent_dir     = rel_path.parent
@@ -141,7 +165,7 @@ def predict(args: dict) -> str:
                         combined_result = cv2.hconcat([image, split_region, output])
                         output          = combined_result
                     cv2.imwrite(str(output_path), output)
-    
+                '''
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")
 

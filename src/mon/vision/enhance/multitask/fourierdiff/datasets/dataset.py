@@ -1,12 +1,11 @@
 import bisect
 import warnings
+from typing import TypeVar, Generic, Iterable, Iterator, Sequence, List, Optional, Tuple
 
-from torch._utils import _accumulate
-from torch import randperm
+from torch import Tensor, Generator
 # No 'default_generator' in torch/__init__.pyi
 from torch import default_generator  # type: ignore
-from typing import TypeVar, Generic, Iterable, Iterator, Sequence, List, Optional, Tuple
-from torch import Tensor, Generator
+from torch import randperm
 
 T_co = TypeVar('T_co', covariant=True)
 T = TypeVar('T')

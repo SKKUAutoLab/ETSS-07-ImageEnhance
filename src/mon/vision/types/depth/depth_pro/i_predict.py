@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Implements the paper: "Depth Pro: Sharp Monocular Metric Depth in Less Than
+a Second,".
+
+References:
+    - https://github.com/apple/ml-depth-pro
+"""
+
 from typing import Sequence
 
 import cv2
@@ -102,7 +109,26 @@ def predict(args: dict) -> str:
             depth   = depth.detach().cpu().numpy().squeeze()
             depth   = (depth - depth.min()) / (depth.max() - depth.min())
             depth_i = 1.0 - depth
-            
+
+            # Save Image
+            if save_image:
+                output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
+                output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                gray = (depth_i * 255).astype(np.uint8)
+                cv2.imwrite(str(output_path), gray)
+
+            # Save Debug
+            if save_debug:
+                debug_dir = mon.parse_output_dir(save_dir, data_name, mon.SAVE_DEBUG_DIR, image_path, keep_subdirs, save_nearby)
+                if save_nearby:
+                    debug_dir = debug_dir.parent / f"{debug_dir.stem}_c"
+                debug_path = debug_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
+                debug_path.parent.mkdir(parents=True, exist_ok=True)
+                color = (cmap(depth_i)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
+                cv2.imwrite(str(debug_path), color)
+
+            '''
             # Save
             if save_image:
                 if keep_subdirs:
@@ -146,7 +172,8 @@ def predict(args: dict) -> str:
                     output      = result["data"]
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     cv2.imwrite(str(output_path), output)
-    
+            '''
+
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")
 

@@ -151,26 +151,28 @@ class DPTHead(nn.Module):
 
 
 class DepthAnythingV2(nn.Module):
+
     def __init__(
         self, 
-        encoder='vitl', 
-        features=256, 
-        out_channels=[256, 512, 1024, 1024], 
-        use_bn=False, 
-        use_clstoken=False
+        encoder      = 'vitl',
+        features     = 256,
+        out_channels = [256  , 512, 1024, 1024],
+        use_bn       = False,
+        use_clstoken = False,
+        device       = None,
     ):
         super(DepthAnythingV2, self).__init__()
-        
+        self.device = device
+
         self.intermediate_layer_idx = {
             'vits': [2, 5, 8, 11],
             'vitb': [2, 5, 8, 11], 
             'vitl': [4, 11, 17, 23], 
             'vitg': [9, 19, 29, 39]
         }
-        
-        self.encoder = encoder
+
+        self.encoder    = encoder
         self.pretrained = DINOv2(model_name=encoder)
-        
         self.depth_head = DPTHead(self.pretrained.embed_dim, features, use_bn, out_channels=out_channels, use_clstoken=use_clstoken)
     
     def forward(self, x):
@@ -196,26 +198,26 @@ class DepthAnythingV2(nn.Module):
     def image2tensor(self, raw_image, input_size=518):        
         transform = Compose([
             Resize(
-                width=input_size,
-                height=input_size,
-                resize_target=False,
-                keep_aspect_ratio=True,
-                ensure_multiple_of=14,
-                resize_method='lower_bound',
-                image_interpolation_method=cv2.INTER_CUBIC,
+                width              = input_size,
+                height             = input_size,
+                resize_target      = False,
+                keep_aspect_ratio  = True,
+                ensure_multiple_of = 14,
+                resize_method      = "lower_bound",
+                image_interpolation_method = cv2.INTER_CUBIC,
             ),
             NormalizeImage(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             PrepareForNet(),
         ])
         
-        h, w = raw_image.shape[:2]
+        h, w  = raw_image.shape[:2]
         
         image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB) / 255.0
         
         image = transform({'image': image})['image']
         image = torch.from_numpy(image).unsqueeze(0)
-        
-        DEVICE = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
-        image = image.to(DEVICE)
+
+        device = self.device or ('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        image  = image.to(device)
         
         return image, (h, w)

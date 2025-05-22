@@ -1,0 +1,46 @@
+# Basic
+root        : ~                                                                 # Root directory of the current run.
+arch        : "deim"                                                            # Model architecture or family (e.g., resnet).
+model       : &model "deim_dfine_l"                                             # Model name (e.g., resnet50).
+data        : &data "fisheye8kv1"                                               # Dataset name (e.g., cifar10) or directory (e.g., data/cifar10).
+fullname    : &fullname "deim_dfine_l_coco802fisheye8kv1_1280"                  # Full name of the current run (e.g., resnet50_cifar10_01). If not set, it will be this file's name.
+save_dir    : &save_dir ~                                                       # Saving directory. If not set, it will be `root/arch/model/data`.
+weights     : &weights "run/train/deim/deim_dfine_l/deim_dfine_l_fisheye8kv1_1280/best_stg2.pth"  # Path to the pretrained weights.
+device      : cuda:0,1,2,3                                                      # Running device (i.e., cuda:0 | cuda:0,1,2,3 | cpu).
+torchrun    : True                                                              # If ``True``, use torch.distributed.run to run the training script.
+master_port : 7777                                                              # Master port for distributed training.
+master_addr : "localhost"                                                       # Master address for distributed training.
+local_rank  : -1                                                                # Local rank for distributed training.
+epochs      : &epochs 300                                                       # Training epochs.
+steps       : &steps ~                                                          # Training steps.
+seed        : 0                                                                 # Random seed.
+imgsz       : &imgsz 1280                                                       # Image size for the model.
+resize      : False                                                             # Resize the input image to `imgsz`.
+benchmark   : False                                                             # Benchmark the model.
+save_result : True                                                              # Save the result of the model.
+save_image  : True                                                              # Save the output image.
+save_debug  : &save_debug True                                                  # Save the debug information.
+use_fullname: True                                                              # Use the full name for the save_dir.
+keep_subdirs: False                                                             # Keep subdirectories in the save_dir.
+save_nearby : False                                                             # Save outputs nearby the source.
+exist_ok    : True                                                              # If ``False``, it will delete the save directory if it already exists.
+verbose     : &verbose True                                                     # Verbosity.
+
+# Misc
+cfg_path    : "deim_dfine/coco80/deim_hgnetv2_l_coco80.yaml"                    # Fine-tuning from Objects365 pre-trained weights.
+resume      : "run/train/deim/deim_dfine_l/deim_dfine_l_fisheye8kv1_1280/last.pth"  # Resume from checkpoint
+tuning      : "zoo/vision/detect/deim/deim_dfine_l/coco80/deim_dfine_l_coco80_e50.pth"  # Fine-tuning from checkpoint
+use_amp     : False                                                             # Use automatic mixed precision (AMP) for training.
+test_only   : False                                                             # Test only.
+print_method: "builtin"                                                         # Print method.
+print_rank  : 0                                                                 # Print rank ID.
+thres_conf  : 0.4                                                               # Confidence threshold for detection.
+
+# We only need to change the '__include__' part in the original config file.
+__include__: [
+  "./dfine_hgnetv2_l_coco80.yaml",
+  "../../dataset/fisheye8kv1_detection.yaml",
+  "../../base/dataloader_1280.yaml",
+  "../../base/dfine_hgnetv2_1280.yaml",
+  "../../base/deim_1280.yaml"
+]

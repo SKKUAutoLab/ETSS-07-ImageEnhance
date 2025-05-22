@@ -24,14 +24,14 @@ from .validator import Validator, scale_boxes
 
 
 def train_one_epoch(
-    model: torch.nn.Module,
-    criterion: torch.nn.Module,
+    model      : torch.nn.Module,
+    criterion  : torch.nn.Module,
     data_loader: Iterable,
-    optimizer: torch.optim.Optimizer,
-    device: torch.device,
-    epoch: int,
-    use_wandb: bool,
-    max_norm: float = 0,
+    optimizer  : torch.optim.Optimizer,
+    device     : torch.device,
+    epoch      : int,
+    use_wandb  : bool,
+    max_norm   : float = 0,
     **kwargs,
 ):
     if use_wandb:
@@ -45,10 +45,10 @@ def train_one_epoch(
     epochs = kwargs.get("epochs", None)
     header = "Epoch: [{}]".format(epoch) if epochs is None else "Epoch: [{}/{}]".format(epoch, epochs)
 
-    print_freq = kwargs.get("print_freq", 10)
+    print_freq            = kwargs.get("print_freq", 10)
     writer: SummaryWriter = kwargs.get("writer", None)
 
-    ema: ModelEMA = kwargs.get("ema", None)
+    ema: ModelEMA      = kwargs.get("ema", None)
     scaler: GradScaler = kwargs.get("scaler", None)
     lr_warmup_scheduler: Warmup = kwargs.get("lr_warmup_scheduler", None)
     losses = []
@@ -147,14 +147,14 @@ def train_one_epoch(
 
 @torch.no_grad()
 def evaluate(
-    model: torch.nn.Module,
-    criterion: torch.nn.Module,
+    model         : torch.nn.Module,
+    criterion     : torch.nn.Module,
     postprocessor,
     data_loader,
     coco_evaluator: CocoEvaluator,
     device,
-    epoch: int,
-    use_wandb: bool,
+    epoch         : int,
+    use_wandb     : bool,
     **kwargs,
 ):
     if use_wandb:
@@ -173,7 +173,7 @@ def evaluate(
     # coco_evaluator = CocoEvaluator(base_ds, iou_types)
     # coco_evaluator.coco_eval[iou_types[0]].params.iouThrs = [0, 0.1, 0.5, 0.75]
 
-    gt: List[Dict[str, torch.Tensor]] = []
+    gt   : List[Dict[str, torch.Tensor]] = []
     preds: List[Dict[str, torch.Tensor]] = []
 
     output_dir = kwargs.get("output_dir", None)

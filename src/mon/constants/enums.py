@@ -421,9 +421,11 @@ class Task(Enum):
 # ----- Vision -----
 class DepthDataSource(Enum):
     """Depth data source types."""
-    
-    DAv2_ViTB = "dav2_vitb"
-    DAv2_ViTL = "dav2_vitl"
+
+    DAv2_ViTB = "dav2_vitb"             # Depth Anything v2 with ViT-B encoder
+    DAv2_ViTL = "dav2_vitl"             # Depth Anything v2 with ViT-L encoder
+    DAv2_ViTS = "dav2_vits"             # Depth Anything v2 with ViT-S encoder
+    DEPTH_PRO = "depth_pro"             # Depth Pro
     DEPTH     = "depth"
 
 

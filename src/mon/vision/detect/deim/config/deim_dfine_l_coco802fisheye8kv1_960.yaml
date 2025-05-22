@@ -34,6 +34,7 @@ use_amp     : False                                                             
 test_only   : False                                                             # Test only.
 print_method: "builtin"                                                         # Print method.
 print_rank  : 0                                                                 # Print rank ID.
+thres_conf  : 0.4                                                               # Confidence threshold for detection.
 
 # We only need to change the '__include__' part in the original config file.
 __include__: [
