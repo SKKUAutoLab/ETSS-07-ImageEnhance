@@ -1,5 +1,5 @@
 # Fisheye8K-v3 dataset:
-#   - trainv3 = train (fixed) + val (fixed) + test (fixed) + train_syn + val_syn: 13841 images
+#   - trainv3 = train + val + test + train_syn + val_syn + visdrone: 31093 images
 #   - val  : 2712 images
 #   - test : 1000 images
 

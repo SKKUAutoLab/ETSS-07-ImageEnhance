@@ -23,10 +23,11 @@ python -W ignore main.py \
     --root "${current_dir}" \
     --task "depth" \
     --mode "predict" \
-    --arch "depth_anything_v2" \
-    --model "depth_anything_v2_vitb" \
+    --arch "depthanythingv2" \
+    --model "depthanythingv2_vitb" \
     --config 0 \
     --data "${data_str}" \
+    --save-result \
     --save-image \
     --save-debug \
     --use-fullname \

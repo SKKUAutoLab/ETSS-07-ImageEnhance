@@ -6,8 +6,6 @@
 python resize_bbox_yolo.py --format "voc" --imgsz 512 --divisible-by 32 --side "long" --replace --verbose --image-dir "/home/longpham/10_workspace/11_code/mon/data/enhance/llie/darkface/test/lq" --label-dir "/home/longpham/10_workspace/11_code/mon/data/enhance/llie/darkface/test/labels"
 """
 
-from __future__ import annotations
-
 import click
 import cv2
 import numpy as np

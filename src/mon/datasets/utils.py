@@ -11,8 +11,11 @@ __all__ = [
     "parse_data_name",
 ]
 
+import torch
+
 from mon import core, vision
-from mon.constants import DATASETS, EXTRA_DATASETS, Split, Task, ROOT_DIR
+from mon.constants import DATASETS, EXTRA_DATASETS, Split, Task
+from torch.utils import data
 
 
 # ----- Retrieve -----
@@ -93,8 +96,10 @@ def parse_data_name(src: core.Path | str) -> str:
     """
     src = core.Path(src)
 
+    # Existing dataset
     if src.stem in DATASETS:
-        data_name = src.stem
+        return src.stem
+    # Direct input directory or file
     elif src.is_dir():
         data_name = src.stem
     elif src.is_video_file():
@@ -106,10 +111,12 @@ def parse_data_name(src: core.Path | str) -> str:
 
 
 def parse_data_loader(
-    src      : core.Path | str,
-    data_root: core.Path | str = None,
-    to_tensor: bool = False,
-    verbose  : bool = False
+    src       : core.Path | str,
+    data_root : core.Path | str = None,
+    to_tensor : bool            = False,
+    batch_size: int             = 1,
+    device    : torch.device    = None,
+    verbose   : bool            = False,
 ) -> tuple[str, core.Dataset]:
     """Parses I/O worker for data src.
 
@@ -117,6 +124,8 @@ def parse_data_loader(
         src: Source of input data.
         data_root: Dataset root dir (e.g., ``data/ntire_2025_llie``). Default is ``None``.
         to_tensor: If ``True``, converts to tensor. Default is ``False``.
+        batch_size: Number of samples per forward pass. Default is ``1``.
+        device: Device to use for data loading. Default is ``None`` (uses CPU).
         verbose: If ``True``, enables verbose output. Default is ``False``.
 
     Returns:
@@ -155,5 +164,16 @@ def parse_data_loader(
         )
     else:
         raise ValueError(f"[src] is invalid: {src}.")
-    
+
+    if batch_size > 1:
+        data_loader = data.DataLoader(
+            dataset            = data_loader,
+            batch_size         = batch_size,
+            shuffle            = False,
+            num_workers        = 0 if device is None else 4,
+            collate_fn         = getattr(data_loader, "collate_fn"),
+            generator          = torch.Generator(device=device),
+            persistent_workers = True
+        )
+
     return data_name, data_loader

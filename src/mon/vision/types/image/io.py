@@ -13,7 +13,7 @@ Common Tasks:
 __all__ = [
     "load_image",
     "read_image_shape",
-    "write_image",
+    "save_image",
 ]
 
 from typing import Any
@@ -99,18 +99,19 @@ def read_image_shape(path: core.Path) -> tuple[int, int, int]:
 
 
 # ----- Write -----
-def write_image(path: core.Path, image: torch.Tensor | np.ndarray):
-    """Writes an image to a file path.
+def save_image(image: torch.Tensor | np.ndarray, path: core.Path):
+    """Save an image to a file path.
 
     Args:
-        path: Output file path as ``core.Path`` or ``str``.
         image: Image as ``torch.Tensor`` [B, C, H, W] or ``numpy.ndarray`` [H, W, C].
-    
+        path: Output file path as ``core.Path`` or ``str``.
+
     Raises:
         TypeError: If ``image`` is not a ``torch.Tensor`` or ``numpy.ndarray``.
     """
     path = core.Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+
     if isinstance(image, torch.Tensor):
         torchvision.utils.save_image(image, str(path))
     elif isinstance(image, np.ndarray):

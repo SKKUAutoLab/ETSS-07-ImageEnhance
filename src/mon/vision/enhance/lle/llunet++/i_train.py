@@ -84,6 +84,7 @@ def train(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     benchmark    = args["benchmark"]

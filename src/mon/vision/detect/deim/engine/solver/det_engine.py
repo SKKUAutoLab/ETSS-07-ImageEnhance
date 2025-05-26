@@ -21,9 +21,18 @@ from ..data import CocoEvaluator
 from ..misc import MetricLogger, SmoothedValue, dist_utils
 
 
-def train_one_epoch(self_lr_scheduler, lr_scheduler, model: torch.nn.Module, criterion: torch.nn.Module,
-                    data_loader: Iterable, optimizer: torch.optim.Optimizer,
-                    device: torch.device, epoch: int, max_norm: float = 0, **kwargs):
+def train_one_epoch(
+    self_lr_scheduler,
+    lr_scheduler,
+    model       : torch.nn.Module,
+    criterion   : torch.nn.Module,
+    data_loader : Iterable,
+    optimizer   : torch.optim.Optimizer,
+    device      : torch.device,
+    epoch       : int,
+    max_norm    : float = 0,
+    **kwargs
+):
     model.train()
     criterion.train()
     metric_logger = MetricLogger(delimiter="  ")
@@ -33,9 +42,9 @@ def train_one_epoch(self_lr_scheduler, lr_scheduler, model: torch.nn.Module, cri
     print_freq = kwargs.get('print_freq', 10)
     writer: SummaryWriter = kwargs.get('writer', None)
 
-    ema: ModelEMA = kwargs.get('ema', None)
+    ema   : ModelEMA   = kwargs.get('ema',    None)
     scaler: GradScaler = kwargs.get('scaler', None)
-    lr_warmup_scheduler :Warmup = kwargs.get('lr_warmup_scheduler', None)
+    lr_warmup_scheduler: Warmup = kwargs.get('lr_warmup_scheduler', None)
 
     cur_iters = epoch * len(data_loader)
 
@@ -123,7 +132,14 @@ def train_one_epoch(self_lr_scheduler, lr_scheduler, model: torch.nn.Module, cri
 
 
 @torch.no_grad()
-def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, postprocessor, data_loader, coco_evaluator: CocoEvaluator, device):
+def evaluate(
+    model         : torch.nn.Module,
+    criterion     : torch.nn.Module,
+    postprocessor,
+    data_loader,
+    coco_evaluator: CocoEvaluator,
+    device
+):
     model.eval()
     criterion.eval()
     coco_evaluator.cleanup()
@@ -142,9 +158,7 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, postprocessor, 
         targets = [{k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in t.items()} for t in targets]
 
         outputs = model(samples)
-
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
-
         results = postprocessor(outputs, orig_target_sizes)
 
         # if 'segm' in postprocessor.keys():
@@ -170,7 +184,7 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, postprocessor, 
     # stats = {k: meter.global_avg for k, meter in metric_logger.meters.items()}
     if coco_evaluator is not None:
         if 'bbox' in iou_types:
-            stats['coco_eval_bbox'] = coco_evaluator.coco_eval['bbox'].stats.tolist()
+            stats['coco_eval_bbox']  = coco_evaluator.coco_eval['bbox'].stats.tolist()
         if 'segm' in iou_types:
             stats['coco_eval_masks'] = coco_evaluator.coco_eval['segm'].stats.tolist()
 

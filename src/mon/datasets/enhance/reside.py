@@ -4,20 +4,20 @@
 """Implements RESIDE datasets."""
 
 __all__ = [
-    "RESIDE_HSTS_Real",
-    "RESIDE_HSTS_Real_DataModule",
-    "RESIDE_HSTS_Synthetic",
-    "RESIDE_HSTS_Synthetic_DataModule",
+    "RESIDE_HSTSReal",
+    "RESIDE_HSTSReal_DataModule",
+    "RESIDE_HSTSSyn",
+    "RESIDE_HSTSSyn_DataModule",
     "RESIDE_ITS",
     "RESIDE_ITS_DataModule",
     "RESIDE_OTS",
     "RESIDE_OTS_DataModule",
     "RESIDE_RTTS",
     "RESIDE_RTTS_DataModule",
-    "RESIDE_SOTS_Indoor",
-    "RESIDE_SOTS_Indoor_DataModule",
-    "RESIDE_SOTS_Outdoor",
-    "RESIDE_SOTS_Outdoor_DataModule",
+    "RESIDE_SOTSIndoor",
+    "RESIDE_SOTSIndoor_DataModule",
+    "RESIDE_SOTSOutdoor",
+    "RESIDE_SOTSOutdoor_DataModule",
     "RESIDE_URHI",
     "RESIDE_URHI_DataModule",
 ]
@@ -38,8 +38,8 @@ VisionDataset                  = vision.VisionDataset
 
 
 # ----- Dataset -----
-@DATASETS.register(name="reside_hsts_real")
-class RESIDE_HSTS_Real(VisionDataset):
+@DATASETS.register(name="reside_hstsreal")
+class RESIDE_HSTSReal(VisionDataset):
     """Loads RESIDE-HSTS-Real dataset from ``root`` dir.
 
     Args:
@@ -55,6 +55,7 @@ class RESIDE_HSTS_Real(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
+        "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
     
@@ -82,8 +83,8 @@ class RESIDE_HSTS_Real(VisionDataset):
         self.datapoints["image"] = images
         
         
-@DATASETS.register(name="reside_hsts_synthetic")
-class RESIDE_HSTS_Synthetic(VisionDataset):
+@DATASETS.register(name="reside_hstssyn")
+class RESIDE_HSTSSyn(VisionDataset):
     """Loads RESIDE-HSTS-Synthetic dataset from ``root`` dir.
 
     Args:
@@ -99,9 +100,11 @@ class RESIDE_HSTS_Synthetic(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
-    has_test_annotations: bool = False
+    has_test_annotations: bool = True
     
     def __init__(self, root: core.Path, *args, **kwargs):
         root = core.Path(root)
@@ -141,10 +144,12 @@ class RESIDE_ITS(VisionDataset):
     """
 
     tasks : list[Task]  = [Task.DEHAZE]
-    splits: list[Split] = [Split.TRAIN, Split.VAL]
+    splits: list[Split] = [Split.TRAIN]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
     
@@ -168,20 +173,8 @@ class RESIDE_ITS(VisionDataset):
                 for path in pbar.track(sequence=paths, description=desc):
                     if path.is_image_file():
                         images.append(ImageAnnotation(path=path, root=pattern))
-        
-        ref_images: list[ImageAnnotation] = []
-        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-            for img in pbar.track(
-                sequence=images,
-                description=f"Listing {self.__class__.__name__} {self.split_str} reference images"
-            ):
-                stem = str(img.path.stem).split("_")[0]
-                path = img.path.replace("/image/", "/ref/")
-                path = path.parent / f"{stem}.{img.path.suffix}"
-                ref_images.append(ImageAnnotation(path=path.image_file(), root=pattern))
-        
-        self.datapoints["image"]     = images
-        self.datapoints["ref_image"] = ref_images
+
+        self.datapoints["image"] = images
 
 
 @DATASETS.register(name="reside_ots")
@@ -201,7 +194,9 @@ class RESIDE_OTS(VisionDataset):
     splits: list[Split] = [Split.TRAIN]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
     
@@ -225,21 +220,9 @@ class RESIDE_OTS(VisionDataset):
                 for path in pbar.track(sequence=paths, description=desc):
                     if path.is_image_file():
                         images.append(ImageAnnotation(path=path, root=pattern))
-        
-        ref_images: list[ImageAnnotation] = []
-        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-            for img in pbar.track(
-                sequence=images,
-                description=f"Listing {self.__class__.__name__} {self.split_str} reference images"
-            ):
-                stem = str(img.path.stem).split("_")[0]
-                path = img.path.replace("/image/", "/ref/")
-                path = path.parent / f"{stem}.{img.path.suffix}"
-                ref_images.append(ImageAnnotation(path=path.image_file(), root=pattern))
-        
-        self.datapoints["image"]     = images
-        self.datapoints["ref_image"] = ref_images
-        
+
+        self.datapoints["image"] = images
+
 
 @DATASETS.register(name="reside_rtts")
 class RESIDE_RTTS(VisionDataset):
@@ -254,10 +237,11 @@ class RESIDE_RTTS(VisionDataset):
         FileNotFoundError: If ``root`` directory does not exist.
     """
 
-    tasks : list[Task]  = [Task.DEHAZE]
+    tasks : list[Task]  = [Task.DEHAZE, Task.DETECT]
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
+        "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
     
@@ -285,8 +269,8 @@ class RESIDE_RTTS(VisionDataset):
         self.datapoints["image"] = images
         
 
-@DATASETS.register(name="reside_sots_indoor")
-class RESIDE_SOTS_Indoor(VisionDataset):
+@DATASETS.register(name="reside_sotsindoor")
+class RESIDE_SOTSIndoor(VisionDataset):
     """Loads RESIDE-SOTS-Indoor dataset from ``root`` dir.
 
     Args:
@@ -302,7 +286,9 @@ class RESIDE_SOTS_Indoor(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = True
     
@@ -326,24 +312,12 @@ class RESIDE_SOTS_Indoor(VisionDataset):
                 for path in pbar.track(sequence=paths, description=desc):
                     if path.is_image_file():
                         images.append(ImageAnnotation(path=path, root=pattern))
-        
-        ref_images: list[ImageAnnotation] = []
-        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-            for img in pbar.track(
-                sequence    = images,
-                description = f"Listing {self.__class__.__name__} {self.split_str} reference images"
-            ):
-                stem = str(img.path.stem).split("_")[0]
-                path = img.path.replace("/image/", "/ref/")
-                path = path.parent / f"{stem}.{img.path.suffix}"
-                ref_images.append(ImageAnnotation(path=path.image_file(), root=pattern))
-        
-        self.datapoints["image"]     = images
-        self.datapoints["ref_image"] = ref_images
-        
 
-@DATASETS.register(name="reside_sots_outdoor")
-class RESIDE_SOTS_Outdoor(VisionDataset):
+        self.datapoints["image"] = images
+
+
+@DATASETS.register(name="reside_sotsoutdoor")
+class RESIDE_SOTSOutdoor(VisionDataset):
     """Loads RESIDE-SOTS-Outdoor dataset from ``root`` dir.
 
     Args:
@@ -359,7 +333,9 @@ class RESIDE_SOTS_Outdoor(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = True
     
@@ -383,20 +359,8 @@ class RESIDE_SOTS_Outdoor(VisionDataset):
                 for path in pbar.track(sequence=paths, description=desc):
                     if path.is_image_file():
                         images.append(ImageAnnotation(path=path, root=pattern))
-        
-        ref_images: list[ImageAnnotation] = []
-        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-            for img in pbar.track(
-                sequence    = images,
-                description = f"Listing {self.__class__.__name__} {self.split_str} reference images"
-            ):
-                stem = str(img.path.stem).split("_")[0]
-                path = img.path.replace("/image/", "/ref/")
-                path = path.parent / f"{stem}.{img.path.suffix}"
-                ref_images.append(ImageAnnotation(path=path.image_file(), root=pattern))
-        
-        self.datapoints["image"]     = images
-        self.datapoints["ref_image"] = ref_images
+
+        self.datapoints["image"] = images
 
 
 @DATASETS.register(name="reside_urhi")
@@ -416,6 +380,7 @@ class RESIDE_URHI(VisionDataset):
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image": ImageAnnotation,
+        "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
     
@@ -444,8 +409,8 @@ class RESIDE_URHI(VisionDataset):
         
 
 # ----- DataModule -----
-@DATAMODULES.register(name="reside_hsts_real")
-class RESIDE_HSTS_Real_DataModule(core.DataModule):
+@DATAMODULES.register(name="reside_hstsreal")
+class RESIDE_HSTSReal_DataModule(core.DataModule):
     """Configures RESIDE_HSTS_Real datasets for training/testing."""
 
     tasks: list[Task] = [Task.DEHAZE]
@@ -465,18 +430,18 @@ class RESIDE_HSTS_Real_DataModule(core.DataModule):
             core.console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
         if stage in [None, "train"]:
-            self.train = RESIDE_HSTS_Real(split=Split.TEST, **self.dataset_kwargs)
-            self.val   = RESIDE_HSTS_Real(split=Split.TEST, **self.dataset_kwargs)
+            self.train = RESIDE_HSTSReal(split=Split.TEST, **self.dataset_kwargs)
+            self.val   = RESIDE_HSTSReal(split=Split.TEST, **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_HSTS_Real(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_HSTSReal(split=Split.TEST, **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:
             self.summarize()
 
 
-@DATAMODULES.register(name="reside_hsts_synthetic")
-class RESIDE_HSTS_Synthetic_DataModule(core.DataModule):
+@DATAMODULES.register(name="reside_hstssyn")
+class RESIDE_HSTSSyn_DataModule(core.DataModule):
     """Configures RESIDE_HSTS_Synthetic datasets for training/testing."""
 
     tasks: list[Task] = [Task.DEHAZE]
@@ -496,10 +461,10 @@ class RESIDE_HSTS_Synthetic_DataModule(core.DataModule):
             core.console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
         if stage in [None, "train"]:
-            self.train = RESIDE_HSTS_Synthetic(split=Split.TEST, **self.dataset_kwargs)
-            self.val   = RESIDE_HSTS_Synthetic(split=Split.TEST, **self.dataset_kwargs)
+            self.train = RESIDE_HSTSSyn(split=Split.TEST, **self.dataset_kwargs)
+            self.val   = RESIDE_HSTSSyn(split=Split.TEST, **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_HSTS_Synthetic(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_HSTSSyn(split=Split.TEST, **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:
@@ -528,9 +493,9 @@ class RESIDE_ITS_DataModule(core.DataModule):
         
         if stage in [None, "train"]:
             self.train = RESIDE_ITS(split=Split.TRAIN, **self.dataset_kwargs)
-            self.val   = RESIDE_ITS(split=Split.VAL, **self.dataset_kwargs)
+            self.val   = RESIDE_ITS(split=Split.VAL,   **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_ITS(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_ITS(split=Split.VAL,   **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:
@@ -559,9 +524,9 @@ class RESIDE_OTS_DataModule(core.DataModule):
         
         if stage in [None, "train"]:
             self.train = RESIDE_OTS(split=Split.TRAIN, **self.dataset_kwargs)
-            self.val   = RESIDE_ITS(split=Split.VAL, **self.dataset_kwargs)
+            self.val   = RESIDE_ITS(split=Split.VAL,   **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_ITS(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_ITS(split=Split.VAL,   **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:
@@ -599,8 +564,8 @@ class RESIDE_RTTS_DataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="reside_sots_indoor")
-class RESIDE_SOTS_Indoor_DataModule(core.DataModule):
+@DATAMODULES.register(name="reside_sotsindoor")
+class RESIDE_SOTSIndoor_DataModule(core.DataModule):
     """Configures RESIDE_SOTS_Indoor datasets for training/testing."""
 
     tasks: list[Task] = [Task.DEHAZE]
@@ -620,18 +585,18 @@ class RESIDE_SOTS_Indoor_DataModule(core.DataModule):
             core.console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
         if stage in [None, "train"]:
-            self.train = RESIDE_SOTS_Indoor(split=Split.TEST, **self.dataset_kwargs)
-            self.val   = RESIDE_SOTS_Indoor(split=Split.TEST, **self.dataset_kwargs)
+            self.train = RESIDE_SOTSIndoor(split=Split.TEST, **self.dataset_kwargs)
+            self.val   = RESIDE_SOTSIndoor(split=Split.TEST, **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_SOTS_Indoor(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_SOTSIndoor(split=Split.TEST, **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:
             self.summarize()
 
 
-@DATAMODULES.register(name="reside_sots_outdoor")
-class RESIDE_SOTS_Outdoor_DataModule(core.DataModule):
+@DATAMODULES.register(name="reside_sotsoutdoor")
+class RESIDE_SOTSOutdoor_DataModule(core.DataModule):
     """Configures RESIDE_SOTS_Outdoor datasets for training/testing."""
 
     tasks: list[Task] = [Task.DEHAZE]
@@ -651,10 +616,10 @@ class RESIDE_SOTS_Outdoor_DataModule(core.DataModule):
             core.console.log(f"Setup [red]{self.__class__.__name__}[/red].")
         
         if stage in [None, "train"]:
-            self.train = RESIDE_SOTS_Outdoor(split=Split.TEST, **self.dataset_kwargs)
-            self.val   = RESIDE_SOTS_Outdoor(split=Split.TEST, **self.dataset_kwargs)
+            self.train = RESIDE_SOTSOutdoor(split=Split.TEST, **self.dataset_kwargs)
+            self.val   = RESIDE_SOTSOutdoor(split=Split.TEST, **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = RESIDE_SOTS_Outdoor(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = RESIDE_SOTSOutdoor(split=Split.TEST, **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:

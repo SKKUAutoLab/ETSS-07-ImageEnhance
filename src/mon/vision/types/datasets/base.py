@@ -44,13 +44,11 @@ class VisionDataset(core.Dataset, ABC):
         *args, **kwargs
     ):
         if depth_source not in DepthDataSource:
-            raise ValueError(f"[depth_source] must be one of {DepthDataSource}, "
-                             f"got {depth_source}.")
+            raise ValueError(f"[depth_source] must be one of {DepthDataSource}, got {depth_source}.")
         self.depth_source = depth_source
         
         if infrared_source not in InfraredDataSource:
-            raise ValueError(f"[infrared_source] must be one of {InfraredDataSource}, "
-                             f"got {infrared_source}.")
+            raise ValueError(f"[infrared_source] must be one of {InfraredDataSource}, got {infrared_source}.")
         self.infrared_source = infrared_source
         super().__init__(*args, **kwargs)
     
@@ -179,28 +177,7 @@ class VisionDataset(core.Dataset, ABC):
             self.datapoints.pop("ref_image",    None)
             self.datapoints.pop("ref_depth",    None)
             self.datapoints.pop("ref_infrared", None)
-    
-    def list_reference_image(self):
-        """Lists reference images for the dataset."""
-        images     = self.datapoints.get("image",     [])
-        ref_images = self.datapoints.get("ref_image", [])
-        
-        if len(ref_images) == 0:
-            ref_images: list[ImageAnnotation] = []
-            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-                for img in pbar.track(
-                    sequence    = images,
-                    description = f"Listing {self.__class__.__name__} "
-                                  f"{self.split_str} reference images"
-                ):
-                    root_name = img.root.name
-                    path      = img.path.replace(f"/{root_name}/", f"/ref/")
-                    ref_images.append(ImageAnnotation(
-                        path = path.image_file(),
-                        root = img.root
-                    ))
-            self.datapoints["ref_image"] = ref_images
-    
+
     def list_depth_map(self):
         """Lists depth maps for the dataset."""
         images = self.datapoints.get("image", [])
@@ -224,7 +201,76 @@ class VisionDataset(core.Dataset, ABC):
                         )
                     )
             self.datapoints["depth"] = depths
-            
+
+    def list_infrared_map(self):
+        """Lists infrared maps for the dataset."""
+        images    = self.datapoints.get("image",    [])
+        infrareds = self.datapoints.get("infrared", [])
+
+        if len(images) > 0 and len(infrareds) == 0:
+            infrareds: list[InfraredAnnotation] = []
+            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+                for img in pbar.track(
+                    sequence    = images,
+                    description = f"Listing {self.__class__.__name__} "
+                                  f"{self.split_str} infrared maps"
+                ):
+                    root_name = img.root.name
+                    path      = img.path.replace(f"/{root_name}/", f"/{root_name}_{self.infrared_source}/")
+                    infrareds.append(
+                        InfraredAnnotation(
+                            path   = path.image_file(),
+                            root   = img.root,
+                            source = self.infrared_source
+                        )
+                    )
+            self.datapoints["infrared"] = infrareds
+
+    def list_bboxes(self):
+        """Lists bboxes for the dataset."""
+        images = self.datapoints.get("image",  [])
+        bboxes = self.datapoints.get("bboxes", [])
+
+        if len(images) > 0 and len(bboxes) == 0:
+            bboxes: list[InfraredAnnotation] = []
+            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+                for img in pbar.track(
+                    sequence    = images,
+                    description = f"Listing {self.__class__.__name__} "
+                                  f"{self.split_str} bboxes"
+                ):
+                    root_name = img.root.name
+                    path      = img.path.replace(f"/{root_name}/", f"/label/")
+                    bboxes.append(
+                        InfraredAnnotation(
+                            path   = path.txt_file(),
+                            root   = img.root,
+                            source = self.infrared_source
+                        )
+                    )
+            self.datapoints["bboxes"] = bboxes
+
+    def list_reference_image(self):
+        """Lists reference images for the dataset."""
+        images     = self.datapoints.get("image",     [])
+        ref_images = self.datapoints.get("ref_image", [])
+
+        if len(ref_images) == 0:
+            ref_images: list[ImageAnnotation] = []
+            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+                for img in pbar.track(
+                    sequence    = images,
+                    description = f"Listing {self.__class__.__name__} "
+                                  f"{self.split_str} reference images"
+                ):
+                    root_name = img.root.name
+                    path      = img.path.replace(f"/{root_name}/", f"/ref/")
+                    ref_images.append(ImageAnnotation(
+                        path = path.image_file(),
+                        root = img.root
+                    ))
+            self.datapoints["ref_image"] = ref_images
+
     def list_reference_depth_map(self):
         """Lists reference depth maps for the dataset."""
         ref_images = self.datapoints.get("ref_image", [])
@@ -248,31 +294,7 @@ class VisionDataset(core.Dataset, ABC):
                         )
                     )
             self.datapoints["ref_depth"] = ref_depths
-    
-    def list_infrared_map(self):
-        """Lists infrared maps for the dataset."""
-        images    = self.datapoints.get("image",    [])
-        infrareds = self.datapoints.get("infrared", [])
-        
-        if len(images) > 0 and len(infrareds) == 0:
-            infrareds: list[InfraredAnnotation] = []
-            with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-                for img in pbar.track(
-                    sequence    = images,
-                    description = f"Listing {self.__class__.__name__} "
-                                  f"{self.split_str} infrared maps"
-                ):
-                    root_name = img.root.name
-                    path      = img.path.replace(f"/{root_name}/", f"/{root_name}_{self.infrared_source}/")
-                    infrareds.append(
-                        InfraredAnnotation(
-                            path   = path.image_file(),
-                            root   = img.root,
-                            source = self.infrared_source
-                        )
-                    )
-            self.datapoints["infrared"] = infrareds
-    
+
     def list_reference_infrared_map(self):
         """Lists reference infrared maps for the dataset."""
         ref_images    = self.datapoints.get("ref_image",    [])

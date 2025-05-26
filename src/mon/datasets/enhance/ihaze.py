@@ -41,7 +41,9 @@ class IHaze(VisionDataset):
     splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = True
 

@@ -8,6 +8,8 @@ __all__ = [
     "BBoxesAnnotation",
 ]
 
+from typing import Any
+
 import numpy as np
 import torch
 
@@ -172,3 +174,26 @@ class BBoxesAnnotation(list[BBoxAnnotation]):
             List of ``confidence`` values in [0.0, 1.0].
         """
         return [item.confidence for item in self]
+
+
+class BBoxesAnnotation2(core.Annotation):
+
+    def __init__(
+        self,
+
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+
+
+    @property
+    def data(self) -> list | None:
+        pass
+
+    @staticmethod
+    def to_tensor(data: torch.Tensor | np.ndarray, *args, **kwargs) -> torch.Tensor:
+        pass
+
+    @staticmethod
+    def collate_fn(batch: list[Any]) -> Any:
+        pass

@@ -6,7 +6,6 @@
 import argparse
 import json
 import logging
-from datetime import datetime
 
 import numpy as np
 from pycocotools.coco import COCO
@@ -15,6 +14,9 @@ from pycocotools.cocoeval import COCOeval
 import mon
 
 mon.disable_print()
+
+current_file = mon.Path(__file__).absolute()
+current_dir  = current_file.parents[0]
 
 
 # ----- COCO -----
@@ -77,16 +79,15 @@ def convert_label_to_coco(
     
     # COCO JSON Format
     annotations = []
-    image_files = list(input_dir.rglob("*"))
-    image_files = sorted([f for f in image_files if f.is_image_file()])
+    image_files = sorted([f for f in list(input_dir.rglob("*")) if f.is_image_file()])
     with mon.create_progress_bar() as pbar:
         for i, image_file in pbar.track(
-                sequence    = enumerate(image_files),
-                total       = len(image_files),
-                description = f"[bright_yellow] Converting"
+            sequence    = enumerate(image_files),
+            total       = len(image_files),
+            description = f"[bright_yellow] Converting"
         ):
             # Append image
-            h, w, c  = mon.read_image_shape(image_file)
+            h, w, _  = mon.read_image_shape(image_file)
             image_id = i
 
             # Append annotations
@@ -95,20 +96,21 @@ def convert_label_to_coco(
                 continue
             
             with open(label_file, "r") as f:
-                lines = f.readlines()
-            lines   = [l.strip().split(" ") for l in lines]
-            lines   = [l for l in lines if len(l) >= 5]
-            if len(lines) == 0:
+                ls = f.readlines()
+            ls = [l_.strip().split(" ") for l_ in ls]
+            ls = [l_ for l_ in ls if len(l_) >= 5]
+            if len(ls) == 0:
                 continue
-            classes = [int(l[0]) for l in lines]
-            bboxes  = np.array([list(map(float, l[1:5])) for l in lines])
-            scores  = [float(l[5]) for l in lines]
+            cs = [int(l_[0]) for l_ in ls]
+            bs = np.array([list(map(float, l_[1:5])) for l_ in ls])
+            ss = [float(l_[5]) for l_ in ls]
             if code:
-                bboxes = mon.convert_bbox(bbox=bboxes, code=code, height=h, width=w)
-            assert len(lines) == len(classes)
-            assert len(lines) == len(bboxes)
+                bs = mon.convert_bbox(bbox=bs, code=code, height=h, width=w)
+            assert len(ls) == len(cs)
+            assert len(ls) == len(bs)
+            assert len(ls) == len(ss)
 
-            for c, b, s in zip(classes, bboxes, scores):
+            for c, b, s in zip(cs, bs, ss):
                 if remap_classes:
                     if c in remap_classes:
                         c = int(remap_classes[c])
@@ -200,7 +202,7 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="metric_iqa")
+    parser = argparse.ArgumentParser(description="metric_coco")
     parser.add_argument("--input-dir",     type=str, help="Input image directory.")
     parser.add_argument("--label-dir",     type=str, help="Input label directory.")
     parser.add_argument("--input-json",    type=str, help="Input JSON file.")

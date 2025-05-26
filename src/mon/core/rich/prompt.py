@@ -96,6 +96,7 @@ class SelectionOrInputPrompt(Prompt):
             allow_empty: Allow empty input. Defaults to False.
             column_first: Align Align items from top to bottom (rather than left to right).
                 Defaults to False.
+            default: Default value to return if no input is given. Defaults to ``...``.
             stream: Optional text file open for reading to get input. Defaults to None.
         """
         _prompt = cls(
@@ -191,6 +192,8 @@ class SelectionOrInputPrompt(Prompt):
 
             # Convert index (if any) to choice
             value = type_extensions.to_list(value, sep=[",", ";"])
+            if any(v for v in value if type_extensions.is_int(v) and not 0 <= int(v) <= len(self.choices) - 1):
+                raise InvalidResponse(self.illegal_choice_message)
             value = [self.choices[int(v)] if type_extensions.is_int(v) else v for v in value]
             
             '''

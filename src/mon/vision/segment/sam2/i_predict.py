@@ -31,6 +31,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     imgsz        = imgsz[0] if isinstance(imgsz, Sequence) else imgsz
     resize       = args["resize"]
@@ -136,8 +137,7 @@ def predict(args: dict) -> str:
                 # Binary
                 for i, mask in enumerate(masks):
                     output_path = binary_save_dir / f"{image_path.stem}_mask_{i}.jpg"
-                    output_path.parent.mkdir(parents=True, exist_ok=True)
-                    cv2.imwrite(str(output_path), np.uint8(mask["segmentation"]) * 255)
+                    mon.save_image(np.uint8(mask["segmentation"]) * 255, output_path)
                 # Color
                 output          = np.ones((masks[0]["segmentation"].shape[0], masks[0]["segmentation"].shape[1], 4))
                 output[:, :, 3] = 0
@@ -146,8 +146,7 @@ def predict(args: dict) -> str:
                     color_mask        = np.concatenate([np.random.random(3), [1.0]])  # 0.35
                     output[mask_bool] = color_mask
                 output_path = color_save_dir / f"{image_path.stem}.jpg"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                cv2.imwrite(str(output_path), np.uint8(output * 255))
+                mon.save_image(np.uint8(output * 255), output_path)
     
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")

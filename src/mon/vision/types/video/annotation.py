@@ -11,6 +11,7 @@ import numpy as np
 import torch
 
 from mon import core
+from mon.constants import SAVE_IMAGE_EXT
 from mon.vision.types import image as I
 
 
@@ -68,7 +69,20 @@ class FrameAnnotation(core.Annotation):
             self._path = path_obj
         else:
             self._path = None
-    
+
+    @property
+    def frame_path(self) -> core.Path:
+        """Returns the path for each frame of the video: <self.path>_<self.index>.
+
+        Returns:
+            ``core.Path`` of video file or ``None`` if not set.
+        """
+        if self.path is not None:
+            path = self.path
+            return path.parent / path.stem / f"{path.stem}_{self.index}{SAVE_IMAGE_EXT}"
+        else:
+            return self._path
+
     @property
     def name(self) -> str:
         """Returns the frame name.
@@ -104,12 +118,14 @@ class FrameAnnotation(core.Annotation):
             Dict with ``index``, ``name``, ``stem``, ``path``, ``shape``, and ``hash``.
         """
         return {
-            "index": self.index,
-            "name" : self.name,
-            "stem" : self.stem,
-            "path" : self.path,
-            "shape": self.shape,
-            "hash" : self.path.stat().st_size if self.path else None,
+            "index"     : self.index,
+            "name"      : self.name,
+            "stem"      : self.stem,
+            "path"      : self.frame_path,
+            "frame_path": self.frame_path,
+            "video_path": self.path,
+            "shape"     : self.shape,
+            "hash"      : self.path.stat().st_size if self.path else None,
         }
     
     @staticmethod

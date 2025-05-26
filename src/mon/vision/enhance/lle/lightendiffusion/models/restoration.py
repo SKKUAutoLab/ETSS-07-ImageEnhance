@@ -35,5 +35,5 @@ class DiffusiveRestoration:
                 pred_x = self.diffusion.model(torch.cat((x_cond, x_cond), dim=1))["pred_x"][:, :, :h, :w]
                 t2 = time.time()
 
-                utils.logging.save_image(pred_x, os.path.join(image_folder, f"{y[0]}"))
+                utils.logging.save_image(os.path.join(image_folder, f"{y[0]}"), pred_x)
                 print(f"processing image {y[0]}, time={t2 - t1}")

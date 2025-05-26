@@ -149,6 +149,7 @@ def reduce_dict(input_dict, average=True) -> Dict[str, torch.Tensor]:
 
 
 class MetricLogger(object):
+
     def __init__(self, delimiter="\t"):
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter

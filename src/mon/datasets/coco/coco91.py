@@ -5,7 +5,7 @@
 
 __all__ = [
     "COCO91",
-    "COCODataModule",
+    "COCO91DataModule",
 ]
 
 from typing import Literal
@@ -26,7 +26,7 @@ VisionDataset                  = vision.VisionDataset
 # ----- Dataset -----
 @DATASETS.register(name="coco91")
 class COCO91(VisionDataset):
-    """COCO 91-classes dataset."""
+    """COCO-91-classes dataset."""
     
     tasks : list[Task]  = [Task.DETECT]
     splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST]
@@ -156,8 +156,8 @@ class COCO91(VisionDataset):
 
 
 # ----- DataModule -----
-@DATAMODULES.register(name="coco2017")
-class COCODataModule(core.DataModule):
+@DATAMODULES.register(name="coco91")
+class COCO91DataModule(core.DataModule):
     
     tasks: list[Task] = [Task.DETECT]
     
@@ -170,9 +170,9 @@ class COCODataModule(core.DataModule):
         
         if stage in [None, "train"]:
             self.train = COCO91(split=Split.TRAIN, **self.dataset_kwargs)
-            self.val   = COCO91(split=Split.VAL, **self.dataset_kwargs)
+            self.val   = COCO91(split=Split.VAL,   **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = COCO91(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = COCO91(split=Split.TEST,  **self.dataset_kwargs)
         
         self.get_classlabels()
         if self.can_log:

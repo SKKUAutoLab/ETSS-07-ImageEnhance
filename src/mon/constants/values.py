@@ -618,33 +618,33 @@ EXTRA_MODELS   = {  # architecture/model (+ variant)
     },
     # endregion
     # region types/depth
-    "depth_anything_v2": {
-        "depth_anything_v2_vitb": {
+    "depthanythingv2": {
+        "depthanythingv2_vitb": {
             "tasks"    : [Task.DEPTH],
             "mltypes"  : [MLType.SUPERVISED],
-            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depth_anything_v2",
+            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depthanythingv2",
         },
-        "depth_anything_v2_vits": {
+        "depthanythingv2_vits": {
             "tasks"    : [Task.DEPTH],
             "mltypes"  : [MLType.SUPERVISED],
-            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depth_anything_v2",
+            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depthanythingv2",
         },
-        "depth_anything_v2_vitl": {
+        "depthanythingv2_vitl": {
             "tasks"    : [Task.DEPTH],
             "mltypes"  : [MLType.SUPERVISED],
-            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depth_anything_v2",
+            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depthanythingv2",
         },
-        "depth_anything_v2_vitg": {
+        "depthanythingv2_vitg": {
             "tasks"    : [Task.DEPTH],
             "mltypes"  : [MLType.SUPERVISED],
-            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depth_anything_v2",
+            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depthanythingv2",
         },
     },
-    "depth_pro"        : {
-        "depth_pro": {
+    "depthpro"       : {
+        "depthpro": {
             "tasks"    : [Task.DEPTH],
             "mltypes"  : [MLType.SUPERVISED],
-            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depth_pro",
+            "model_dir": MON_DIR / "vision" / "types" / "depth" / "depthpro",
         },
     },
     # endregion

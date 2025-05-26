@@ -1,0 +1,29 @@
+#
+#     /\_____/\
+#    /  o   o  \
+#   ( ==  ^  == )
+#    )         (
+#   (           )
+#  ( (  )   (  ) )
+# (__(__)___(__)__)
+#
+[tool.poetry]
+name        = "depthanythingv2"
+version     = "1.0.0"
+description = "Depth Anything V2. A More Capable Foundation Model for Monocular Depth Estimation"
+license     = "Depth-Anything-V2-Small model is under the Apache-2.0 license. Depth-Anything-V2-Base/Large/Giant models are under the CC-BY-NC-4.0 license."
+authors     = [
+]
+packages = [
+    {include="depth_anything_v2"},
+]
+include  = []
+exclude  = []
+
+[tool.poetry.dependencies]
+gradio-imageslider = "*"
+gradio             = "4.29.0"
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

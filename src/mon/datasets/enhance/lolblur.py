@@ -72,7 +72,7 @@ class LOLBlur(VisionDataset):
 # ----- DataModule -----
 @DATAMODULES.register(name="lolblur")
 class LOLBlurDataModule(core.DataModule):
-    """Configures LOLBlur datasets for training/testing."""
+    """Configures LOL-Blur datasets for training/testing."""
     
     tasks: list[Task] = [Task.LLE]
 

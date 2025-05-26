@@ -15,7 +15,7 @@ from typing import Any
 import cv2
 
 from mon import core
-from mon.constants import Split, Task, TRANSFORMS
+from mon.constants import Split, Task, TRANSFORMS, SAVE_IMAGE_EXT
 from mon.vision.geometry import albumentation
 from mon.vision.types.video import FrameAnnotation
 
@@ -38,7 +38,7 @@ class VideoLoader(core.Dataset, ABC):
     
     tasks: list[Task] = [Task.VIDEO]
     datapoint_attrs   = core.DatapointAttributes({
-        "frame": FrameAnnotation,
+        "image": FrameAnnotation,
     })
     
     def __init__(
@@ -86,7 +86,7 @@ class VideoLoader(core.Dataset, ABC):
         if self.to_tensor:
             for k, v in datapoint.items():
                 to_tensor_fn = getattr(self.datapoint_attrs[k], "to_tensor", None)
-                if to_tensor_fn and v:
+                if to_tensor_fn and v is not None:
                     datapoint[k] = to_tensor_fn(v, normalize=True)
         
         return datapoint | {"meta": meta}
@@ -329,9 +329,8 @@ class VideoLoaderCV(VideoLoader):
     
     def reset(self):
         """Resets the video loader."""
-        self.index = 0
         if isinstance(self.video_capture, cv2.VideoCapture):
-            self.video_capture.set(cv2.CAP_PROP_POS_FRAMES, self.index)
+            self.video_capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
     
     def close(self):
         """Closes and releases video capture."""
@@ -351,7 +350,7 @@ class VideoLoaderCV(VideoLoader):
             StopIteration: If index exceeds frame count for non-streams.
             RuntimeError: If ``video_capture`` not initialized.
         """
-        if not self.is_stream and self.index >= self.num_frames:
+        if not self.is_stream and index >= self.num_frames:
             self.close()
             raise StopIteration
         
@@ -362,15 +361,15 @@ class VideoLoaderCV(VideoLoader):
         
         if frame is not None:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = FrameAnnotation(index=self.index, frame=frame, path=self.root)
-        self.index += 1
-        
+            frame = FrameAnnotation(index=index, frame=frame, path=self.root)
+
         datapoint = self.new_datapoint
         for k, v in self.datapoints.items():
             if k == self.main_attribute:
                 datapoint[k] = frame.data
-            elif v and v[index] and hasattr(v[index], "data"):
+            elif v is not None and v[index] and hasattr(v[index], "data"):
                 datapoint[k] = v[index].data
+
         return datapoint
     
     def get_meta(self, index: int = 0) -> dict:
@@ -382,6 +381,7 @@ class VideoLoaderCV(VideoLoader):
         Returns:
             Dict with metadata from main attribute.
         """
+        path = self.root
         return {
             "format"       : self.format,
             "fourcc"       : self.fourcc,
@@ -395,7 +395,9 @@ class VideoLoaderCV(VideoLoader):
             "mode"         : self.mode,
             "name"         : str(self.root.name),
             "num_frames"   : self.num_frames,
-            "path"         : self.root,
+            "path"         : path.parent / path.stem / f"{path.stem}_{index}{SAVE_IMAGE_EXT}",
+            "frame_path"   : path.parent / path.stem / f"{path.stem}_{index}{SAVE_IMAGE_EXT}",
+            "video_path"   : path,
             "pos_avi_ratio": self.pos_avi_ratio,
             "pos_frames"   : self.pos_frames,
             "pos_msec"     : self.pos_msec,

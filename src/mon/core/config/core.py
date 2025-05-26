@@ -204,13 +204,20 @@ CLI_OPTIONS  = {
         "prompt_only": False,
         "prompt_text": "Seed ",
     },
+    "batch_size"  : {
+        "default"    : 1,
+        "type"       : _int_or_none,
+        "help"       : "Batch size for prediction.",
+        "prompt_only": False,
+        "prompt_text": "Batch Size",
+    },
     "imgsz"       : {
         "action"     : "append",
         "default"    : None,
         "type"       : _int_or_none,
         "help"       : "Image size.",
         "prompt_only": False,
-        "prompt_text": "Image size",
+        "prompt_text": "Image Size",
     },
     "resize"      : {
         "action"     : "store_true",

@@ -60,6 +60,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     benchmark    = args["benchmark"]
@@ -130,31 +131,29 @@ def predict(args: dict) -> str:
             
             # Optimize
             timer.tick()
-            enhance, denoise, illum = model(input)
+            enhanced, denoise, illum = model(input)
             if not is_video:
-                enhance, denoise, illum = model(input)
+                enhanced, denoise, illum = model(input)
             timer.tock()
             
             # Post-processing
             if resize:
-                enhance = mon.resize(enhance, (h0, w0))
-                denoise = mon.resize(denoise, (h0, w0))
-            enhance = save_images(enhance)
-            denoise = save_images(denoise)
-            enhance = cv2.cvtColor(enhance, cv2.COLOR_BGR2RGB)
-            denoise = cv2.cvtColor(denoise, cv2.COLOR_BGR2RGB)
+                enhanced = mon.resize(enhanced, (h0, w0))
+                denoise  = mon.resize(denoise,  (h0, w0))
+            enhanced = save_images(enhanced)
+            denoise  = save_images(denoise)
+            enhanced = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
+            denoise  = cv2.cvtColor(denoise,  cv2.COLOR_BGR2RGB)
             
             # Save
             if save_image:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                cv2.imwrite(str(output_path), enhance)
+                mon.save_image(enhanced, output_path)
             if save_debug:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, f"{mon.SAVE_IMAGE_DIR}_denoise", image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                cv2.imwrite(str(output_path), denoise)
+                mon.save_image(denoise, output_path)
     
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")

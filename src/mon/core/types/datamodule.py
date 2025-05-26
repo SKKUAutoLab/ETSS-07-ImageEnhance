@@ -15,7 +15,7 @@ import torch
 from torch.utils import data
 
 from mon.constants import Task
-from mon.core import rich, type_extensions, device as D
+from mon.core import rich, device as D
 from mon.core.types import dataset
 
 

@@ -3,8 +3,6 @@
 
 """This module defines all common configuration settings used in this project."""
 
-from __future__ import annotations
-
 __all__ = [
     "DATASETS",
     "MODELS",

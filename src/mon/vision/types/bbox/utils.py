@@ -173,8 +173,8 @@ def check_valid_bbox(bbox: np.ndarray | list | tuple) -> np.ndarray:
         bbox = bbox.reshape(1, -1)
     if bbox.ndim != 2 or bbox.shape[1] < 4:
         raise ValueError(f"[bbox] must be a 2D array [N, M] with M >= 4 or a 1D array [M] with M >= 4, got {bbox.shape}.")
-    if not np.all((bbox[:, 0] >= 0) & (bbox[:, 1] >= 0) & (bbox[:, 2] > 0) & (bbox[:, 3] > 0)):
-        raise ValueError(f"Invalid bbox values.")
+    #if not np.all((bbox[:, 0] >= 0) & (bbox[:, 1] >= 0) & (bbox[:, 2] > 0) & (bbox[:, 3] > 0)):
+    #    raise ValueError(f"Invalid bbox values.")
     return bbox
 
 

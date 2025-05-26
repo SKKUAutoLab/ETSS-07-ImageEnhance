@@ -301,4 +301,4 @@ class DenoisingDiffusion(object):
                 img_w_64 = int(64 * np.ceil(img_w / 64.0))
                 x = F.pad(x, (0, img_w_64 - img_w, 0, img_h_64 - img_h), 'reflect')
                 pred_x = self.model(x.to(self.device))["pred_x"][:, :, :img_h, :img_w]
-                utils.logging.save_image(pred_x, os.path.join(image_folder, str(step), '{}'.format(y[0])))
+                utils.logging.save_image(os.path.join(image_folder, str(step), '{}'.format(y[0])), pred_x)

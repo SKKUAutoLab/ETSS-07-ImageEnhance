@@ -4,12 +4,13 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-arch="retinexnet"
-model="retinexnet_lolv1"
+arch="fourierdiff"
+model="fourierdiff"
 detector="dfine_s_coco80"
 data=(
     ### Real-World Set
     # "darkface"
+    "darkface496"
     # "exdark"
     "exdark1200"
     "lolistreetval"
@@ -38,7 +39,13 @@ for (( i=0; i<${#data[@]}; i++ )); do
     input_json="${current_dir}/run/predict/${arch}/${model}/${data[i]}/pred_${detector}.json"
 
     # Target
-    if [ "${data[i]}" == "exdark" ]; then
+    if [ "${data[i]}" == "darkface" ]; then
+        target_json="${current_dir}/data/darkface/test/test.json"
+        remap_classes=""
+    elif [ "${data[i]}" == "darkface496" ]; then
+        target_json="${current_dir}/data/darkface/test496/test496.json"
+        remap_classes=""
+    elif [ "${data[i]}" == "exdark" ]; then
         target_json="${current_dir}/data/exdark/test/test.json"
         remap_classes="${current_dir}/data/exdark/remap_coco802exdark.yaml"
     elif [ "${data[i]}" == "exdark1200" ]; then

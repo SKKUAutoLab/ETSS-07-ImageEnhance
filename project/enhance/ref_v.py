@@ -52,5 +52,4 @@ with mon.create_progress_bar() as pbar:
             output = kornia.filters.bilateral_blur(output, (3, 3), 0.5, (1.5, 1.5))
         # Output
         output_path = output_dir / f"{image_file.stem}.png"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        mon.write_image(output_path, output)
+        mon.save_image(output, output_path)

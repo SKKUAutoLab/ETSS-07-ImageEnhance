@@ -1,7 +1,7 @@
-# Fisheye8K-v2 dataset:
-#   - trainv2 = train + val + test + train_syn + val_syn: 13841 images
-#   - val  : 2712 images
-#   - test : 1000 images
+# Fisheye8Kv2 dataset:
+#   - trainv2 = train + val + test + train_syn + val_syn: 13,841 images
+#   - val  : 2,712 images
+#   - test : 1,000 images
 
 task: detection
 

@@ -50,6 +50,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     benchmark    = args["benchmark"]
@@ -62,7 +63,7 @@ def predict(args: dict) -> str:
     exist_ok     = args["exist_ok"]
     verbose      = args["verbose"]
 
-    thres_conf   = args["thres_conf"]
+    conf_thres   = args["conf_thres"]
 
     # Start
     mon.console.rule(f"[bold red] {fullname}")
@@ -141,19 +142,20 @@ def predict(args: dict) -> str:
                 label_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(str(label_path), "w") as f:
                     for j, img in enumerate(image):
-                        score = scores[j]
-                        label = labels[j][score > thres_conf]
-                        box   =  boxes[j][score > thres_conf]
-                        box   = mon.convert_bbox(bbox=box, code=mon.ShapeCode.VOC2YOLO, height=h0, width=w0)
-                        for l, b, s in zip(label, box, score):
-                            f.write(f"{l} {b[0]} {b[1]} {b[2]} {b[3]} {s}\n")
+                        ss = scores[j]
+                        cs = labels[j][ss > conf_thres]
+                        bs =  boxes[j][ss > conf_thres]
+                        if len(cs) == 0:
+                            continue
+                        bs = mon.convert_bbox(bbox=bs, code=mon.ShapeCode.VOC2YOLO, height=h0, width=w0)
+                        for c, b, s in zip(cs, bs, ss):
+                            f.write(f"{c} {b[0]} {b[1]} {b[2]} {b[3]} {s}\n")
 
             # Save Image
             if save_image:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_VISUALIZE_DIR, image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                # output_path.parent.mkdir(parents=True, exist_ok=True)
-                # torchvision.utils.save_image(enhanced, str(output_path))
+                # mon.save_image(enhanced, output_path)
         
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")

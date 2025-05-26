@@ -4,6 +4,7 @@
 """Trains a model on a given dataset."""
 
 import mon
+from mon.vision.enhance.derain.esdnet_snn.test import batch_size
 
 current_file = mon.Path(__file__).absolute()
 current_dir  = current_file.parents[0]
@@ -23,6 +24,7 @@ def train(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    # batch_size   = args["batch_size"]
     # imgsz        = args["imgsz"]
     # resize       = args["resize"]
     benchmark    = args["benchmark"]

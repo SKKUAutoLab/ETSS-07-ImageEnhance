@@ -5,9 +5,9 @@
 
 __all__ = [
     "DarkFace",
+    "DarkFace496",
+    "DarkFace496DataModule",
     "DarkFaceDataModule",
-    "DarkFaceFull",
-    "DarkFaceFullDataModule",
 ]
 
 from typing import Literal
@@ -26,54 +26,9 @@ VisionDataset                  = vision.VisionDataset
 
 
 # ----- Dataset -----
+
 @DATASETS.register(name="darkface")
 class DarkFace(VisionDataset):
-    """Loads DarkFace dataset from ``root`` dir.
-
-    Args:
-        root: Directory path to dataset.
-        *args: Additional args for parent class.
-        **kwargs: Additional kwargs for parent class.
-
-    Raises:
-        FileNotFoundError: If ``root`` directory does not exist.
-    """
-    
-    tasks : list[Task]  = [Task.LLE, Task.DETECT]
-    splits: list[Split] = [Split.TEST]
-    datapoint_attrs     = DatapointAttributes({
-        "image": ImageAnnotation,
-        "depth": DepthMapAnnotation,
-    })
-    has_test_annotations: bool = False
-
-    def __init__(self, root: core.Path, *args, **kwargs):
-        root = core.Path(root)
-        root = root / "darkface" if root.name != "darkface" else root
-        if not root.is_dir():
-            raise FileNotFoundError(f"[root] directory not found: [{root}].")
-
-        super().__init__(root=root, *args, **kwargs)
-
-    def list_data(self):
-        """Lists ``datapoints`` with image annotations for split."""
-        patterns = [self.root / self.split_str / "image"]
-
-        images: list[ImageAnnotation] = []
-        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
-            for pattern in patterns:
-                paths = sorted(pattern.rglob("*"))
-                desc  = f"Listing {self.__class__.__name__} {self.split_str} images"
-                for path in pbar.track(sequence=paths, description=desc):
-                    if path.is_image_file():
-                        images.append(ImageAnnotation(path=path, root=pattern))
-
-        self.datapoints["image"] = images
-        
-
-# ----- DataModule -----
-@DATASETS.register(name="darkface_full")
-class DarkFaceFull(VisionDataset):
     """Loads DarkFaceFull dataset from ``root`` dir.
 
     Args:
@@ -84,7 +39,7 @@ class DarkFaceFull(VisionDataset):
     Raises:
         FileNotFoundError: If ``root`` directory does not exist.
     """
-    
+
     tasks : list[Task]  = [Task.LLE, Task.DETECT]
     splits: list[Split] = [Split.TEST]
     datapoint_attrs     = DatapointAttributes({
@@ -92,6 +47,9 @@ class DarkFaceFull(VisionDataset):
         "depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = False
+    classlabels = ClassLabels([
+        {"name": "face", "id": 0, "color": [ 81, 120, 228]},
+    ])
 
     def __init__(self, root: core.Path, *args, **kwargs):
         root = core.Path(root)
@@ -103,7 +61,7 @@ class DarkFaceFull(VisionDataset):
 
     def list_data(self):
         """Lists ``datapoints`` with image annotations for split."""
-        patterns = [self.root / f"{self.split_str}_full" / "image"]
+        patterns = [self.root / f"{self.split_str}" / "image"]
 
         images: list[ImageAnnotation] = []
         with core.create_progress_bar(disable=self.disable_pbar) as pbar:
@@ -117,11 +75,41 @@ class DarkFaceFull(VisionDataset):
         self.datapoints["image"] = images
 
 
+@DATASETS.register(name="darkface496")
+class DarkFace496(DarkFace):
+    """Loads DarkFace dataset from ``root`` dir.
+
+    Args:
+        root: Directory path to dataset.
+        *args: Additional args for parent class.
+        **kwargs: Additional kwargs for parent class.
+
+    Raises:
+        FileNotFoundError: If ``root`` directory does not exist.
+    """
+
+    def list_data(self):
+        """Lists ``datapoints`` with image annotations for split."""
+        patterns = [self.root / f"{self.split_str}496" / "image"]
+
+        images: list[ImageAnnotation] = []
+        with core.create_progress_bar(disable=self.disable_pbar) as pbar:
+            for pattern in patterns:
+                paths = sorted(pattern.rglob("*"))
+                desc  = f"Listing {self.__class__.__name__} {self.split_str} images"
+                for path in pbar.track(sequence=paths, description=desc):
+                    if path.is_image_file():
+                        images.append(ImageAnnotation(path=path, root=pattern))
+
+        self.datapoints["image"] = images
+
+
+# ----- DataModule -----
 @DATAMODULES.register(name="darkface")
 class DarkFaceDataModule(core.DataModule):
-    """Configures DarkFace datasets for training/testing."""
+    """Configures DarkFaceFull datasets for training/testing."""
     
-    tasks: list[Task] = [Task.LLE]
+    tasks: list[Task] = [Task.LLE, Task.DETECT]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -148,11 +136,11 @@ class DarkFaceDataModule(core.DataModule):
             self.summarize()
 
 
-@DATAMODULES.register(name="darkface_full")
-class DarkFaceFullDataModule(core.DataModule):
-    """Configures DarkFaceFull datasets for training/testing."""
-    
-    tasks: list[Task] = [Task.LLE]
+@DATAMODULES.register(name="darkface496")
+class DarkFace496DataModule(core.DataModule):
+    """Configures DarkFace datasets for training/testing."""
+
+    tasks: list[Task] = [Task.LLE, Task.DETECT]
 
     def prepare_data(self, *args, **kwargs):
         """Prepares data (placeholder, no action taken)."""
@@ -169,10 +157,10 @@ class DarkFaceFullDataModule(core.DataModule):
             core.console.log(f"Setup [red]{self.__class__.__name__}[/red].")
 
         if stage in [None, "train"]:
-            self.train = DarkFaceFull(split=Split.TEST, **self.dataset_kwargs)
-            self.val   = DarkFaceFull(split=Split.TEST, **self.dataset_kwargs)
+            self.train = DarkFace496(split=Split.TEST, **self.dataset_kwargs)
+            self.val   = DarkFace496(split=Split.TEST, **self.dataset_kwargs)
         if stage in [None, "test"]:
-            self.test  = DarkFaceFull(split=Split.TEST, **self.dataset_kwargs)
+            self.test  = DarkFace496(split=Split.TEST, **self.dataset_kwargs)
 
         self.get_classlabels()
         if self.can_log:

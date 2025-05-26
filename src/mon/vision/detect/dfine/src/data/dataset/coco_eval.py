@@ -25,6 +25,7 @@ __all__ = [
 
 @register()
 class CocoEvaluator(object):
+
     def __init__(self, coco_gt, iou_types):
         assert isinstance(iou_types, (list, tuple))
         coco_gt = copy.deepcopy(coco_gt)
@@ -86,10 +87,80 @@ class CocoEvaluator(object):
         for coco_eval in self.coco_eval.values():
             coco_eval.accumulate()
 
+    def summarize_original(self):
+        for iou_type, coco_eval in self.coco_eval.items():
+            print("IoU metric: {}".format(iou_type))
+            coco_eval.summarize()
+
+    #######################
+    # My Modifications    #
+    # Calculate F1 scores #
+    #######################
     def summarize(self):
         for iou_type, coco_eval in self.coco_eval.items():
             print("IoU metric: {}".format(iou_type))
             coco_eval.summarize()
+
+            # Calculate F1 scores
+            precisions     = coco_eval.eval['precision']  # Shape: (T, R, K, A, M)
+            recalls        = coco_eval.params.recThrs     # Shape: (R,)
+            iou_thrs       = coco_eval.params.iouThrs     # Shape: (T,)
+            area_rngs      = coco_eval.params.areaRngLbl  # ['all', 'small', 'medium', 'large']
+            max_dets       = coco_eval.params.maxDets     # e.g., [1, 10, 100]
+            # Initialize arrays for appending to stats
+            new_stats      = []
+            new_all_stats  = []
+            metric_configs = [
+                {"name": "(F1) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]", "iou_idx": slice(None),                      "area_idx": 0, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.50      | area=   all | maxDets=100 ]", "iou_idx": np.where(iou_thrs == 0.50)[0][0], "area_idx": 0, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.75      | area=   all | maxDets=100 ]", "iou_idx": np.where(iou_thrs == 0.75)[0][0], "area_idx": 0, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area= small | maxDets=100 ]", "iou_idx": slice(None),                      "area_idx": 1, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area=medium | maxDets=100 ]", "iou_idx": slice(None),                      "area_idx": 2, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area= large | maxDets=100 ]", "iou_idx": slice(None),                      "area_idx": 3, "max_det_idx": -1},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area=   all | maxDets=  1 ]", "iou_idx": slice(None),                      "area_idx": 0, "max_det_idx":  0},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area=   all | maxDets= 10 ]", "iou_idx": slice(None),                      "area_idx": 0, "max_det_idx":  1},
+                {"name": "(F1) @[ IoU=0.5:0.95  | area=   all | maxDets=100 ]", "iou_idx": slice(None),                      "area_idx": 0, "max_det_idx": -1},
+            ]
+
+            for config in metric_configs:
+                name        = config["name"]
+                iou_idx     = config["iou_idx"]
+                area_idx    = config["area_idx"]
+                max_det_idx = config["max_det_idx"]
+
+                # Extract precision
+                precision = precisions[iou_idx, :, :, area_idx, max_det_idx]
+                if isinstance(iou_idx, slice):
+                    precision = np.mean(precision, axis=0)  # Average over IoU thresholds
+                precision = np.mean(precision, axis=1)      # Average over categories
+                recall    = recalls
+
+                valid = precision > -1
+                if not np.any(valid):
+                    print(f"Warning: No valid detections for {name}")
+                    best_precision = best_recall = best_f1 = 0.0
+                else:
+                    precision      = precision[valid]
+                    recall         = recall[valid]
+                    f1_scores      = np.zeros_like(precision)
+                    non_zero       = (precision + recall) > 0
+                    f1_scores[non_zero] = 2 * (precision[non_zero] * recall[non_zero]) / (precision[non_zero] + recall[non_zero])
+                    best_idx       = np.argmax(f1_scores)
+                    best_f1        = f1_scores[best_idx]
+                    best_precision = precision[best_idx]
+                    best_recall    = recall[best_idx]
+
+                print(f" F1-Score           {name} = {best_f1:.3f} (Precision: {best_precision:.3f}, Recall: {best_recall:.3f})")
+
+                # Append to stats
+                # new_stats.extend(    [best_precision, best_recall, best_f1])
+                # new_all_stats.extend([best_precision, best_recall, best_f1])
+                new_stats.extend(    [best_f1])
+                new_all_stats.extend([best_f1])
+
+            # Update coco_eval.stats and all_stats
+            coco_eval.all_stats = np.append(coco_eval.all_stats, new_stats)
+            coco_eval.stats     = np.append(coco_eval.stats,     new_stats)
 
     def prepare(self, predictions, iou_type):
         if iou_type == "bbox":

@@ -9,7 +9,6 @@ References:
 
 import torch
 import torch.optim
-import torchvision
 
 import models
 import mon
@@ -34,6 +33,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     benchmark    = args["benchmark"]
@@ -96,20 +96,19 @@ def predict(args: dict) -> str:
             
             # Infer
             timer.tick()
-            pred = model(
+            enhanced = model(
                 inp   = ((image - 0.5) / 0.5).to(device),
                 coord = coord.unsqueeze(0),
                 cell  = cell_factor * cell
             )#.squeeze(0)
-            pred = (pred * 0.5 + 0.5).clamp(0, 1).reshape(1, 3, h, w).cpu()
+            enhanced = (enhanced * 0.5 + 0.5).clamp(0, 1).reshape(1, 3, h, w).cpu()
             timer.tock()
             
             # Save
             if save_image:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                torchvision.utils.save_image(pred, str(output_path))
+                mon.save_image(enhanced, output_path)
     
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")

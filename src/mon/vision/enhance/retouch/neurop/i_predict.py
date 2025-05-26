@@ -36,6 +36,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     imgsz        = imgsz[0] if isinstance(imgsz, Sequence) else imgsz
     resize       = args["resize"]

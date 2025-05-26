@@ -5,6 +5,6 @@
 
 from mon.vision.types.depth.annotation import *
 from mon.vision.types.depth.base import *
-from mon.vision.types.depth.depth_anything_v2 import *
-from mon.vision.types.depth.depth_pro import *
+from mon.vision.types.depth.depthanythingv2 import *
+from mon.vision.types.depth.depthpro import *
 from mon.vision.types.depth.processing import *

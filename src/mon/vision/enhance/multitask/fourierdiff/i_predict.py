@@ -45,6 +45,7 @@ def predict(args: dict) -> str:
     weights      = args["weights"]
     device       = args["device"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     epochs       = args["epochs"]

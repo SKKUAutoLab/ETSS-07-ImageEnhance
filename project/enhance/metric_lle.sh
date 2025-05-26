@@ -4,8 +4,8 @@ echo "$HOSTNAME"
 clear
 
 # ----- Input -----
-arch="retinexnet"
-model="retinexnet_lolv1"
+arch="zerolinr"
+model="zerolinr"
 data=(
     ### Unpaired Set
     "dicm"
@@ -31,7 +31,8 @@ data=(
     "sidsony"
     ### Real-World Set
     "darkcityscapes"
-    "darkface"
+    # "darkface"
+    "darkface496"
     # "exdark"
     "exdark1200"
     "lolistreettest"

@@ -1,7 +1,7 @@
 # Fisheye8K dataset:
-#   - train: 5288 images
-#   - val  : 2712 images
-#   - test : 1000 images
+#   - train: 5,288 images
+#   - val  : 2,712 images
+#   - test : 1,000 images
 
 task: detection
 

@@ -41,7 +41,9 @@ class OHaze(VisionDataset):
     splits: list[Split] = [Split.TRAIN, Split.VAL, Split.TEST]
     datapoint_attrs     = DatapointAttributes({
         "image"    : ImageAnnotation,
+        "depth"    : DepthMapAnnotation,
         "ref_image": ImageAnnotation,
+        "ref_depth": DepthMapAnnotation,
     })
     has_test_annotations: bool = True
     
@@ -55,9 +57,7 @@ class OHaze(VisionDataset):
     
     def list_data(self):
         """Lists ``datapoints`` with image annotations for split."""
-        patterns = [
-            self.root / self.split_str / "image",
-        ]
+        patterns = [self.root / self.split_str / "image"]
         
         images: list[ImageAnnotation] = []
         with core.create_progress_bar(disable=self.disable_pbar) as pbar:

@@ -14,6 +14,8 @@ local_rank  : -1                                                                
 epochs      : &epochs 100                                                       # Training epochs.
 steps       : &steps ~                                                          # Training steps.
 seed        : 0                                                                 # Random seed.
+batch_size  : &batch_size 1                                                     # Batch size for prediction.
+batch_size  : &batch_size 1                                                     # Batch size for prediction.
 imgsz       : &imgsz 384                                                        # Image size for the model.
 resize      : False                                                             # Resize the input image to `imgsz`.
 benchmark   : False                                                             # Benchmark the model.

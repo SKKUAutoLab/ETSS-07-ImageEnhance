@@ -343,7 +343,19 @@ class Path(type(pathlib.Path())):
             if temp.is_file():
                 return temp
         return self
-    
+
+    def txt_file(self) -> "Path":
+        """Returns the .txt file path.
+
+        Returns:
+            YAML file ``Path``.
+        """
+        for ext in [".txt"]:
+            temp = self.with_suffix(ext)
+            if temp.is_file():
+                return temp
+        return self
+
     def yaml_file(self) -> "Path":
         """Returns the YAML file path.
 

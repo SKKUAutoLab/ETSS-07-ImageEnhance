@@ -15,6 +15,9 @@ import mon
 
 mon.disable_print()
 
+current_file = mon.Path(__file__).absolute()
+current_dir  = current_file.parents[0]
+
 _METRICS = pyiqa.default_model_configs.DEFAULT_CONFIGS
 
 

@@ -61,6 +61,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     imgsz        = imgsz[0] if isinstance(imgsz, Sequence) else imgsz
     resize       = args["resize"]
@@ -156,14 +157,14 @@ def predict(args: dict) -> str:
             img_hsv_fixed = replace_v_component(img_hsv, img_v_fixed)
             img_rgb_fixed = hsv2rgb_torch(img_hsv_fixed)
             img_rgb_fixed = img_rgb_fixed / torch.max(img_rgb_fixed)
+            enhanced      = (torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)
             timer.tock()
             
             # Save
             if save_image:
                 output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                Image.fromarray((torch.movedim(img_rgb_fixed, 1, -1)[0].detach().cpu().numpy() * 255).astype(np.uint8)).save(str(output_path))
+                mon.save_image(enhanced, output_path)
     
     # Finish
     mon.console.log(f"Average time: {timer.avg_time}")

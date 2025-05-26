@@ -23,6 +23,7 @@ def predict(args: dict) -> str:
     epochs       = args["epochs"]
     steps        = args["steps"]
     seed         = args["seed"]
+    batch_size   = args["batch_size"]
     imgsz        = args["imgsz"]
     resize       = args["resize"]
     benchmark    = args["benchmark"]
@@ -93,8 +94,7 @@ def predict(args: dict) -> str:
                 _, output   = outputs.popitem()
                 output_dir  = mon.parse_output_dir(save_dir, data_name, mon.SAVE_IMAGE_DIR, image_path, keep_subdirs, save_nearby)
                 output_path = output_dir / f"{image_path.stem}{mon.SAVE_IMAGE_EXT}"
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                mon.write_image(output_path, output)
+                mon.save_image(output, output_path)
             
             # Save Debug
             if save_debug:
@@ -102,8 +102,7 @@ def predict(args: dict) -> str:
                 for k, v in outputs.items():
                     if mon.is_image(v):
                         path = debug_dir / f"{image_path.stem}_{k}{mon.SAVE_IMAGE_EXT}"
-                        path.parent.mkdir(parents=True, exist_ok=True)
-                        mon.write_image(path, v)
+                        mon.save_image(v, path)
     
     # Finish
     avg_time = float(sum(run_time) / len(run_time)) if run_time else 0
