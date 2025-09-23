@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Defines global constants used across the package."""
+
+__all__ = [
+    "ALBUMENTATIONS",
+    "DATASETS",
+    "DEPTH_SOURCE",
+    "INFRARED_SOURCE",
+    "MODELS",
+    "ROOT_DIR",
+    "SAVE_CKPT_EXT",
+    "SAVE_DEBUG_DIR",
+    "SAVE_IMAGE_DIR",
+    "SAVE_IMAGE_EXT",
+    "SAVE_LABEL_DIR",
+    "SAVE_VISUALIZE_DIR",
+    "SAVE_WEIGHTS_EXT",
+    "VERBOSE",
+    "ZOO_DIR",
+]
+
+from mon.core.enum import (
+    DepthSource,
+    ImageExtension,
+    InfraredSource,
+    WeightExtension,
+)
+from mon.core.factory import (
+    ALBUMENTATIONS,
+    DATASETS,
+    MODELS,
+)
+from mon.core.pathlib import Path
+
+
+# ----- Directory -----
+current_file = Path(__file__).absolute()   # mon/shared/mon/mon/constants.py
+ROOT_DIR     = current_file.parents[3]     # ./mon
+ZOO_DIR      = ROOT_DIR / "zoo"            # ./mon/zoo
+
+
+# ----- Constants -----
+DEPTH_SOURCE       = DepthSource.DAv2_ViTB
+INFRARED_SOURCE    = InfraredSource.INFRARED
+SAVE_DEBUG_DIR     = "debug"
+SAVE_IMAGE_DIR     = "pred"
+SAVE_LABEL_DIR     = "label"
+SAVE_VISUALIZE_DIR = "visualize"
+SAVE_CKPT_EXT      = WeightExtension.CKPT.value
+SAVE_IMAGE_EXT     = ImageExtension.JPG.value
+SAVE_WEIGHTS_EXT   = WeightExtension.PT.value
+VERBOSE            = True  # Global verbosity flag for internal logging

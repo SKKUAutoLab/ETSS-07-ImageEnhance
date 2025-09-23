@@ -12,34 +12,14 @@ __all__ = [
 from mon import Task
 
 # List all tasks that are performed in this project.
-TASKS = [
-	Task.RETOUCH,
-	Task.RGB2TIR,
-	Task.SR,
-	Task.UE,
-    Task.DEBLUR,
-    Task.DEHAZE,
-    Task.DENOISE,
-    Task.DEPTH,
-    Task.DERAIN,
-    Task.DESNOW,
-    Task.DETECT,
-    Task.INPAINT,
-    Task.LLE,
-    Task.NIGHTTIME,
-    Task.SEGMENT,
-]
+TASKS = []
 
 # List all models that are used in this project.
-MODELS = [
-
-]
+MODELS = []
 # If unsure, run the following script:
-# mon.print_table(mon.MODELS | mon.EXTRA_MODELS)
+# mon.print_table(mon.MODELS)
 
 # List all datasets that are used in this project.
-DATASETS = [
-
-]
+DATASETS = []
 # If unsure, run the following script:
-# mon.print_table(mon.DATASETS | mon.DATASETS_EXTRA)
+# mon.print_table(mon.DATASETS)
