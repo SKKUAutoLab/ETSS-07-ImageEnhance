@@ -1,6 +1,0 @@
-output/
-weight/
-*.pyc
-wandb/
-*.pth
-*.onnx
