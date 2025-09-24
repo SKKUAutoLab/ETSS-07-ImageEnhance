@@ -44,14 +44,14 @@ def split(image: Union[torch.Tensor, np.ndarray], n: int = 2) -> list[np.ndarray
         ValueError: If inputs are invalid (e.g., image shape, n).
     """
     if not isinstance(image, np.ndarray) or len(image.shape) != 3:
-        raise ValueError(f"[image] must be a numpy.ndarray of shape (H, W, C), "
+        raise ValueError(f"``image`` must be a numpy.ndarray of shape (H, W, C), "
                          f"got {image.shape} with {len(image.shape)} dimensions.")
     if n < 1:
-        raise ValueError(f"[n] must be a positive integer, got {n}.")
+        raise ValueError(f"``n`` must be a positive integer, got {n}.")
 
     h, w = imgsz(image)
     if n > h * w:
-        raise ValueError(f"[n] ({n}) exceeds image pixel count ({h * w}).")
+        raise ValueError(f"``n`` ({n}) exceeds image pixel count ({h * w}).")
 
     # Determine orientation
     is_portrait = h > w
@@ -128,7 +128,7 @@ def to_channel_first(image: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tens
     if is_channel_first(image):
         return image
     if not 3 <= image.ndim <= 4:
-        raise ValueError(f"[image]'s number of dimensions must be between 3 and 4, got {image.ndim}.")
+        raise ValueError(f"``image``'s number of dimensions must be between 3 and 4, got {image.ndim}.")
     
     if isinstance(image, torch.Tensor):
         image = image.clone()
@@ -143,7 +143,7 @@ def to_channel_first(image: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tens
         elif image.ndim == 4:
             image = np.transpose(image, (0, 3, 1, 2))  # [B, H, W, C] -> [B, C, H, W]
     else:
-        raise TypeError(f"[image] must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
     
     return image
 
@@ -166,7 +166,7 @@ def to_channel_last(image: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tenso
     if is_channel_last(image):
         return image
     if not 3 <= image.ndim <= 4:
-        raise ValueError(f"[image]'s number of dimensions must be between 3 and 4, got {image.ndim}.")
+        raise ValueError(f"``image``'s number of dimensions must be between 3 and 4, got {image.ndim}.")
     
     if isinstance(image, torch.Tensor):
         image = image.clone()
@@ -181,7 +181,7 @@ def to_channel_last(image: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tenso
         elif image.ndim == 4:
             image = np.transpose(image, (0, 2, 3, 1))  # [B, C, H, W] -> [B, H, W, C]
     else:
-        raise TypeError(f"[image] must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
     
     return image
 
@@ -210,7 +210,7 @@ def pair_downsample(image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         - Code: https://colab.research.google.com/drive/1i82nyizTdszyHkaHBuKPbWnTzao8HF9b?usp=sharing
     """
     if not isinstance(image, torch.Tensor) or image.ndim != 4:
-        raise TypeError(f"[image] must be a torch.Tensor of shape (B, C, H, W), "
+        raise TypeError(f"``image`` must be a torch.Tensor of shape (B, C, H, W), "
                         f"got {type(image)} with {image.ndim} dimensions.")
     
     b, c, h, w = image.shape
@@ -241,7 +241,7 @@ def to_array(image: torch.Tensor) -> np.ndarray:
         image = (tensor.squeeze().detach().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).round().astype("uint8")
     """
     if not isinstance(image, torch.Tensor) or image.ndim != 4:
-        raise TypeError(f"[image] must be a torch.Tensor of shape (B, C, H, W), "
+        raise TypeError(f"``image`` must be a torch.Tensor of shape (B, C, H, W), "
                         f"got {type(image)} with {image.ndim} dimensions.")
     
     image = (image.squeeze().detach().cpu().clamp(0, 1).permute(1, 2, 0).numpy())
@@ -268,7 +268,7 @@ def to_tensor(image: np.ndarray, normalize: bool = False) -> torch.Tensor:
         image = torch.from_numpy(image).permute(2, 0, 1).contiguous().float().div(255.0).unsqueeze(0).to(device)
     """
     if not isinstance(image, np.ndarray) or len(image.shape) != 3:
-        raise TypeError(f"[image] must be a numpy.ndarray of shape (H, W, C), "
+        raise TypeError(f"``image`` must be a numpy.ndarray of shape (H, W, C), "
                         f"got {type(image)} with {len(image.shape)} dimensions.")
     
     if normalize:

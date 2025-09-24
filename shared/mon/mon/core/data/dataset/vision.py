@@ -109,7 +109,7 @@ class VisionDataset(BaseDataset, abc.ABC):
         if transform is None or isinstance(transform, A.Compose):
             self.transform = transform
         else:
-            raise TypeError(f"[transform] must be None or an instance of "
+            raise TypeError(f"``transform`` must be None or an instance of "
                             f"albumentations.Compose, got: {type(transform)}.")
         
         # Add additional targets to A.Compose if needed.

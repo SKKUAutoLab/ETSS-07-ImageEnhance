@@ -15,7 +15,7 @@ from mon.constants import MODELS
 from mon.core import MLType, ModelMixin, nn, Path, Task
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 @MODELS.register(name="tvdenoise", arch="tvdenoise")
@@ -25,7 +25,7 @@ class TVDenoise(nn.Module, ModelMixin):
     name     : str          = "tvdenoise"
     tasks    : list[Task]   = [Task.DENOISE]
     mltypes  : list[MLType] = [MLType.ZERO_SHOT]
-    model_dir: Path         = current_dir
+    model_dir: Path         = root_dir
     zoo      : dict         = box.Box()
     
     def __init__(self):

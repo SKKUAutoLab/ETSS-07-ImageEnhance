@@ -25,7 +25,7 @@ from mon.constants import MODELS, ROOT_DIR
 from mon.core import MLType, ModelMixin, Path, Task
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 class ConvNeXt(tvm.ConvNeXt, ModelMixin, abc.ABC):
@@ -39,7 +39,7 @@ class ConvNeXt(tvm.ConvNeXt, ModelMixin, abc.ABC):
     name     : str          = "convnext"
     tasks    : list[Task]   = [Task.CLASSIFY]
     mltypes  : list[MLType] = [MLType.SUPERVISED]
-    model_dir: Path         = current_dir
+    model_dir: Path         = root_dir
     zoo      : dict         = box.Box()
     
     def __init__(self, weights: Any = "imagenet1k_v1", num_classes: int = 1000, *args, **kwargs):

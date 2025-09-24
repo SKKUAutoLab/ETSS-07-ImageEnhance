@@ -67,7 +67,7 @@ def pprint_dict(a_dict: dict | box.Box, title: str = ""):
     if isinstance(a_dict, box.Box):
         a_dict = a_dict.to_dict()
     if not isinstance(a_dict, dict):
-        raise TypeError(f"[a_dict] must be a dict, got {type(a_dict).__name__}.")
+        raise TypeError(f"``a_dict`` must be a dict, got {type(a_dict).__name__}.")
     pr = pretty.Pretty(
         a_dict,
         expand_all    = True,
@@ -92,7 +92,7 @@ def rprint_dict(a_dict: dict, title: str = ""):
     if isinstance(a_dict, box.Box):
         a_dict = a_dict.to_dict()
     if not isinstance(a_dict, dict):
-        raise TypeError(f"[x] must be a dict, got {type(a_dict).__name__}.")
+        raise TypeError(f"``x`` must be a dict, got {type(a_dict).__name__}.")
     tab = Table(
         title        = title,
         show_header  = True,
@@ -119,11 +119,11 @@ def rprint_list_dicts(list_of_dicts: list[dict]):
         ValueError: If any ``dict`` in ``list_of_dicts`` lack identical keys.
     """
     if not isinstance(list_of_dicts, list) or not all(isinstance(d, dict) for d in list_of_dicts):
-        raise TypeError(f"[list_of_dicts] must be a list of dicts, got {type(list_of_dicts).__name__}.")
+        raise TypeError(f"``list_of_dicts`` must be a list of dicts, got {type(list_of_dicts).__name__}.")
     if not list_of_dicts:
-        raise ValueError("[list_of_dicts] must not be empty.")
+        raise ValueError("``list_of_dicts`` must not be empty.")
     if not all(set(d.keys()) == set(list_of_dicts[0].keys()) for d in list_of_dicts):
-        raise ValueError("All dictionaries in [list_of_dicts] must have identical keys.")
+        raise ValueError("All dictionaries in ``list_of_dicts`` must have identical keys.")
     tab = Table(show_header=True, header_style="bold magenta")
     for k in list_of_dicts[0].keys():
         tab.add_column(k, no_wrap=True)

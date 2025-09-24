@@ -29,7 +29,7 @@ from quadprior import (
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Utils -----
@@ -133,7 +133,7 @@ def predict(args: dict | box.Box) -> str:
         raise ValueError(f"Invalid weights file: {pretrained}.")
 
     # Model
-    cfg_path  = current_dir / "src" / "models" / args.cfg
+    cfg_path  = root_dir / "src" / "models" / args.cfg
     init_ckpt = mon.ROOT_DIR / "zoo/vision/enhance/lle/quadprior/quadprior/coco80/control_sd15_init.ckpt"
     ae_ckpt   = mon.ROOT_DIR / "zoo/vision/enhance/lle/quadprior/quadprior/coco80/ae_epoch=00_step=7000.ckpt"
 
@@ -219,12 +219,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

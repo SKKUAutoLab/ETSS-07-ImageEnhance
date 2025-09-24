@@ -24,7 +24,7 @@ mon.dev()
 torch.set_printoptions(sci_mode=False)
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Utils -----
@@ -42,7 +42,7 @@ def dict2namespace(config):
 # ----- Predict -----
 @torch.no_grad()
 def predict(args: dict | box.Box) -> str:
-    cfg_path = current_dir / "fourierdiff" / "option" / args.cfg
+    cfg_path = root_dir / "fourierdiff" / "option" / args.cfg
     with open(str(cfg_path), "r") as f:
         cfg = yaml.safe_load(f)
     cfg = dict2namespace(cfg)
@@ -106,12 +106,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

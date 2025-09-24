@@ -26,13 +26,13 @@ from mon import albumentations as A
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Utils -----
 def benchmark(model):
     #inputs = {"input": onnx_tool.create_ndarray_f32((1, 3, 512, 512)), }
-    #onnx_tool.model_profile(str(current_dir/"enlighten_inference/enlighten.onnx"), inputs, None)
+    #onnx_tool.model_profile(str(root_dir/"enlighten_inference/enlighten.onnx"), inputs, None)
     pass
 
 
@@ -116,12 +116,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

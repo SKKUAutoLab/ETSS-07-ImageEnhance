@@ -20,7 +20,7 @@ from ..ldm.modules.diffusionmodules.util import (
 from ..ldm.util import exists, instantiate_from_config
 
 current_file = pathlib.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 class ControlledUnetModel(UNetModel):
@@ -325,7 +325,7 @@ class ControlLDM(LatentDiffusion):
         self.control_key      = control_key
         self.only_mid_control = only_mid_control
         self.control_scales   = [1.0] * 13
-        with open((current_dir.parent / "empty_embedding.pkl"), 'rb') as f:
+        with open((root_dir.parent / "empty_embedding.pkl"), 'rb') as f:
             self.cond_txt_empty = pickle.load(f)
 
     @torch.no_grad()

@@ -444,7 +444,7 @@ def download_url_to_file(url: str, path: Path, overwrite: bool = False) -> Path:
         ValueError: If ``url`` is not a valid URL.
     """
     if not Path(url).is_url():
-        raise ValueError(f"[url] must be a valid URL, got {url}.")
+        raise ValueError(f"``url`` must be a valid URL, got {url}.")
     
     path = Path(path)
     if not path.exists() or overwrite:

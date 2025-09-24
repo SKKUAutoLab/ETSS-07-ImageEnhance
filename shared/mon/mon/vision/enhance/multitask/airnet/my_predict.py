@@ -20,7 +20,7 @@ from utils.image_io import save_image_tensor
 
 console      = console
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Predict -----
@@ -104,12 +104,12 @@ def predict(args: argparse.Namespace):
 # ----- Main -----
 
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

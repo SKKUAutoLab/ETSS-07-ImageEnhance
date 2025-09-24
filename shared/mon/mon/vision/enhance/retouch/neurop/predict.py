@@ -19,13 +19,13 @@ from mon import albumentations as A
 from neurop import build_model, dict_to_nonedict, parse
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Predict -----
 @torch.no_grad()
 def predict(args: dict | box.Box) -> str:
-    cfg_path        = current_dir / "neurop" / "option" / "test" / args.cfg
+    cfg_path        = root_dir / "neurop" / "option" / "test" / args.cfg
     cfgs            = parse(str(cfg_path))
     cfgs            = dict_to_nonedict(cfgs)
     cfgs["dist"]    = False
@@ -108,12 +108,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

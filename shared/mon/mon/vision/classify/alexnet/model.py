@@ -16,7 +16,7 @@ from mon.constants import MODELS, ROOT_DIR
 from mon.core import MLType, ModelMixin, Path, Task
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 @MODELS.register(name="alexnet", arch="alexnet")
@@ -32,7 +32,7 @@ class AlexNet(tvm.AlexNet, ModelMixin):
     name     : str          = "alexnet",
     tasks    : list[Task]   = [Task.CLASSIFY]
     mltypes  : list[MLType] = [MLType.SUPERVISED]
-    model_dir: Path         = current_dir
+    model_dir: Path         = root_dir
     zoo      : dict         = box.Box({
         "imagenet1k_v1": {
             "url"        : "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth",

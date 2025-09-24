@@ -108,4 +108,4 @@ def save_image(image: Union[torch.Tensor, np.ndarray], path: Path):
     elif isinstance(image, np.ndarray):
         cv2.imwrite(str(path), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
     else:
-        raise TypeError(f"[image] must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be a torch.Tensor or numpy.ndarray, got {type(image)}.")

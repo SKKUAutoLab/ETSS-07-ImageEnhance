@@ -16,7 +16,7 @@ from ultralytics import settings, YOLO
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
@@ -48,7 +48,7 @@ def train(args: dict | box.Box) -> str:
     if pretrained and pretrained.is_weights_file(exist=True):
         cfg.model = pretrained
     if not mon.Path(cfg.data).is_yaml_file():
-        cfg.data = str(current_dir / "ultralytics" / "cfg" / "datasets" / f"{cfg.data}")
+        cfg.data = str(root_dir / "ultralytics" / "cfg" / "datasets" / f"{cfg.data}")
     cfg.epochs   = args.epochs
     cfg.batch    = args.batch_size
     cfg.device   = device
@@ -75,7 +75,7 @@ def train(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

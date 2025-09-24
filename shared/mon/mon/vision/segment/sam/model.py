@@ -27,7 +27,7 @@ from mon.core import MLType, ModelMixin, Path, Task
 from ultralytics import SAM as SAM_
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- SAM -----
@@ -42,7 +42,7 @@ class SAM(SAM_, ModelMixin):
     name     : str          = "sam"
     tasks    : list[Task]   = [Task.SEGMENT]
     mltypes  : list[MLType] = [MLType.SUPERVISED]
-    model_dir: Path         = current_dir
+    model_dir: Path         = root_dir
     zoo      : dict         = box.Box()
     
     def __init__(self, weights: Any = "sa1b", *args, **kwargs):

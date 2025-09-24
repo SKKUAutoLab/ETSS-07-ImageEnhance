@@ -38,7 +38,7 @@ def blur_spot_prior(image: np.ndarray, threshold: int = 250) -> bool:
         ``False`` otherwise.
     """
     if not isinstance(image, np.ndarray):
-        raise TypeError(f"[image] must be numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be numpy.ndarray, got {type(image)}.")
     
     # Convert image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -68,7 +68,7 @@ def bright_spot_prior(image: np.ndarray) -> bool:
         TypeError: If ``image`` is not a ``numpy.ndarray``.
     """
     if not isinstance(image, np.ndarray):
-        raise TypeError(f"[image] must be numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be numpy.ndarray, got {type(image)}.")
     
     # Convert image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -103,7 +103,7 @@ def bright_channel_prior(image: Union[torch.Tensor, np.ndarray], ksize: int) -> 
         kernel         = cv2.getStructuringElement(cv2.MORPH_RECT, ksize)
         bcp            = cv2.erode(bright_channel, kernel)
     else:
-        raise ValueError(f"[image] must be torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise ValueError(f"``image`` must be torch.Tensor or numpy.ndarray, got {type(image)}.")
     return bcp
 
 
@@ -129,7 +129,7 @@ def dark_channel_prior(image: Union[torch.Tensor, np.ndarray], ksize: int) ->  U
         kernel       = cv2.getStructuringElement(cv2.MORPH_RECT, ksize)
         dcp          = cv2.erode(dark_channel, kernel)
     else:
-        raise ValueError(f"[image] must be torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise ValueError(f"``image`` must be torch.Tensor or numpy.ndarray, got {type(image)}.")
     return dcp
 
 

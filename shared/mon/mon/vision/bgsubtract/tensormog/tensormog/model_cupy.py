@@ -25,7 +25,7 @@ from mon.core.enum import Enum
 from mon.core.pathlib import Path
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Module -----
@@ -376,7 +376,7 @@ class TensorMOGCuPy(nn.Module, ModelMixin):
     name     : str          = "tensormog_cupy"
     tasks    : list[Task]   = [Task.BGSUBTRACT, Task.VIDEO]
     mltypes  : list[MLType] = [MLType.INFERENCE]
-    model_dir: Path         = current_dir
+    model_dir: Path         = root_dir
     zoo      : dict         = {}
     
     def __init__(

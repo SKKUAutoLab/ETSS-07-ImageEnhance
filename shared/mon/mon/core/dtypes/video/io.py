@@ -46,7 +46,7 @@ def load_video_ffmpeg(process, height: int, width: int) -> np.ndarray:
         image = None
     else:
         if len(in_bytes) != img_size:
-            raise ValueError(f"[in_bytes] length [{len(in_bytes)}] != expected size [{img_size}].")
+            raise ValueError(f"``in_bytes`` length [{len(in_bytes)}] != expected size [{img_size}].")
         image = (
             np
             .frombuffer(in_bytes, np.uint8)
@@ -67,7 +67,7 @@ def write_video_ffmpeg(process, frame: Union[torch.Tensor, np.ndarray]):
         ValueError: If ``frame`` is not a ``numpy.ndarray``.
     """
     if not isinstance(frame, np.ndarray):
-        raise ValueError(f"[frame] must be a numpy.ndarray, got {type(frame).__name__}.")
+        raise ValueError(f"``frame`` must be a numpy.ndarray, got {type(frame).__name__}.")
     process.stdin.write(
         frame
         .astype("uint8")
@@ -182,7 +182,7 @@ class VideoWriterCV(VideoWriter):
         )
         
         if self.video_writer is None:
-            raise FileNotFoundError(f"[video_file] cannot be created at {video_file}.")
+            raise FileNotFoundError(f"``video_file`` cannot be created at {video_file}.")
     
     def close(self):
         """Close video writer."""

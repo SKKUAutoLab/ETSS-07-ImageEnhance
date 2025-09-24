@@ -60,7 +60,7 @@ class Factory(dict):
             TypeError: If ``name`` is not a ``str`` or ``None``.
         """
         if name and not isinstance(name, str):
-            raise TypeError(f"[name] must be str or None, got {type(name).__name__}.")
+            raise TypeError(f"``name`` must be str or None, got {type(name).__name__}.")
         
         def _register(cls):
             self.register_module(module=cls, name=name, replace=replace)
@@ -81,7 +81,7 @@ class Factory(dict):
             ValueError: If ``module`` is not a class.
         """
         if not inspect.isclass(module):
-            raise ValueError(f"[module] must be a class, got {type(module).__name__}.")
+            raise ValueError(f"``module`` must be a class, got {type(module).__name__}.")
         
         key = (
             name
@@ -110,7 +110,7 @@ class Factory(dict):
             ValueError: If ``name`` is not in the registry.
         """
         if not name:
-            error_console.log(f"[name] must be defined to build an instance of {self.name}.")
+            error_console.log(f"``name`` must be defined to build an instance of {self.name}.")
             return None
             
         for k in [name, depascalize(name), pascalize(name)]:
@@ -119,7 +119,7 @@ class Factory(dict):
                 if not hasattr(instance, "name"):
                     instance.name = depascalize(k)
                 return instance
-        raise ValueError(f"[name={name}] must be in registry.")
+        raise ValueError(f"``name={name}`` must be in registry.")
     
 
 # ----- Model Factory -----
@@ -184,7 +184,7 @@ class ModelFactory(Factory):
             TypeError: If ``name`` is not a ``str`` or ``None``.
         """
         if name and not isinstance(name, str):
-            raise TypeError(f"[name] must be str or None, got {type(name).__name__}.")
+            raise TypeError(f"``name`` must be str or None, got {type(name).__name__}.")
         
         def _register(cls: type) -> type:
             self.register_module(cls, name, arch, replace)
@@ -213,7 +213,7 @@ class ModelFactory(Factory):
             ValueError: If ``module_cls`` is not a class.
         """
         if not inspect.isclass(module):
-            raise ValueError(f"[module] must be a class, got {type(module).__name__}.")
+            raise ValueError(f"``module`` must be a class, got {type(module).__name__}.")
         
         module_key = name or depascalize(module.__name__)
         arch_key   = arch or depascalize(getattr(module, "arch", module.__name__))
@@ -239,7 +239,7 @@ class ModelFactory(Factory):
         """
         arch = arch or name
         if not name:
-            error_console.log(f"[name] must be defined to build an instance of {self.name}.")
+            error_console.log(f"``name`` must be defined to build an instance of {self.name}.")
             return None
             
         for k in [name, depascalize(name), pascalize(name)]:
@@ -249,7 +249,7 @@ class ModelFactory(Factory):
                     if not hasattr(instance, "name"):
                         instance.name = depascalize(k)
                     return instance
-        raise ValueError(f"[arch={arch}] and [name={name}] must be in registry.")
+        raise ValueError(f"``arch={arch}`` and ``name={name}`` must be in registry.")
 
     
 # ----- Constants -----

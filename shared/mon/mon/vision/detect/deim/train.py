@@ -26,7 +26,7 @@ from engine.solver import TASKS
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
@@ -73,7 +73,7 @@ def train(args: dict | box.Box) -> str:
     # Trainer
     dist_utils.setup_distributed(args.print_rank, args.print_method, seed=args.seed)
 
-    cfg_path     = current_dir / "option" / args.cfg
+    cfg_path     = root_dir / "option" / args.cfg
     updated_cfg  = args.updated_cfg
     updated_cfg |= {"tuning": str(tuning)} if tuning else {}
     updated_cfg |= {"resume": str(resume)} if resume else {}
@@ -113,7 +113,7 @@ def train(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

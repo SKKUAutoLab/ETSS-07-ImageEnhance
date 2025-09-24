@@ -1,9 +1,12 @@
-[submodule "src/mon/extra/snntorch"]
-	path = src/mon/extra/snntorch
-	url  = https://github.com/phlong3105/snntorch
-[submodule "src/mon/extra/spikingjelly"]
-	path = src/mon/extra/spikingjelly
+[submodule "shared/spikingjelly"]
+	path = shared/spikingjelly
 	url  = https://github.com/phlong3105/spikingjelly
-[submodule "src/mon/extra/ultralytics"]
-	path = src/mon/extra/ultralytics
+[submodule "shared/snntorch"]
+	path = shared/snntorch
+	url  = https://github.com/phlong3105/snntorch
+[submodule "shared/ultralytics"]
+	path = shared/ultralytics
 	url  = https://github.com/phlong3105/ultralytics
+[submodule "shared/open_clip"]
+	path = shared/open_clip
+	url  = https://github.com/phlong3105/open_clip

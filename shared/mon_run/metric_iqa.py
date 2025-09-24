@@ -195,7 +195,7 @@ def main(
     target_dir = mon.Path(target_dir) if target_dir else None
 
     if not input_dir or not input_dir.is_dir():
-        raise ValueError(f"[input_dir] does not exist: {input_dir}.")
+        raise ValueError(f"``input_dir`` does not exist: {input_dir}.")
 
     results         = {}
     results_gt_mean = {}

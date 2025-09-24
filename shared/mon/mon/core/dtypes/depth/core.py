@@ -49,7 +49,7 @@ class DepthMap(I.Image):
     ):
         source = DepthSource.from_value(source)
         if source not in DepthSource:
-            raise ValueError(f"[source] must be one of {DepthSource}, got {source}.")
+            raise ValueError(f"``source`` must be one of {DepthSource}, got {source}.")
 
         super().__init__(data=data, path=path, root=root, flags=flags, cache=cache)
         self.source = source

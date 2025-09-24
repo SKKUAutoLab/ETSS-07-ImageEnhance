@@ -33,7 +33,7 @@ def to_color(depth: np.ndarray, color_map: int = cv2.COLORMAP_JET) -> np.ndarray
         TypeError: If ``depth`` is not a ``numpy.ndarray``.
     """
     if not isinstance(depth, np.ndarray):
-        raise TypeError(f"[depth] must be a numpy.ndarray, got {type(depth)}.")
+        raise TypeError(f"``depth`` must be a numpy.ndarray, got {type(depth)}.")
     depth = np.uint8(255 * depth) if I.is_normalized(depth) else depth
     depth = cv2.applyColorMap(depth, color_map)
     return depth

@@ -8,12 +8,12 @@ import cv2
 import numpy as np
 import torch
 
-import mertens
 import mon
 from mon import Path
+from ..mertens import Mertens
 
 current_file = Path(__file__).absolute()
-root_dir     = current_file.parents[0]
+root_dir     = current_file.parents[1]
 data_dir     = root_dir / "data"
 run_dir      = root_dir / "run"
 
@@ -23,7 +23,7 @@ def run(args: dict | box.Box):
     image_dir = data_dir / image_dir
     out_path  = run_dir  / "sample" / f"{image_dir.stem}.jpg"
     
-    model  = mertens.Mertens()
+    model  = Mertens()
     
     timers = mon.TimeProfiler()
     timers.total.tick()

@@ -136,7 +136,7 @@ class BaseDataset(dataset.Dataset, abc.ABC):
         if self.root_name not in [None, ""] and root.name != self.root_name:
             root = root / self.root_name
         if not root.is_dir():
-            raise FileNotFoundError(f"[root] directory not found: {root}.")
+            raise FileNotFoundError(f"``root`` directory not found: {root}.")
         self._root = root
     
     @property
@@ -150,7 +150,7 @@ class BaseDataset(dataset.Dataset, abc.ABC):
         if split in self.splits:
             self._split = split
         else:
-            raise ValueError(f"[split] must be one of {self.splits}, got {split}.")
+            raise ValueError(f"``split`` must be one of {self.splits}, got {split}.")
     
     @property
     def split_str(self) -> str:
@@ -165,7 +165,7 @@ class BaseDataset(dataset.Dataset, abc.ABC):
         for k, v in self.modalities.items():
             if v.primary:
                 return k, v
-        raise ValueError(f"[modalities] has no primary modality. "
+        raise ValueError(f"``modalities`` has no primary modality. "
                          f"Please set `primary=True` for one of the modalities.")
     
     @property

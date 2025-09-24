@@ -75,7 +75,7 @@ def sort(col: Collection, reverse: bool = False) -> Any:
     if isinstance(col, dict):
         sorted_items = sorted(col.items(), key=lambda item: item[0], reverse=reverse)
         return dict(sorted_items)
-    raise TypeError(f"[col] must be an iterable or a dict, got {type(col)}.")
+    raise TypeError(f"``col`` must be an iterable or a dict, got {type(col)}.")
 
 
 def unique(seq: Sequence) -> Sequence:
@@ -91,7 +91,7 @@ def unique(seq: Sequence) -> Sequence:
         TypeError: If ``seq`` is not a ``list`` or ``tuple``.
     """
     if not isinstance(seq, list | tuple):
-        raise TypeError(f"[seq] must be a list or tuple, got {type(seq).__name__}.")
+        raise TypeError(f"``seq`` must be a list or tuple, got {type(seq).__name__}.")
     return type(seq)(set(seq))
 
 
@@ -113,7 +113,7 @@ def to_int(int_or_str: Any) -> int | None:
     try:
         return int(int_or_str)
     except (ValueError, TypeError):
-        raise ValueError(f"[int_or_str] must be convertible to int, "
+        raise ValueError(f"``int_or_str`` must be convertible to int, "
                          f"got {int_or_str} ({type(int_or_str).__name__}).")
 
 
@@ -134,7 +134,7 @@ def to_float(float_or_str: Any) -> float | None:
     try:
         return float(float_or_str)
     except (ValueError, TypeError):
-        raise ValueError(f"[float_or_str] must be convertible to float, "
+        raise ValueError(f"``float_or_str`` must be convertible to float, "
                          f"got {float_or_str} ({type(float_or_str).__name__}).")
 
 

@@ -264,7 +264,7 @@ def load_project_defaults(project_root: Path) -> dict:
         Dict with default config, or empty dict if invalid or not found.
     """
     if project_root in [None, "None", ""]:
-        log_error(f"[project_root] is not a valid project directory: {project_root}.")
+        log_error(f"``project_root`` is not a valid project directory: {project_root}.")
         return {}
     
     config_file = Path(project_root) / "config" / "default.py"

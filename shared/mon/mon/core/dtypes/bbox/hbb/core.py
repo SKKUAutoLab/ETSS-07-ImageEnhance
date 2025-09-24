@@ -55,11 +55,11 @@ class HBBs(BaseTensorOrArray):
         if all(d is None for d in [data, path]):
             raise ValueError("Either [data] or [path] must be provided to initialize the Image object.")
         if data is not None and orig_shape is None:
-            raise ValueError("If [data] is provided, [orig_shape] must also be specified.")
+            raise ValueError(f"If ``data`` is provided, ``orig_shape`` must also be specified.")
         if data is not None and orig_shape is not None:
             from mon.core.dtypes.bbox.hbb import utils
             if not utils.is_xyxy(data, orig_shape):
-                raise ValueError(f"[data] must be in XYXY format, got {data.shape}.")
+                raise ValueError(f"``data`` must be in XYXY format, got {data.shape}.")
 
         super().__init__(data=data, orig_shape=orig_shape)
         self._path     = Path(path) if path is not None else None

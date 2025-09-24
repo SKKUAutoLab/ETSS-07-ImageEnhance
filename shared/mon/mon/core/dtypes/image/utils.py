@@ -116,7 +116,7 @@ def imgsz(image_or_size: Any, divisor: int = None) -> tuple[int, int]:
             else (int(image_or_size.shape[-3]), int(image_or_size.shape[-2]))
         )
     else:
-        raise TypeError(f"[input] must be a torch.Tensor, numpy.ndarray, int, "
+        raise TypeError(f"``input`` must be a torch.Tensor, numpy.ndarray, int, "
                         f"Sequence[int], str, or core.Path, got {type(image_or_size)}.")
 
     if divisor is not None:
@@ -161,11 +161,11 @@ def is_channel_first(image: Union[torch.Tensor, np.ndarray]) -> bool:
     elif isinstance(image, np.ndarray):
         shape_ = image.shape
     else:
-        raise TypeError(f"[image] must be a numpy.ndarray or torch.Tensor, got {type(image)}.")
+        raise TypeError(f"``image`` must be a numpy.ndarray or torch.Tensor, got {type(image)}.")
     
     # Check if tensor has at least 3 dimensions (batch, height/width, channels)
     if not 3 <= len(shape_) <= 4:
-        raise ValueError(f"[image] must have at least 3 dimensions, got {len(shape_)}.")
+        raise ValueError(f"``image`` must have at least 3 dimensions, got {len(shape_)}.")
     
     # Extract dimensions
     if len(shape_) == 3:
@@ -246,4 +246,4 @@ def is_normalized(image: Union[torch.Tensor, np.ndarray]) -> bool:
     elif isinstance(image, np.ndarray):
         return abs(np.amax(image)) <= 1.0
     else:
-        raise TypeError(f"[image] must be a torch.Tensor or numpy.ndarray, got {type(image)}.")
+        raise TypeError(f"``image`` must be a torch.Tensor or numpy.ndarray, got {type(image)}.")

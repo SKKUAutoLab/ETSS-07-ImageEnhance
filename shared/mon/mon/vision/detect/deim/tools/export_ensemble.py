@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from engine.core import YAMLConfig
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Export -----
@@ -214,7 +214,7 @@ def export(args: dict | box.Box) -> str:
 
     cfgs = []
     for i, cfg in enumerate(args.cfg):
-        cfg_path     = current_dir / "option" / cfg
+        cfg_path     = root_dir / "option" / cfg
         updated_cfg  = args.updated_cfg[i]
         updated_cfg |= {"resume": str(pretrained[i])} if pretrained[i] else {}
         updated_cfg |= {
@@ -259,7 +259,7 @@ def export(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_predict_args(model_root=current_dir)
+    args = mon.rt.parse_predict_args(model_root=root_dir)
     export(args)
 
 

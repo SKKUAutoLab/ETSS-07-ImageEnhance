@@ -18,7 +18,7 @@ import mon
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Export -----
@@ -82,7 +82,7 @@ def export_trt(onnx_path: mon.Path, engine_path: mon.Path, args: dict | box.Box)
         raise FileNotFoundError(f"Invalid ONNX file: {onnx_path}.")
 
     if trt_p not in mon.TRTPrecision:
-        raise ValueError(f"[fp] must be one of {mon.TRTPrecision.values()}, got {trt_p}.")
+        raise ValueError(f"``fp`` must be one of {mon.TRTPrecision.values()}, got {trt_p}.")
 
     # Setup
     logger        = trt.Logger(trt.Logger.VERBOSE if args.verbose else trt.Logger.INFO)
@@ -211,7 +211,7 @@ def export(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_predict_args(model_root=current_dir)
+    args = mon.rt.parse_predict_args(root=root_dir, model_root=root_dir)
     export(args)
 
 

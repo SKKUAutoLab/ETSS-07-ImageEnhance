@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from engine.core import YAMLConfig
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Utils -----
@@ -200,7 +200,7 @@ def export(args: dict | box.Box) -> str:
         raise ValueError(f"Invalid weights file: {pretrained}.")
 
     # Model
-    cfg_path     = current_dir / "option" / args.cfg
+    cfg_path     = root_dir / "option" / args.cfg
     updated_cfg  = args.updated_cfg
     updated_cfg |= {"resume": str(pretrained)} if pretrained else {}
     updated_cfg |= {
@@ -244,7 +244,7 @@ def export(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_predict_args(model_root=current_dir)
+    args = mon.rt.parse_predict_args(model_root=root_dir)
     export(args)
 
 

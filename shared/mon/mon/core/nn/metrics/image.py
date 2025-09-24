@@ -46,7 +46,7 @@ def scale_gt_mean(
         mean_target = cv2.cvtColor(target, cv2.COLOR_RGB2GRAY).mean()
         image       = np.clip(image * (mean_target / mean_image), 0, 255)
     else:
-        raise TypeError(f"[image] and [target] must be same type, "
+        raise TypeError(f"``image`` and ``target`` must be same type, "
                         f"got {type(image).__name__} and {type(target).__name__}.")
     return image
 

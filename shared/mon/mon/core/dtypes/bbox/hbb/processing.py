@@ -549,7 +549,7 @@ def enclosing(bbox: np.ndarray) -> np.ndarray:
         ValueError: If ``bbox`` last dimension is not ``8``.
     """
     if bbox.shape[-1] < 8:
-        raise ValueError(f"[bbox] last dimension must be 8, got {bbox.shape[-1]}.")
+        raise ValueError(f"``bbox`` last dimension must be 8, got {bbox.shape[-1]}.")
     x_ = bbox[:, [0, 2, 4, 6]]
     y_ = bbox[:, [1, 3, 5, 7]]
     x1 = np.min(x_, 1).reshape(-1, 1)
@@ -572,15 +572,15 @@ def split_image_and_hbbs(image: np.ndarray, bbox: np.ndarray, n: int = 2) -> tup
         ValueError: If inputs are invalid (e.g., image shape, bboxes, n).
     """
     if not isinstance(image, np.ndarray) or len(image.shape) != 3:
-        raise ValueError(f"[image] must be a numpy.ndarray of shape (H, W, C), got {image.shape}.")
+        raise ValueError(f"``image`` must be a numpy.ndarray of shape (H, W, C), got {image.shape}.")
     if not isinstance(bbox, np.ndarray)  or bbox.ndim != 2 or bbox.shape[1] < 4:
-        raise ValueError(f"[bboxes] must be a numpy.ndarray of shape (N, M) with M >= 4, got {bbox.shape}.")
+        raise ValueError(f"``bboxes`` must be a numpy.ndarray of shape (N, M) with M >= 4, got {bbox.shape}.")
     if n < 1:
-        raise ValueError(f"[n] must be a positive integer, got {n}.")
+        raise ValueError(f"``n`` must be a positive integer, got {n}.")
 
     h, w = I.imgsz(image)
     if n > h * w:
-        raise ValueError(f"[n] ({n}) exceeds image pixel count ({h * w}).")
+        raise ValueError(f"``n`` ({n}) exceeds image pixel count ({h * w}).")
 
     # Determine orientation
     is_portrait = h > w
@@ -790,12 +790,12 @@ def to_2d(bbox: Union[np.ndarray, list, tuple]) -> np.ndarray:
         elif bbox[0].ndim == 2:                                                 # [[N, 4+], ...]
             bbox = np.concatenate(bbox, axis=0)                                 # [[N, 4+], ...] -> [N*, 4+]
         else:
-            raise TypeError(f"[bbox] list/tuple must contain consistent 1D or 2D "
+            raise TypeError(f"``bbox`` list/tuple must contain consistent 1D or 2D "
                             f"numpy.ndarray, got mixed types or dimensions: "
                             f"{[type(b) for b in bbox]} "
                             f"{[b.shape for b in bbox if b is not None]}.")
     else:
-        raise ValueError(f"[bbox] must be a numpy.ndarray, or list/tuple, got {type(bbox)}.")
+        raise ValueError(f"``bbox`` must be a numpy.ndarray, or list/tuple, got {type(bbox)}.")
 
     return bbox
 
@@ -971,4 +971,4 @@ def convert(bbox: np.ndarray, fmt: BBoxFormat, imgsz: tuple[int, int]) -> np.nda
         case BBoxFormat.YOLO2COCO | BBoxFormat.CXCYWHN2XYXY:
             return yolo_to_coco(bbox, imgsz)
         case _:
-            raise ValueError(f"[fmt] must be one of {BBoxFormat.conversion_codes()}, got {fmt}.")
+            raise ValueError(f"``fmt`` must be one of {BBoxFormat.conversion_codes()}, got {fmt}.")

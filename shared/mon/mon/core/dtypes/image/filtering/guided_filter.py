@@ -39,7 +39,7 @@ def guided_filter(image: torch.Tensor, guide: torch.Tensor, kernel_size: int, ep
         - Code: https://github.com/wuhuikai/DeepGuidedFilter/blob/master/GuidedFilteringLayer/GuidedFilter_PyTorch/guided_filter_pytorch/guided_filter.py
     """
     if not isinstance(image, torch.Tensor) or not isinstance(guide, torch.Tensor):
-        raise TypeError(f"[image] and [guide] must be torch.Tensor, got {type(image)} and {type(guide)}.")
+        raise TypeError(f"``image`` and ``guide`` must be torch.Tensor, got {type(image)} and {type(guide)}.")
     
     x          = image
     y          = guide

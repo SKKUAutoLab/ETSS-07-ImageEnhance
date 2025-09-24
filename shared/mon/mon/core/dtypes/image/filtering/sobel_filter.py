@@ -26,7 +26,7 @@ def sobel_filter(image: np.ndarray, kernel_size: int = 3) -> np.ndarray:
         Grayscale image with edge magnitudes.
     """
     if not isinstance(image, np.ndarray) or image.ndim not in [2, 3]:
-        raise TypeError(f"[image] must be a numpy.ndarray with 2 or 3 dimensions, "
+        raise TypeError(f"``image`` must be a numpy.ndarray with 2 or 3 dimensions, "
                         f"got {type(image)} with shape {image.shape}.")
     
     if is_color(image):

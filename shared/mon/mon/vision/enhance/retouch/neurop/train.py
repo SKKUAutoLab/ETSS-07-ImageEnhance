@@ -20,12 +20,12 @@ import mon
 from neurop import build_model, build_train_loader, dict_to_nonedict, parse
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
 def train(args: dict | box.Box) -> str:
-    cfg_path = current_dir / "neurop" / "option" / "train" / args.cfg
+    cfg_path = root_dir / "neurop" / "option" / "train" / args.cfg
     cfgs     = parse(str(cfg_path))
     cfgs     = dict_to_nonedict(cfgs)
     cfgs["network_G"]["init_model"] = mon.rt.parse_weights_file(mon.ROOT_DIR, cfgs.network_G.init_model)
@@ -92,7 +92,7 @@ def train(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

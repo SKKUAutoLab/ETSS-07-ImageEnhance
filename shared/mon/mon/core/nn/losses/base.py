@@ -34,7 +34,7 @@ class BaseLoss(_Loss, abc.ABC):
     def __init__(self, reduction: Literal["none", "mean", "sum"] = "mean"):
         super().__init__(reduction=reduction)
         if self.reduction not in self.reductions:
-            raise ValueError(f"[reduction] must be one of: {self.reductions}, got {reduction}.")
+            raise ValueError(f"``reduction`` must be one of: {self.reductions}, got {reduction}.")
         
     def __str__(self):
         return depascalize(self.__class__.__name__).lower()

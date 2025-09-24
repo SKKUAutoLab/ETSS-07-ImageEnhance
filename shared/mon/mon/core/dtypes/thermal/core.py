@@ -50,7 +50,7 @@ class InfraredMap(I.Image):
     ):
         source = InfraredSource.from_value(source)
         if source not in InfraredSource:
-            raise ValueError(f"[source] must be one of {InfraredSource}, got {source}.")
+            raise ValueError(f"``source`` must be one of {InfraredSource}, got {source}.")
 
         super().__init__(data=data, path=path, root=root, flags=flags, cache=cache)
         self.source = source

@@ -16,7 +16,7 @@ from ultralytics import YOLO
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Export -----
@@ -44,7 +44,7 @@ def export(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_predict_args(model_root=current_dir)
+    args = mon.rt.parse_predict_args(root=root_dir, model_root=root_dir)
     export(args)
 
 

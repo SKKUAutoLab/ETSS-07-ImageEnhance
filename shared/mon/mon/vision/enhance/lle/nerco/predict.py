@@ -23,7 +23,7 @@ import nerco
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Predict -----
@@ -69,7 +69,7 @@ def predict(args: dict | box.Box) -> str:
     
     # Data I/O
     data_name, dataloader = mon.data.build_dataloader(args.data, args.root)
-    testB_dir   = current_dir / "nerco" / "dataset" / "testB"
+    testB_dir   = root_dir / "nerco" / "dataset" / "testB"
     testB_files = sorted([f for f in testB_dir.glob("*") if f.is_image_file()])
     testB_size  = len(testB_files)
     transform_A = nerco.get_transform(cfgs)
@@ -144,12 +144,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

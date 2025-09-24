@@ -93,7 +93,7 @@ def mertens_cv2(
 ) -> np.ndarray:
     if isinstance(images, torch.Tensor):
         images = torch.split(images, 1, dim=0)
-    if all (isinstance(img, torch.Tensor) for img in images):
+    if isinstance(images, Sequence) and all(isinstance(img, torch.Tensor) for img in images):
         images = [I.to_array(img) for img in images]
     
     align_mtb = cv2.createAlignMTB()

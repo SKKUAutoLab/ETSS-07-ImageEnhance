@@ -7,7 +7,7 @@ from . import genotypes
 from .operations import *
 
 current_file = pathlib.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
@@ -194,7 +194,7 @@ class Network(nn.Module):
 
     def _init_weights(self):
         # model_dict = torch.load(mon.ROOT_DIR / "zoo/vision/enhance/lle/ruas/ruas/lol_v1/denoise.pt", weights_only=True)
-        model_dict = torch.load(current_dir / "pretrained/denoise.pt", weights_only=True)
+        model_dict = torch.load(root_dir / "pretrained/denoise.pt", weights_only=True)
         self.denoise_net.load_state_dict(model_dict)
 
     def forward(self, input):

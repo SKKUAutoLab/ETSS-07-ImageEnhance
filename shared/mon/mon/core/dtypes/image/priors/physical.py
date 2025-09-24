@@ -84,7 +84,7 @@ def atmospheric_prior(image: np.ndarray, ksize: int = 15, p: float = 0.0001) -> 
         :math:`[0, 255]` for each channel.
     """
     if not isinstance(image, np.ndarray):
-        raise ValueError(f"[image] must be numpy.ndarray, got {type(image)}.")
+        raise ValueError(f"``image`` must be numpy.ndarray, got {type(image)}.")
     
     image      = image.transpose(1, 2, 0)
     # Reference CVPR09, 4.4

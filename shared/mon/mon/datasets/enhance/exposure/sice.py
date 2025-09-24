@@ -45,7 +45,7 @@ class SICE(VisionDataset):
     """
     
     root_name : str         = "sice"
-    tasks     : list[Task]  = [Task.EXPOSURE, Task.LLE]
+    tasks     : list[Task]  = [Task.EXPOSURE, Task.MEF, Task.LLE]
     splits    : list[Split] = [Split.TRAIN, Split.TEST]
     modalities: Modalities  = {
         "image"      : Modality(name="image_under", type="image", module=Image,           train=True, test=True, primary=True),

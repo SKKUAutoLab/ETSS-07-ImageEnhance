@@ -216,11 +216,11 @@ class Probs(BaseTensorOrArray):
     ):
         if isinstance(data, int):
             if num_classes is None:
-                raise ValueError("If [data] is an int, [num_classes] must be provided.")
+                raise ValueError("If ``data`` is an int, ``num_classes`` must be provided.")
             else:
                 data = Probs.to_probs(data, num_classes)
         if not isinstance(data, Union[torch.Tensor, np.ndarray]):
-            raise TypeError(f"[data] must be a torch.Tensor or numpy.ndarray, got {type(data)}.")
+            raise TypeError(f"``data`` must be a torch.Tensor or numpy.ndarray, got {type(data)}.")
 
         super().__init__(data, orig_shape)
 
@@ -263,9 +263,9 @@ class Probs(BaseTensorOrArray):
             ``1.0`` and others set to ``0.0``.
         """
         if not isinstance(class_id, int):
-            raise TypeError(f"[class_id] must be an int, got {type(class_id)}.")
+            raise TypeError(f"``class_id`` must be an int, got {type(class_id)}.")
         if not isinstance(num_classes, int):
-            raise TypeError(f"[num_classes] must be an int, got {type(num_classes)}.")
+            raise TypeError(f"``num_classes`` must be an int, got {type(num_classes)}.")
 
         probs           = np.zeros(num_classes, dtype=np.float32)
         probs[class_id] = 1.0

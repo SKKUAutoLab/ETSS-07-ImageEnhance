@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from engine.core import YAMLConfig
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Utils -----
@@ -47,7 +47,7 @@ class ModelEnsemble(torch.nn.Module):
     def __init__(self, cfg: list, export_postprocessor: bool = True):
         super().__init__()
         if not isinstance(cfg, list | tuple):
-            raise TypeError(f"[cfg] must be a list or tuple of configurations, got {type(cfg)}.")
+            raise TypeError(f"``cfg`` must be a list or tuple of configurations, got {type(cfg)}.")
 
         self.models = torch.nn.ModuleList([c.model.deploy() for c in cfg])
         if export_postprocessor:
@@ -133,7 +133,7 @@ def export_trt(onnx_path: Path, engine_path: Path, args: dict | box.Box) -> Path
         raise FileNotFoundError(f"Invalid ONNX file: {onnx_path}.")
 
     if trt_p not in mon.TRTPrecision:
-        raise ValueError(f"[fp] must be one of {mon.TRTPrecision.values()}, got {trt_p}.")
+        raise ValueError(f"``fp`` must be one of {mon.TRTPrecision.values()}, got {trt_p}.")
 
     # Setup
     logger        = trt.Logger(trt.Logger.VERBOSE if args.verbose else trt.Logger.INFO)
@@ -242,7 +242,7 @@ def export(args: dict | box.Box) -> str:
         raise ValueError(f"Number of configurations ({len(cfg)}) does not match number of pretrained weights ({len(pretrained)}).")
 
     for i in range(len(cfg)):
-        cfg_path        = current_dir / "option" / cfg[i]
+        cfg_path        = root_dir / "option" / cfg[i]
         updated_cfg[i] |= {"resume": str(pretrained[i])} if pretrained[i] else {}
         updated_cfg[i] |= {
             "device": device,
@@ -290,7 +290,7 @@ def export(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_predict_args(model_root=current_dir)
+    args = mon.rt.parse_predict_args(model_root=root_dir)
     export(args)
 
 

@@ -35,7 +35,7 @@ np.float = np.float64
 np.bool  = np.bool_
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
@@ -246,7 +246,7 @@ def train(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

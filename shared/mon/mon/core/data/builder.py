@@ -68,7 +68,7 @@ def build_dataset(
         data_name = src.name
         dataset = VideoLoaderCV(root=src, transform=transform, verbose=verbose, **kwargs)
     else:
-        raise ValueError(f"[src] is invalid: {src}.")
+        raise ValueError(f"``src`` is invalid: {src}.")
 
     return data_name, dataset
 
@@ -133,4 +133,4 @@ def parse_data_dir(root: Path, data_dir: Path = "") -> Path:
     for d in candidates:
         if d.is_dir():
             return d
-    raise FileNotFoundError(f"[data_dir] not found: {data_dir}.")
+    raise FileNotFoundError(f"``data_dir`` not found: {data_dir}.")

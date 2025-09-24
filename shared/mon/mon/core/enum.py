@@ -101,7 +101,7 @@ class Enum(enum.Enum):
         str_to_enum = cls.str_to_enum()
         value_lower = a_str.lower()
         if value_lower not in str_to_enum:
-            raise ValueError(f"[a_str] must be one of {str_to_enum}, got {value_lower}.")
+            raise ValueError(f"``a_str`` must be one of {str_to_enum}, got {value_lower}.")
         return str_to_enum[value_lower]
     
     @classmethod
@@ -113,7 +113,7 @@ class Enum(enum.Enum):
         """
         int_to_enum = cls.int_to_enum()
         if an_int not in int_to_enum:
-            raise ValueError(f"[an_int] must be one of {int_to_enum}, got {an_int}.")
+            raise ValueError(f"``an_int`` must be one of {int_to_enum}, got {an_int}.")
         return int_to_enum[an_int]
     
     @classmethod
@@ -125,7 +125,7 @@ class Enum(enum.Enum):
             return cls.from_str(value)
         if isinstance(value, int):
             return cls.from_int(value)
-        raise TypeError(f"[value] must be a str or int, got {type(value)}.")
+        raise TypeError(f"``value`` must be a str or int, got {type(value)}.")
 
 
 # ----- Color -----

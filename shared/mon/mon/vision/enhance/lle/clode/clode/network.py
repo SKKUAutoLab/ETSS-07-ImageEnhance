@@ -33,11 +33,11 @@ class Conv2dTime(nn.Conv2d):
 
 class network(nn.Module):
     
-    def __init__(self, n_chan: int, chan_embed: int = 48):
+    def __init__(self, in_channels: int, embed_channels: int = 48):
         super().__init__()
-        self.conv1 = nn.Conv2d(n_chan,     chan_embed, 3, padding=1)
-        self.conv2 = nn.Conv2d(chan_embed, chan_embed, 3, padding=1)
-        self.conv3 = nn.Conv2d(chan_embed, n_chan,     1)
+        self.conv1 = nn.Conv2d(in_channels,    embed_channels, 3, padding=1)
+        self.conv2 = nn.Conv2d(embed_channels, embed_channels, 3, padding=1)
+        self.conv3 = nn.Conv2d(embed_channels, in_channels,    1)
         self.act   = nn.LeakyReLU(negative_slope=0.2, inplace=True)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -73,15 +73,15 @@ class EnhanceFunc(nn.Module):
                 
     def pair_downsampler(self, image: torch.Tensor) -> torch.Tensor:
         c       = image.shape[1]
-        filter1 = torch.FloatTensor([[[[0 ,0.5],[0.5, 0]]]]).to(image.device)
+        filter1 = torch.FloatTensor([[[[0, 0.5],[0.5, 0]]]]).to(image.device)
         filter1 = filter1.repeat(c,1, 1, 1)
-        filter2 = torch.FloatTensor([[[[0.5 ,0],[0, 0.5]]]]).to(image.device)
+        filter2 = torch.FloatTensor([[[[0.5, 0],[0, 0.5]]]]).to(image.device)
         filter2 = filter2.repeat(c,1, 1, 1)
         output1 = F.conv2d(image, filter1, stride=2, groups=c)
         output2 = F.conv2d(image, filter2, stride=2, groups=c)
         return output1, output2
 
-    def mse(self, gt: torch.Tensor, pred:torch.Tensor)-> torch.Tensor:
+    def mse(self, gt: torch.Tensor, pred: torch.Tensor)-> torch.Tensor:
         loss = torch.nn.MSELoss()
         return loss(gt, pred)
     

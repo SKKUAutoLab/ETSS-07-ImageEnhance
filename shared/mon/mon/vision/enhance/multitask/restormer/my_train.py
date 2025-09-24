@@ -35,7 +35,7 @@ from basicsr.utils.dist_util import get_dist_info, init_dist
 from basicsr.utils.options import dict2str, parse
 
 current_file = Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
@@ -348,7 +348,7 @@ def train(args: argparse.Namespace):
 # ----- Main -----
 
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

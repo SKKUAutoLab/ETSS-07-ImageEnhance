@@ -57,7 +57,7 @@ def create_patches(image: torch.Tensor, kernel_size: int = 1) -> torch.Tensor:
         A ``torch.Tensor`` with patches in channels of shape :math:`(B, H', W', K^2)`.
     """
     if image.ndim != 4:
-        raise ValueError(f"[image] must be a torch.Tensor of shape (B, C, H, W), got {image.shape}.")
+        raise ValueError(f"``image`` must be a torch.Tensor of shape (B, C, H, W), got {image.shape}.")
     
     b, c, h, w = image.shape
     kernel     = torch.zeros(kernel_size ** 2, c, kernel_size, kernel_size, device=image.device)
@@ -386,7 +386,7 @@ class INRLayer(nn.Module):
         elif nonlinear == "finer":
             self.nonlinear = FINERLayer(**layer_args, is_first=is_first, w0=w0)
         else:
-            raise ValueError(f"[nonlinear] must be supported type, got {nonlinear}.")
+            raise ValueError(f"``nonlinear`` must be supported type, got {nonlinear}.")
             
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return self.nonlinear(input)

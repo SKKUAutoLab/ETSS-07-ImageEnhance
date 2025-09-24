@@ -21,7 +21,7 @@ from mon import albumentations as A
 mon.dev()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Predict -----
@@ -72,7 +72,7 @@ def predict(args: dict | box.Box) -> str:
     ])
     data_name, dataloader = mon.data.build_dataloader(args.data, args.root, transform)
     
-    ref_image = current_dir / "uec" / "dataset" / "testB" / "a0001-jmac_DSC1459.jpg"
+    ref_image = root_dir / "uec" / "dataset" / "testB" / "a0001-jmac_DSC1459.jpg"
     ref_image = mon.image.load_image(ref_image)
     ref_image = transform(image=ref_image)["image"]
     ref_image = ref_image.unsqueeze(0).to(device)
@@ -146,12 +146,12 @@ def predict(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    cli  = mon.rt.parse_cli_args(root=current_dir)
+    cli  = mon.rt.parse_cli_args(root=root_dir)
     data = mon.utils.to_list(cli.data)
     for d in data:
         cli_ = copy.deepcopy(cli)
         cli_.data = d
-        args = mon.rt.parse_predict_args(cli=cli_, root=current_dir)
+        args = mon.rt.parse_predict_args(cli=cli_, root=root_dir, model_root=root_dir)
         predict(args)
 
 

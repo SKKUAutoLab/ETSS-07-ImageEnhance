@@ -25,7 +25,7 @@ mon.dev()
 disable_verbosity()
 
 current_file = mon.Path(__file__).absolute()
-current_dir  = current_file.parents[0]
+root_dir     = current_file.parents[0]
 
 
 # ----- Train -----
@@ -41,7 +41,7 @@ def train(args: dict | box.Box) -> str:
     mon.set_random_seed(args.seed)
 
     # Model
-    cfg_path        = current_dir / "src" / "models" / args.cfg
+    cfg_path        = root_dir / "src" / "models" / args.cfg
     init_ckpt       = mon.ROOT_DIR / "zoo/vision/enhance/lle/quadprior/quadprior/coco/control_sd15_init.ckpt"
     pretrained_ckpt = mon.ROOT_DIR / "zoo/vision/enhance/lle/quadprior/quadprior/coco/control_sd15_coco_final.ckpt"
     # First use cpu to load models. Pytorch Lightning will automatically move it to GPUs.
@@ -118,7 +118,7 @@ def train(args: dict | box.Box) -> str:
 
 # ----- Main -----
 def main() -> str:
-    args = mon.rt.parse_train_args(model_root=current_dir)
+    args = mon.rt.parse_train_args(root=root_dir, model_root=root_dir)
     train(args)
 
 

@@ -54,7 +54,7 @@ def build_transforms(transforms: list[Any]) -> list[A.BasicTransform]:
             transform_ops.append(t)
     
     if len(transform_ops) == 0:
-        raise ValueError(f"[transforms] must contain at least one valid transformation.")
+        raise ValueError(f"``transforms`` must contain at least one valid transformation.")
 
     return transform_ops
 

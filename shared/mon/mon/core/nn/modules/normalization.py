@@ -131,7 +131,7 @@ class HalfInstanceNorm2d(nn.Module):
     ):
         super().__init__()
         if num_features % 2 != 0:
-            raise ValueError(f"[num_features] must be even, got {num_features}.")
+            raise ValueError(f"``num_features`` must be even, got {num_features}.")
         self.in_ = nn.InstanceNorm2d(int(num_features // 2), eps, momentum, *args, **kwargs)
         
     def forward(self, input: torch.Tensor) -> torch.Tensor:

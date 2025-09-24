@@ -163,7 +163,7 @@ def measure_depth_metrics(
                 if use_color:
                     target = (cmap(target)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
             else:
-                raise FileNotFoundError(f"[target_file] does not exist: {target_file}.")
+                raise FileNotFoundError(f"``target_file`` does not exist: {target_file}.")
             
             # Transform
             if need_resize:
@@ -218,7 +218,7 @@ def main(
     target_dir = mon.Path(target_dir) if target_dir else None
 
     if not input_dir or not input_dir.is_dir():
-        raise ValueError(f"[input_dir] does not exist: {input_dir}.")
+        raise ValueError(f"``input_dir`` does not exist: {input_dir}.")
 
     results = measure_depth_metrics(
         input_dir  = input_dir,

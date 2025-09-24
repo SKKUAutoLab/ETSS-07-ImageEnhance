@@ -33,7 +33,7 @@ def is_normalized(bbox: np.ndarray) -> bool:
         ``True`` if normalized, ``False`` otherwise.
     """
     if not (bbox.ndim >= 2 and bbox.shape[-1] < 4):
-        raise ValueError(f"[bbox] must be of shape [N, 4+], got {bbox.shape}.")
+        raise ValueError(f"``bbox`` must be of shape (N, 4+), got {bbox.shape}.")
 
     return np.all((bbox[:, :4] >= 0) & (bbox[:, :4] <= 1))
 
@@ -49,7 +49,7 @@ def is_cxcywhn(bbox: np.ndarray, imgsz: tuple[int, int]) -> bool:
         ``True`` if in ``CXCYWHN`` format, ``False`` otherwise.
     """
     if not (bbox.ndim >= 2 and bbox.shape[-1] < 4):
-        raise ValueError(f"[bbox] must be of shape [N, 4+], got {bbox.shape}.")
+        raise ValueError(f"``bbox`` must be of shape (N, 4+), got {bbox.shape}.")
 
     return (
         np.all((bbox[:, :4] >= 0) & (bbox[:, :4] <= 1))
@@ -68,7 +68,7 @@ def is_xyxy(bbox: np.ndarray, imgsz: tuple[int, int]) -> bool:
         ``True`` if in ``XYXY`` format, ``False`` otherwise.
     """
     if not (bbox.ndim >= 2 and bbox.shape[-1] < 4):
-        raise ValueError(f"[bbox] must be of shape [N, 4+], got {bbox.shape}.")
+        raise ValueError(f"``bbox`` must be of shape (N, 4+), got {bbox.shape}.")
 
     if is_cxcywhn(bbox, imgsz):
         return False
@@ -92,7 +92,7 @@ def is_xywh(bbox: np.ndarray, imgsz: tuple[int, int]) -> bool:
         ``True`` if in ``XYWH`` format, ``False`` otherwise.
     """
     if not (bbox.ndim >= 2 and bbox.shape[-1] < 4):
-        raise ValueError(f"[bbox] must be of shape [N, 4+], got {bbox.shape}.")
+        raise ValueError(f"``bbox`` must be of shape (N, 4+), got {bbox.shape}.")
 
     if is_cxcywhn(bbox, imgsz):
         return False

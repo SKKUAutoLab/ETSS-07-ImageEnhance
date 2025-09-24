@@ -42,7 +42,7 @@ def load_hbb_coco(
     path = Path(path)
     if not path.is_json_file(exist=True):
         if verbose:
-            error_console.print(f"[path] must be a valid .json file, got {path}.")
+            error_console.print(f"``path`` must be a valid .json file, got {path}.")
 
     json_data = {}
     with open(path, "r") as f:
@@ -74,7 +74,7 @@ def load_hbb_voc(
     path = Path(path)
     if not path.is_xml_file(exist=True):
         if verbose:
-            error_console.print(f"[path] must be a valid .xmls file, got {path}.")
+            error_console.print(f"``path`` must be a valid .xmls file, got {path}.")
         return np.empty((0, 6), dtype=np.float32)
 
     tree = ET.parse(str(path))
@@ -153,7 +153,7 @@ def load_hbb_yolo(
     path = Path(path)
     if not path.is_txt_file(exist=True):
         if verbose:
-            error_console.print(f"[path] must be a valid .txt file, got {path}.")
+            error_console.print(f"``path`` must be a valid .txt file, got {path}.")
         return np.empty((0, 6), dtype=np.float32)
 
     with open(path, "r") as f:
@@ -216,7 +216,7 @@ def load_hbb(
         case BBoxFormat.YOLO | BBoxFormat.CXCYWHN:
             bbox = load_hbb_yolo(path, remap, verbose)
         case _:
-            raise ValueError(f"[src_fmt] must be one of {BBoxFormat.formats()}, got {src_fmt}.")
+            raise ValueError(f"``src_fmt`` must be one of {BBoxFormat.formats()}, got {src_fmt}.")
 
     if fmt and imgsz is None:
         raise ValueError("[imgsz] must be provided when converting HBBs.")
